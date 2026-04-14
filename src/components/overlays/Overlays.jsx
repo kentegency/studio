@@ -123,6 +123,25 @@ export function StageOverlay() {
           desc:  n.description ?? '',
         }))
     : STAGE_NODES
+
+  // Empty state — new project with no scenes
+  if (currentProject && nodes.length === 0) return (
+    <div className="sf-full" style={{ position:'fixed', inset:0, zIndex:3000, background:'rgba(4,4,2,.97)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px' }}>
+      <button style={{ position:'absolute', top:14, left:14, display:'flex', alignItems:'center', gap:6, fontSize:12, color:'var(--mute)', background:'none', border:'none', letterSpacing:'.1em', fontFamily:'var(--font-ui)' }}
+        onClick={() => closeOverlay('stage')}>
+        <svg viewBox="0 0 24 24" style={{width:14,height:14,stroke:'currentColor',fill:'none',strokeWidth:1.5}}><polyline points="15 18 9 12 15 6"/></svg>
+        Back to canvas
+      </button>
+      <div style={{ fontFamily:'var(--font-display)', fontSize:32, color:'var(--mute)', letterSpacing:'.04em' }}>Stage is empty</div>
+      <div style={{ fontSize:13, color:'var(--ghost)', letterSpacing:'.06em', textAlign:'center', lineHeight:1.7, maxWidth:320 }}>
+        Add scenes to your timeline first.<br/>Stage mode presents them in sequence.
+      </div>
+      <button style={{ fontSize:12, letterSpacing:'.18em', padding:'9px 22px', textTransform:'uppercase', color:'var(--orange)', border:'.5px solid rgba(245,146,12,.28)', borderRadius:2, background:'transparent', fontFamily:'var(--font-mono)', marginTop:8 }}
+        onClick={() => closeOverlay('stage')}>
+        Add scenes →
+      </button>
+    </div>
+  )
   const [idx,       setIdx]      = useState(0)
   const [animKey,   setAnimKey]  = useState(0)
   const [showLine,  setShowLine] = useState(false)

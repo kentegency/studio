@@ -132,3 +132,15 @@ body {
 }
 .offline-bar.on { transform: translateY(0); }
 .offline-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); animation: pulse-dot 1.5s ease infinite; }
+
+/* PROJECT ACCENT — injected dynamically per project */
+:root {
+  --project-accent: #F5920C; /* default, overridden by JS */
+}
+
+/* Elements that use project accent */
+.rph::before           { background: linear-gradient(90deg, var(--project-accent), transparent 52%) !important; }
+.rp-tab.on             { border-bottom-color: var(--project-accent) !important; }
+.upload-trigger        { border-color: rgba(var(--project-accent-rgb, 245,146,12), .18) !important; }
+.sf-progress-fill      { background: var(--project-accent) !important; }
+.add-node-btn          { color: var(--project-accent) !important; border-color: rgba(var(--project-accent-rgb, 245,146,12), .25) !important; }

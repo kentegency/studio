@@ -9,6 +9,9 @@ import Upload from './upload/Upload'
 import PublishPanel from './publish/PublishPanel'
 import Notifications from './shell/Notifications'
 import AssetViewer from './viewer/Viewer'
+import SettingsPanel from './settings/SettingsPanel'
+import ActsPanel from './settings/ActsPanel'
+import VoiceRecorder from './voice/VoiceRecorder'
 import SketchOverlay from './overlays/SketchOverlay'
 import CompareOverlay from './overlays/CompareOverlay'
 import StageOverlay from './overlays/StageOverlay'
@@ -17,6 +20,8 @@ import DigestOverlay from './overlays/DigestOverlay'
 import InvitePanel from './contributor/InvitePanel'
 import WrapPanel from './wrap/WrapPanel'
 import './wrap/Wrap.css'
+import './settings/Settings.css'
+import './settings/Acts.css'
 import './contributor/Contributor.css'
 import { useUIStore, useProjectStore } from '../stores'
 import { supabase } from '../lib/supabase'
@@ -29,11 +34,21 @@ import './viewer/Viewer.css'
 export default function Canvas() {
   const { overlays } = useUIStore()
   const { currentProject } = useProjectStore()
+
+  // Inject project accent colour as CSS variable
+  useEffect(() => {
+    const accent = currentProject?.accent_color ?? '#F5920C'
+    document.documentElement.style.setProperty('--project-accent', accent)
+    return () => document.documentElement.style.removeProperty('--project-accent')
+  }, [currentProject?.accent_color])
   const [showUpload,   setShowUpload]   = useState(false)
   const [showPublish,  setShowPublish]  = useState(false)
   const [showNotifs,   setShowNotifs]   = useState(false)
   const [showInvite,   setShowInvite]   = useState(false)
   const [showWrap,     setShowWrap]     = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showActs,     setShowActs]     = useState(false)
+  const [showVoice,    setShowVoice]    = useState(false)
   const [notifCount,   setNotifCount]   = useState(0)
   const [viewerAsset,  setViewerAsset]  = useState(null)
   const [viewerList,   setViewerList]   = useState([])
@@ -46,7 +61,11 @@ export default function Canvas() {
       setViewerList(list)
       setViewerIdx(idx)
     }
-    return () => { delete window.__openViewer }
+    window.__openVoice = () => setShowVoice(true)
+    return () => {
+      delete window.__openViewer
+      delete window.__openVoice
+    }
   }, [])
 
   // Real-time notification count
@@ -89,15 +108,19 @@ export default function Canvas() {
         onInvite={() => setShowInvite(true)}
         onWrap={() => setShowWrap(true)}
         onNotifs={() => { setShowNotifs(true); setNotifCount(0) }}
-        notifCount={notifCount} />
-      <Topbar onWrap={() => setShowWrap(true)} />
+        notifCount={notifCount}
+        onSettings={() => setShowSettings(true)}
+        onActs={() => setShowActs(true)} />
+      <Topbar onWrap={() => setShowWrap(true)} onSettings={() => setShowSettings(true)} onActs={() => setShowActs(true)} />
       <main className="canvas-main"><Timeline /></main>
       <Minimap />
       <RightPanel
         onUpload={() => setShowUpload(true)}
-        onPublish={() => setShowPublish(true)} />
+        onPublish={() => setShowPublish(true)}
+        onInvite={() => setShowInvite(true)}
+        onSettings={() => setShowSettings(true)} />
 
-      <QuickCapture />
+      <QuickCapture onVoice={() => setShowVoice(true)} />
 
       {/* Full-screen overlays — render at top level */}
       {viewerAsset  && <AssetViewer asset={viewerAsset} onClose={closeViewer}
@@ -105,8 +128,11 @@ export default function Canvas() {
         hasNext={viewerIdx < viewerList.length - 1}
         hasPrev={viewerIdx > 0} />}
 
-      {showWrap     && <WrapPanel onClose={() => setShowWrap(false)} />}
-      {showInvite   && <InvitePanel onClose={() => setShowInvite(false)} />}
+      {showWrap     && <WrapPanel     onClose={() => setShowWrap(false)} />}
+      {showInvite   && <InvitePanel   onClose={() => setShowInvite(false)} />}
+      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      {showActs     && <ActsPanel     onClose={() => setShowActs(false)} />}
+      {showVoice    && <VoiceRecorder onClose={() => setShowVoice(false)} />}
       {showUpload   && <Upload       onClose={() => setShowUpload(false)} />}
       {showPublish  && <PublishPanel onClose={() => setShowPublish(false)} />}
       {showNotifs   && <Notifications onClose={() => setShowNotifs(false)} />}

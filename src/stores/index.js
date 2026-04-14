@@ -99,6 +99,8 @@ export const useProjectStore = create((set, get) => ({
     }
   },
 
+  setActs: (acts) => set({ acts }),
+
   createProject: async (payload) => {
     // Use auth.users id directly — no profiles dependency
     const { data: { user } } = await supabase.auth.getUser()

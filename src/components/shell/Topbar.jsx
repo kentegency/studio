@@ -1,7 +1,7 @@
 import { useUIStore, useProjectStore } from '../../stores'
 import './Topbar.css'
 
-export default function Topbar({ onWrap }) {
+export default function Topbar({ onWrap, onSettings, onActs }) {
   const { activeRoom, setRoom, openOverlay, showToast } = useUIStore()
   const { currentProject } = useProjectStore()
 
@@ -38,6 +38,7 @@ export default function Topbar({ onWrap }) {
       <div className="tb-actions">
         <button className="tbb act" onClick={() => openOverlay('digest')} data-hover>Digest</button>
         <button className="tbb" onClick={() => openOverlay('brief')} data-hover>Brief</button>
+        <button className="tbb" onClick={() => onActs?.()} data-hover title="Manage act zones">Acts</button>
         <button className="tbb"
           onClick={() => { openOverlay('stage'); showToast('Lights up.') }} data-hover>
           Stage ↗

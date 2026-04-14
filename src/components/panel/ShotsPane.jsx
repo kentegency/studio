@@ -267,39 +267,48 @@ export function TeamPane({ onInvite }) {
   )
 }
 
-// ── STYLE PANE ────────────────────────────────
-const PALETTE = ['#F5920C','#1E8A8A','#F4EFD8','#7A7A7A','#4ADE80','#621408']
+// ── STYLE PANE — project-aware ────────────────
 const FONTS = [
   { label:'Display', value:'Bebas Neue',    style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:'16px' } },
   { label:'Body',    value:'Cormorant',     style:{ fontFamily:"'Cormorant Garamond',serif", fontStyle:'italic', fontSize:'14px' } },
   { label:'Mono',    value:'IBM Plex Mono', style:{ fontFamily:"'IBM Plex Mono',monospace", fontSize:'11px' } },
   { label:'UI',      value:'Inter',         style:{ fontFamily:"'Inter',sans-serif", fontSize:'12px' } },
 ]
-const TOKENS = [
-  { k:'--color-accent', v:'#F5920C' },
-  { k:'--color-teal',   v:'#1E8A8A' },
-  { k:'--font-display', v:'Bebas Neue' },
-  { k:'--spacing',      v:'normal' },
-  { k:'--motion',       v:'cinematic' },
-  { k:'--radius',       v:'2px' },
-]
 
-export function StylePane() {
-  const [activeColor, setActiveColor] = useState('#F5920C')
+export function StylePane({ onOpenSettings }) {
+  const { currentProject } = useProjectStore()
+  const accent = currentProject?.accent_color ?? '#F5920C'
+
+  const TOKENS = [
+    { k:'--project-accent', v: accent },
+    { k:'--font-display',   v:'Bebas Neue' },
+    { k:'--font-ui',        v:'Inter' },
+    { k:'--font-mono',      v:'IBM Plex Mono' },
+    { k:'--motion',         v:'cinematic' },
+    { k:'--radius',         v:'2px' },
+  ]
+
+  const PALETTE_BASE = ['#F4EFD8','#A09890','#4ADE80','#E05050','#8B5CF6']
+  const palette = [accent, ...PALETTE_BASE].slice(0, 6)
+
   return (
     <div className="node-pane">
       <div className="rph">
-        <div className="rp-ey">EBAN — Project</div>
+        <div className="rp-ey">{currentProject?.name ?? 'No project'}</div>
         <div className="rp-ti">Style Tokens</div>
       </div>
       <div className="sec">
         <div className="sec-l">Project Palette</div>
         <div className="color-row">
-          {PALETTE.map((c, i) => (
-            <div key={i} className={`cp ${activeColor===c?'on':''}`}
-              style={{ background:c }} onClick={() => setActiveColor(c)} data-hover />
+          {palette.map((c, i) => (
+            <div key={i} className="cp on" style={{ background:c }} />
           ))}
-          <div className="cp add-cp" data-hover>+</div>
+        </div>
+        <div style={{ marginTop:'8px' }}>
+          <button style={{ fontSize:'11px', color:'var(--orange)', background:'none', border:'none', letterSpacing:'.12em', textTransform:'uppercase', fontFamily:'var(--font-mono)' }}
+            onClick={() => onOpenSettings?.()}>
+            Change accent colour →
+          </button>
         </div>
       </div>
       <div className="sec">
@@ -319,7 +328,7 @@ export function StylePane() {
           {TOKENS.map((t, i) => (
             <div key={i} className="tok">
               <span className="tok-k">{t.k}</span>
-              <span className="tok-v">{t.v}</span>
+              <span className="tok-v" style={t.k==='--project-accent'?{color:accent}:{}}>{t.v}</span>
             </div>
           ))}
         </div>

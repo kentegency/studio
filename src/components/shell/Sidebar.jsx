@@ -28,7 +28,7 @@ function SbIcon({ Icon, active, onClick, count, title }) {
   )
 }
 
-export default function Sidebar({ onUpload, onPublish, onNotifs, notifCount }) {
+export default function Sidebar({ onUpload, onPublish, onNotifs, notifCount, onSettings }) {
   const { openOverlay, showToast, setScreen } = useUIStore()
   const [active, setActive] = useState('projects')
   const click = (key, action) => { setActive(key); if (action) action() }
@@ -60,10 +60,7 @@ export default function Sidebar({ onUpload, onPublish, onNotifs, notifCount }) {
       <SbIcon Icon={StageIcon}   active={active==='stage'}    title="Stage mode"
         onClick={() => click('stage', () => { openOverlay('stage'); showToast('Lights up.') })} />
       <SbIcon Icon={SettingsIcon}active={active==='settings'} title="Settings"
-        onClick={() => click('settings', () => {
-          localStorage.removeItem('kentegency_onboarding_v1')
-          showToast('Onboarding reset. Refresh to replay the tour.')
-        })} />
+        onClick={() => click('settings', () => onSettings?.())} />
     </aside>
   )
 }

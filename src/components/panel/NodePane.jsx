@@ -347,9 +347,16 @@ export default function NodePane({ onUpload }) {
       <div className="notes-wrap">
         <div className="notes-header">
           <span className="nh-l">Notes — {notes.length}</span>
-          <span className="nh-a" onClick={() => setAddingNote(s => !s)} data-hover>
-            {addingNote ? 'Cancel' : '+ Add'}
-          </span>
+          <div style={{ display:'flex', gap:'8px' }}>
+            <span className="nh-a" style={{ color:'#8B5CF6', borderColor:'rgba(139,92,246,.2)' }}
+              onClick={() => window.__openVoice?.()}
+              data-hover title="Voice note">
+              🎙
+            </span>
+            <span className="nh-a" onClick={() => setAddingNote(s => !s)} data-hover>
+              {addingNote ? 'Cancel' : '+ Add'}
+            </span>
+          </div>
         </div>
         {addingNote && (
           <div className="add-note-form">
