@@ -55,3 +55,14 @@
   font-family: var(--font-mono);
 }
 .sbi:hover::after { opacity: 1; }
+
+/* NOTIFICATION COUNT BADGE */
+.sbi-count {
+  position: absolute; top: 3px; right: 3px;
+  min-width: 14px; height: 14px;
+  background: var(--orange); color: var(--black);
+  border-radius: 7px; font-size: 9px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px; line-height: 1;
+  animation: pulse-dot 2s ease infinite;
+}

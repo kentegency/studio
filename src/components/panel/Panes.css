@@ -349,3 +349,19 @@
   75%  { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* ASSET TYPE ICONS */
+.at-type-icon {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.at-type-icon svg {
+  width: 18px; height: 18px;
+  stroke: currentColor; fill: none; stroke-width: 1.5;
+}
+.at-b {
+  position: absolute; bottom: 2px; right: 2px;
+  font-size: 11px; letter-spacing: .04em;
+  padding: 1px 4px; border-radius: 1px;
+  text-transform: uppercase; font-weight: 500;
+}
