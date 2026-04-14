@@ -8,6 +8,7 @@ import Dashboard from './components/dashboard/Dashboard'
 import Canvas from './components/Canvas'
 import Window from './components/window/Window'
 import ContributorView from './components/contributor/ContributorView'
+import Onboarding from './components/onboarding/Onboarding'
 import { Toast, OfflineBanner } from './components/Toast'
 import './styles/tokens.css'
 import './components/overlays/Overlays.css'
@@ -70,6 +71,7 @@ export default function App() {
     <>
       <div className="grain" /><div className="scan" />
       <Cursor /><Toast /><OfflineBanner />
+      <Onboarding />
       {screen === 'loader'    && <Loader />}
       {screen === 'entry'     && <Entry />}
       {screen === 'auth'      && <Auth />}

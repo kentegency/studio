@@ -60,7 +60,10 @@ export default function Sidebar({ onUpload, onPublish, onNotifs, notifCount }) {
       <SbIcon Icon={StageIcon}   active={active==='stage'}    title="Stage mode"
         onClick={() => click('stage', () => { openOverlay('stage'); showToast('Lights up.') })} />
       <SbIcon Icon={SettingsIcon}active={active==='settings'} title="Settings"
-        onClick={() => click('settings', () => showToast('Settings coming in next sprint.'))} />
+        onClick={() => click('settings', () => {
+          localStorage.removeItem('kentegency_onboarding_v1')
+          showToast('Onboarding reset. Refresh to replay the tour.')
+        })} />
     </aside>
   )
 }
