@@ -92,7 +92,7 @@
   flex: 1; position: relative; overflow: hidden;
   display: flex; flex-direction: column;
   justify-content: center; align-items: flex-start;
-  padding: 80px 100px;
+  padding: 80px 240px 80px 100px;
 }
 .st-eye {
   font-size: 13px; letter-spacing: .44em; color: var(--orange); text-transform: uppercase;

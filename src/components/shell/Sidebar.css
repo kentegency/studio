@@ -34,3 +34,24 @@
   animation: pulse-dot 2s ease infinite;
 }
 .sb-spacer { flex: 1; }
+
+/* TOOLTIPS */
+.sbi { position: relative; }
+.sbi::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%; transform: translateY(-50%);
+  background: var(--s2);
+  border: .5px solid var(--b2);
+  color: var(--cream);
+  font-size: 11px; letter-spacing: .08em;
+  white-space: nowrap;
+  padding: 5px 10px; border-radius: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-mid) var(--ease);
+  z-index: 9999;
+  font-family: var(--font-mono);
+}
+.sbi:hover::after { opacity: 1; }
