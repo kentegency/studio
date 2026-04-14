@@ -39,6 +39,8 @@ function useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, 
       action: () => { onWrap?.(); onClose() } },
     { id:'voice',       group:'Action',    label:'Record voice note',         shortcut:'',    icon:'◉',
       action: () => { onVoice?.(); onClose() } },
+    { id:'session',     group:'Action',    label:'Start live session with client', shortcut:'', icon:'▶',
+      action: () => { window.__startSession?.(null); showToast('Open Node panel to create a session link.'); onClose() } },
     { id:'acts',        group:'Action',    label:'Manage act zones',          shortcut:'',    icon:'⋮',
       action: () => { onActs?.(); onClose() } },
     { id:'settings',    group:'Action',    label:'Open project settings',     shortcut:'',    icon:'⚙',
@@ -48,13 +50,15 @@ function useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, 
 
     // ── PANEL TABS
     { id:'tab-node',    group:'Panel',     label:'Switch to Node tab',        shortcut:'',    icon:'◇',
-      action: () => { setTab('node');  onClose() } },
+      action: () => { setTab('node');   onClose() } },
     { id:'tab-shots',   group:'Panel',     label:'Switch to Shots tab',       shortcut:'',    icon:'◇',
-      action: () => { setTab('shots'); onClose() } },
+      action: () => { setTab('shots');  onClose() } },
     { id:'tab-team',    group:'Panel',     label:'Switch to Team tab',        shortcut:'',    icon:'◇',
-      action: () => { setTab('team');  onClose() } },
+      action: () => { setTab('team');   onClose() } },
+    { id:'tab-people',  group:'Panel',     label:'Switch to People tab',      shortcut:'',    icon:'◇',
+      action: () => { setTab('people'); onClose() } },
     { id:'tab-style',   group:'Panel',     label:'Switch to Style tab',       shortcut:'',    icon:'◇',
-      action: () => { setTab('style'); onClose() } },
+      action: () => { setTab('style');  onClose() } },
 
     // ── SCENES (dynamic — from current project nodes)
     ...nodes.slice(0, 12).map(n => ({

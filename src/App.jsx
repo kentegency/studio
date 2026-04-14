@@ -9,7 +9,7 @@ import Canvas from './components/Canvas'
 import Window from './components/window/Window'
 import ContributorView from './components/contributor/ContributorView'
 import Onboarding from './components/onboarding/Onboarding'
-import { undoStack } from './lib/undo'
+import SessionGuest from './components/session/SessionGuest'
 import { Toast, OfflineBanner } from './components/Toast'
 import './styles/tokens.css'
 import './components/overlays/Overlays.css'
@@ -24,15 +24,18 @@ export default function App() {
   const { closeAll, showToast } = useUIStore()
   const [windowToken,      setWindowToken]      = useState(null)
   const [contributorToken, setContributorToken] = useState(null)
+  const [sessionToken,     setSessionToken]     = useState(null)
 
-  // Hash routing for Window and Contributor pages
+  // Hash routing for Window, Contributor, Session pages
   useEffect(() => {
     const checkHash = () => {
       const hash = window.location.hash
       const wMatch = hash.match(/^#\/window\/(.+)$/)
       const cMatch = hash.match(/^#\/contributor\/(.+)$/)
+      const sMatch = hash.match(/^#\/session\/(.+)$/)
       setWindowToken(wMatch ? wMatch[1] : null)
       setContributorToken(cMatch ? cMatch[1] : null)
+      setSessionToken(sMatch ? sMatch[1] : null)
     }
     checkHash()
     window.addEventListener('hashchange', checkHash)
@@ -76,6 +79,14 @@ export default function App() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
+
+  // Session guest page — no auth needed
+  if (sessionToken) return (
+    <>
+      <div className="grain" /><div className="scan" /><Cursor />
+      <SessionGuest sessionToken={sessionToken} />
+    </>
+  )
 
   // Window page — no auth needed
   if (windowToken) return (

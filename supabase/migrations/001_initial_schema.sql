@@ -250,3 +250,28 @@ create trigger trg_notes_updated    before update on notes    for each row execu
 -- Bucket name: "assets"   → private
 -- Bucket name: "sketches" → private
 -- Bucket name: "exports"  → private
+
+-- Sprint 9A: add session_token column to projects
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS session_token text;
+
+-- Sprint 9B: subjects (production bible — interview subjects, key people)
+create table if not exists subjects (
+  id              uuid primary key default uuid_generate_v4(),
+  project_id      uuid not null references projects(id) on delete cascade,
+  name            text not null,
+  title           text,
+  organisation    text,
+  category        text default 'Other',
+  contact_status  text default 'prospect'
+    check (contact_status in ('prospect','contacted','confirmed','filmed','declined')),
+  contact_info    text,
+  node_ids        uuid[] default '{}',
+  notes           text,
+  color           text default '#1E8A8A',
+  created_at      timestamptz default now()
+);
+
+alter table subjects enable row level security;
+create policy "Project owner manages subjects" on subjects for all using (
+  exists (select 1 from projects where id = subjects.project_id and owner_id = auth.uid())
+);

@@ -230,3 +230,9 @@ body {
 .skeleton-title  { height: 20px; border-radius: 2px; }
 .skeleton-block  { height: 48px; border-radius: 2px; }
 .skeleton-avatar { width: 32px; height: 32px; border-radius: 50%; }
+
+/* ── PULSE DOT — used in session tile live indicator ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .5; transform: scale(.8); }
+}

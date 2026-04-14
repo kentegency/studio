@@ -25,6 +25,7 @@ import './settings/Acts.css'
 import './contributor/Contributor.css'
 import CommandPalette from './palette/CommandPalette'
 import ShortcutsPanel from './palette/ShortcutsPanel'
+import SessionTile    from './session/SessionTile'
 import ErrorBoundary from './ErrorBoundary'
 import { useUIStore, useProjectStore } from '../stores'
 import { supabase } from '../lib/supabase'
@@ -54,6 +55,7 @@ export default function Canvas() {
   const [showVoice,    setShowVoice]    = useState(false)
   const [showPalette,   setShowPalette]   = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [sessionToken,  setSessionToken]  = useState(null)
   const [notifCount,   setNotifCount]   = useState(0)
   const [viewerAsset,  setViewerAsset]  = useState(null)
   const [viewerList,   setViewerList]   = useState([])
@@ -69,11 +71,13 @@ export default function Canvas() {
     window.__openVoice    = () => setShowVoice(true)
     window.__openPalette  = () => setShowPalette(true)
     window.__openShortcuts= () => setShowShortcuts(true)
+    window.__startSession = (token) => setSessionToken(token)
     return () => {
       delete window.__openViewer
       delete window.__openVoice
       delete window.__openPalette
       delete window.__openShortcuts
+      delete window.__startSession
     }
   }, [])
 
@@ -153,6 +157,11 @@ export default function Canvas() {
           onVoice={() => setShowVoice(true)} />
       )}
       {showShortcuts && <ShortcutsPanel onClose={() => setShowShortcuts(false)} />}
+      {sessionToken  && (
+        <SessionTile
+          sessionToken={sessionToken}
+          onEnd={() => setSessionToken(null)} />
+      )}
       {showUpload   && <Upload       onClose={() => setShowUpload(false)} />}
       {showPublish  && <PublishPanel onClose={() => setShowPublish(false)} />}
       {showNotifs   && <Notifications onClose={() => setShowNotifs(false)} />}

@@ -5,12 +5,14 @@ import { ShotsPane } from '../panel/ShotsPane'
 import { TeamPane }  from '../panel/ShotsPane'
 import { StylePane } from '../panel/ShotsPane'
 import WindowPreview from '../panel/WindowPreview'
+import BiblePane from '../bible/BiblePane'
 import './RightPanel.css'
 
 const TABS = [
   { key: 'node',   label: 'Node'   },
   { key: 'shots',  label: 'Shots'  },
   { key: 'team',   label: 'Team'   },
+  { key: 'people', label: 'People' },
   { key: 'style',  label: 'Style'  },
 ]
 
@@ -42,10 +44,11 @@ export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }
 
   // Meeting room banner
   const panes = {
-    node:  () => <NodePane onUpload={onUpload} onPublish={onPublish} />,
-    shots: () => <ShotsPane />,
-    team:  () => <TeamPane onInvite={onInvite} />,
-    style: () => <StylePane onOpenSettings={onSettings} />,
+    node:   () => <NodePane onUpload={onUpload} onPublish={onPublish} />,
+    shots:  () => <ShotsPane />,
+    team:   () => <TeamPane onInvite={onInvite} />,
+    people: () => <BiblePane />,
+    style:  () => <StylePane onOpenSettings={onSettings} />,
   }
   const ActivePane = panes[activeTab] ?? panes.node
 

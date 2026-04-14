@@ -313,3 +313,15 @@
   transition: background var(--dur-mid) var(--ease);
 }
 .win-approve:hover { background: rgba(245,146,12,.06); }
+
+/* SESSION JOIN BUTTON */
+.win-session-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 2px;
+  border: .5px solid; background: transparent;
+  font-size: 11px; letter-spacing: .12em;
+  font-family: var(--font-mono); text-transform: uppercase;
+  cursor: pointer; margin-left: 8px;
+  transition: background var(--dur-mid) var(--ease);
+}
+.win-session-btn:hover { background: rgba(245,146,12,.06); }

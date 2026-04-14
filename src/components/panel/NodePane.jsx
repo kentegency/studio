@@ -140,8 +140,41 @@ export default function NodePane({ onUpload }) {
     showToast('Note saved.', 'var(--orange)', 5000)
   }
 
-  const windowUrl = currentProject?.window_token
+  const windowUrl  = currentProject?.window_token
     ? `${window.location.origin}/#/window/${currentProject.window_token}` : ''
+
+  // Session token — stored on project, generated once
+  const [sessionToken,    setSessionToken]    = useState(currentProject?.session_token ?? null)
+  const [sessionCopied,   setSessionCopied]   = useState(false)
+  const [generatingToken, setGeneratingToken] = useState(false)
+
+  const sessionUrl = sessionToken
+    ? `${window.location.origin}/#/session/${sessionToken}` : ''
+
+  const generateSessionToken = async () => {
+    if (!currentProject?.id) return
+    setGeneratingToken(true)
+    const token = crypto.randomUUID().replace(/-/g, '').slice(0, 20)
+    const { error } = await import('../../lib/supabase').then(({ supabase }) =>
+      supabase.from('projects').update({ session_token: token }).eq('id', currentProject.id)
+    )
+    if (!error) {
+      setSessionToken(token)
+      showToast('Session link created.', '#4ADE80')
+    }
+    setGeneratingToken(false)
+  }
+
+  const copySession = () => {
+    navigator.clipboard.writeText(sessionUrl)
+    setSessionCopied(true)
+    setTimeout(() => setSessionCopied(false), 2000)
+  }
+
+  const startSession = () => {
+    if (!sessionToken) return
+    window.__startSession?.(sessionToken)
+  }
 
   return (
     <div className="node-pane">
@@ -259,6 +292,41 @@ export default function NodePane({ onUpload }) {
                   setShowWindow(false)
                 }} data-hover>Copy</button>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Live Session */}
+      {currentProject && (
+        <div className="sec" style={{ flexShrink:0 }}>
+          <div className="sec-l">Live Session</div>
+          {!sessionToken ? (
+            <button className="window-link-btn" onClick={generateSessionToken}
+              disabled={generatingToken} data-hover>
+              <svg viewBox="0 0 24 24" style={{ width:13, height:13, stroke:'currentColor', fill:'none', strokeWidth:1.5, strokeLinecap:'round', flexShrink:0 }}>
+                <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+              </svg>
+              <span>{generatingToken ? 'Creating…' : 'Create session link'}</span>
+            </button>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+              <button className="window-link-btn" onClick={startSession} data-hover
+                style={{ color:'var(--project-accent, var(--orange))', borderColor:'rgba(245,146,12,.2)' }}>
+                <svg viewBox="0 0 24 24" style={{ width:13, height:13, stroke:'currentColor', fill:'none', strokeWidth:1.5, strokeLinecap:'round', flexShrink:0 }}>
+                  <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+                <span>Start session now</span>
+              </button>
+              <div className="window-link-box">
+                <div className="wl-url">{sessionUrl}</div>
+                <button className="wl-copy" onClick={copySession} data-hover>
+                  {sessionCopied ? 'Copied ✓' : 'Copy'}
+                </button>
+              </div>
+              <div style={{ fontSize:'11px', color:'var(--mute)', fontFamily:'var(--font-ui)', lineHeight:1.5 }}>
+                Send this link to your client. They join from their browser — no login needed.
+              </div>
             </div>
           )}
         </div>

@@ -295,6 +295,19 @@ export default function Window({ token }) {
         <span>Presented by The Kentegency</span>
         <span style={{ color:'var(--mute)' }}>·</span>
         <span>Creative Intelligence Studio</span>
+        {project?.session_token && (
+          <button
+            className="win-session-btn"
+            style={{ borderColor: accent, color: accent }}
+            onClick={() => {
+              window.location.hash = `#/session/${project.session_token}`
+            }}>
+            <svg viewBox="0 0 24 24" style={{ width:12, height:12, stroke:'currentColor', fill:'none', strokeWidth:1.5, strokeLinecap:'round' }}>
+              <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+            </svg>
+            Join live session
+          </button>
+        )}
       </div>
     </div>
   )
