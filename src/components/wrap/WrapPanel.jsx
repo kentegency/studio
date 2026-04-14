@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { jsPDF } from 'jspdf'
 import { supabase } from '../../lib/supabase'
 import { useProjectStore, useNodeStore, useAuthStore, useUIStore } from '../../stores'
 import './Wrap.css'
@@ -10,316 +9,257 @@ export default function WrapPanel({ onClose }) {
   const { profile }        = useAuthStore()
   const { showToast }      = useUIStore()
   const [generating, setGenerating] = useState(false)
-  const [preview,    setPreview]    = useState(false)
+
+  const approvedNodes = nodes.filter(n => n.status === 'approved' || n.status === 'locked').length
 
   const generate = async () => {
     if (!currentProject) { showToast('Open a project first.', '#E05050'); return }
     setGenerating(true)
+    showToast('Building your wrap…')
 
     try {
-      // Fetch all project data
       const [{ data: allNotes }, { data: allShots }, { data: allAssets }, { data: contributors }] = await Promise.all([
-        supabase.from('notes').select('*,nodes(name)').eq('project_id', currentProject.id).eq('resolved', false).order('created_at'),
-        supabase.from('shots').select('*,nodes(name)').eq('project_id', currentProject.id),
-        supabase.from('assets').select('*,nodes(name)').eq('project_id', currentProject.id),
+        supabase.from('notes').select('*, nodes(name)').eq('project_id', currentProject.id).neq('room','studio').order('created_at'),
+        supabase.from('shots').select('*, nodes(name)').eq('project_id', currentProject.id).order('number'),
+        supabase.from('assets').select('*, nodes(name)').eq('project_id', currentProject.id),
         supabase.from('contributors').select('*').eq('project_id', currentProject.id),
       ])
 
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const W = 210, H = 297
-      const M = 20 // margin
-      let y = M
+      const sortedNodes = [...nodes].sort((a,b) => (a.position??0)-(b.position??0))
+      const date = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
+      const doneShots = (allShots??[]).filter(s => s.status==='done').length
 
-      const addPage = () => { doc.addPage(); y = M }
-      const checkY = (needed) => { if (y + needed > H - M) addPage() }
+      const STATUS_COLOR = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+      const ACT_COLOR    = (i) => i<=2 ? '#1E8A8A' : i<=5 ? '#F5920C' : '#B43C1E'
 
-      // Colours
-      const C = {
-        black:  [4,   4,   2],
-        orange: [245, 146, 12],
-        teal:   [30,  138, 138],
-        cream:  [244, 239, 216],
-        dim:    [160, 152, 144],
-        mute:   [106, 98,  88],
-        bg:     [12,  11,  8],
-        green:  [74,  222, 128],
-      }
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${currentProject.name} — Wrap</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#040402; color:#F4EFD8; font-family:'IBM Plex Mono',monospace; }
+  @media print {
+    body { background:white; color:#111; }
+    .cover { background:#111 !important; }
+    .page { page-break-after: always; }
+    .no-print { display:none; }
+  }
 
-      // ── COVER PAGE ──────────────────────────────
-      doc.setFillColor(...C.black)
-      doc.rect(0, 0, W, H, 'F')
+  /* PRINT BUTTON */
+  .print-bar {
+    position:fixed; top:0; left:0; right:0; height:52px;
+    background:rgba(4,4,2,.98); border-bottom:.5px solid rgba(255,255,255,.08);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 32px; z-index:100;
+  }
+  .print-label { font-size:12px; letter-spacing:.3em; color:#7A7268; text-transform:uppercase; }
+  .print-btn {
+    font-size:12px; letter-spacing:.2em; padding:9px 22px;
+    text-transform:uppercase; color:#F5920C;
+    border:.5px solid rgba(245,146,12,.3); border-radius:2px;
+    background:transparent; font-family:'IBM Plex Mono',monospace;
+    cursor:pointer; transition:background .2s;
+  }
+  .print-btn:hover { background:rgba(245,146,12,.06); }
 
-      // Orange accent bar
-      doc.setFillColor(...C.orange)
-      doc.rect(M, 30, 80, 1, 'F')
+  .doc { max-width:860px; margin:0 auto; padding:72px 0 80px; }
 
-      // Project type
-      doc.setFontSize(9)
-      doc.setTextColor(...C.orange)
-      doc.setFont('helvetica', 'normal')
-      doc.text((currentProject.type ?? 'film').toUpperCase(), M, 44, { charSpace: 2 })
+  /* COVER */
+  .cover {
+    background:#040402; padding:72px 64px;
+    margin-bottom:2px;
+    min-height:520px; display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .cover-type { font-size:11px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:28px; }
+  .cover-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,8vw,96px); color:#F4EFD8; line-height:.9; letter-spacing:.015em; margin-bottom:20px; }
+  .cover-rule  { width:120px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin-bottom:20px; }
+  .cover-log   { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; color:#7A7268; line-height:1.65; max-width:500px; margin-bottom:32px; }
+  .cover-meta  { font-size:11px; letter-spacing:.1em; color:#4A4840; line-height:2; }
+  .cover-stats { display:flex; gap:40px; margin-top:24px; }
+  .cs-val { font-family:'Bebas Neue',sans-serif; font-size:40px; color:#F5920C; line-height:1; }
+  .cs-key { font-size:10px; letter-spacing:.22em; color:#4A4840; text-transform:uppercase; margin-top:4px; }
 
-      // Project name
-      doc.setFontSize(32)
-      doc.setTextColor(...C.cream)
-      doc.setFont('helvetica', 'bold')
-      const nameLines = doc.splitTextToSize(currentProject.name, W - M * 2)
-      doc.text(nameLines, M, 60)
-      y = 60 + nameLines.length * 14
+  /* SECTIONS */
+  .section { padding:56px 64px; border-top:.5px solid rgba(255,255,255,.06); }
+  .sec-eye  { font-size:10px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:10px; }
+  .sec-title{ font-family:'Bebas Neue',sans-serif; font-size:36px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
+  .sec-rule { width:60px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin:16px 0 28px; }
 
-      // Logline
-      if (currentProject.logline) {
-        doc.setFontSize(12)
-        doc.setTextColor(...C.dim)
-        doc.setFont('helvetica', 'italic')
-        const logLines = doc.splitTextToSize(currentProject.logline, W - M * 2)
-        doc.text(logLines, M, y + 10)
-        y += 10 + logLines.length * 7
-      }
+  /* SCENE LIST */
+  .scene { display:flex; gap:16px; padding:14px 16px; background:rgba(12,11,8,1); border-radius:2px; margin-bottom:6px; border-left:3px solid; }
+  .scene-num  { font-size:11px; color:#6A6258; min-width:24px; padding-top:2px; }
+  .scene-body { flex:1; }
+  .scene-name { font-size:14px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
+  .scene-meta { font-size:11px; color:#6A6258; letter-spacing:.08em; }
+  .scene-status { font-size:10px; letter-spacing:.18em; text-transform:uppercase; margin-top:4px; }
+  .scene-shots { margin-left:auto; font-size:11px; color:#4A4840; letter-spacing:.08em; padding-top:2px; white-space:nowrap; }
 
-      // Metadata
-      y += 16
-      doc.setFontSize(9)
-      doc.setTextColor(...C.mute)
-      doc.setFont('helvetica', 'normal')
-      doc.text(`Creative Director: ${profile?.name ?? 'The Kentegency'}`, M, y, { charSpace: 1 })
-      y += 7
-      doc.text(`Date: ${new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}`, M, y, { charSpace: 1 })
-      y += 7
-      doc.text(`Scenes: ${nodes.length} · Assets: ${allAssets?.length ?? 0} · Notes: ${allNotes?.length ?? 0}`, M, y, { charSpace: 1 })
+  /* SHOTS */
+  .shot-group-label { font-size:11px; letter-spacing:.28em; color:#F5920C; text-transform:uppercase; margin:20px 0 8px; opacity:.7; }
+  .shot { display:flex; gap:12px; padding:10px 14px; background:rgba(12,11,8,1); border-radius:2px; margin-bottom:4px; border-left:2px solid; }
+  .shot-n    { font-size:11px; color:#6A6258; min-width:20px; }
+  .shot-info { flex:1; }
+  .shot-name { font-size:13px; color:#A09890; letter-spacing:.04em; margin-bottom:3px; }
+  .shot-meta { font-size:11px; color:#4A4840; letter-spacing:.06em; }
 
-      // Teal accent at bottom
-      doc.setFillColor(...C.teal)
-      doc.rect(M, H - 30, 40, 1, 'F')
-      doc.setFontSize(8)
-      doc.setTextColor(...C.teal)
-      doc.text('THE KENTEGENCY · CREATIVE INTELLIGENCE STUDIO', M, H - 22, { charSpace: 1.5 })
+  /* NOTES */
+  .note-item { padding:14px 16px; background:rgba(12,11,8,1); border-radius:2px; border-left:3px solid; margin-bottom:8px; }
+  .note-body { font-size:13px; color:#A09890; line-height:1.65; margin-bottom:6px; }
+  .note-meta { font-size:10px; color:#4A4840; letter-spacing:.08em; }
 
-      // ── TIMELINE ARC ────────────────────────────
-      addPage()
-      doc.setFillColor(...C.black)
-      doc.rect(0, 0, W, H, 'F')
+  /* TEAM */
+  .team-row { display:flex; gap:16px; align-items:center; padding:12px 0; border-bottom:.5px solid rgba(255,255,255,.05); }
+  .team-init { width:36px; height:36px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; color:#040402; flex-shrink:0; }
+  .team-name { font-size:13px; color:#A09890; letter-spacing:.04em; }
+  .team-role { font-size:11px; color:#4A4840; letter-spacing:.08em; margin-top:3px; }
 
-      doc.setFontSize(8)
-      doc.setTextColor(...C.orange)
-      doc.setFont('helvetica', 'normal')
-      doc.text('PROJECT ARC', M, y, { charSpace: 2 })
-      y += 10
+  /* FOOTER */
+  .wrap-footer { padding:32px 64px; border-top:.5px solid rgba(255,255,255,.06); display:flex; justify-content:space-between; align-items:center; }
+  .wf-left  { font-size:10px; letter-spacing:.22em; color:#4A4840; text-transform:uppercase; }
+  .wf-right { font-size:10px; letter-spacing:.14em; color:#4A4840; }
+</style>
+</head>
+<body>
 
-      doc.setFontSize(18)
-      doc.setTextColor(...C.cream)
-      doc.setFont('helvetica', 'bold')
-      doc.text('SCENE OVERVIEW', M, y)
-      y += 4
+<div class="print-bar no-print">
+  <span class="print-label">The Kentegency — Wrap Document</span>
+  <button class="print-btn" onclick="window.print()">Download PDF →</button>
+</div>
 
-      doc.setFillColor(...C.orange)
-      doc.rect(M, y + 2, 30, 0.5, 'F')
-      y += 12
+<div class="doc">
 
-      // Scene list
-      const sortedNodes = [...nodes].sort((a,b) => (a.position??0) - (b.position??0))
-      sortedNodes.forEach((node, i) => {
-        checkY(22)
+  <!-- COVER -->
+  <div class="cover page">
+    <div>
+      <div class="cover-type">${currentProject.type ?? 'Film'} · Creative Direction</div>
+      <div class="cover-title">${currentProject.name}</div>
+      <div class="cover-rule"></div>
+      ${currentProject.logline ? `<div class="cover-log">${currentProject.logline}</div>` : ''}
+      <div class="cover-meta">
+        Creative Director: ${profile?.name ?? 'The Kentegency'}<br>
+        Date: ${date}<br>
+        Prepared by The Kentegency · Creative Intelligence Studio
+      </div>
+    </div>
+    <div class="cover-stats">
+      <div><div class="cs-val">${nodes.length}</div><div class="cs-key">Scenes</div></div>
+      <div><div class="cs-val">${approvedNodes}</div><div class="cs-key">Approved</div></div>
+      <div><div class="cs-val">${(allShots??[]).length}</div><div class="cs-key">Shots</div></div>
+      <div><div class="cs-val">${doneShots}</div><div class="cs-key">Shot done</div></div>
+      <div><div class="cs-val">${(contributors??[]).length}</div><div class="cs-key">Team</div></div>
+    </div>
+  </div>
 
-        // Status color
-        const statusColors = {
-          concept:  C.mute, progress: C.orange,
-          review:   [192,112,16], approved: C.green, locked: C.green
-        }
-        const sc = statusColors[node.status] ?? C.mute
+  <!-- SCENE OVERVIEW -->
+  <div class="section page">
+    <div class="sec-eye">Project Arc</div>
+    <div class="sec-title">Scene Overview</div>
+    <div class="sec-rule"></div>
+    ${sortedNodes.map((n, i) => {
+      const sc = STATUS_COLOR[n.status] ?? '#6A6258'
+      const ac = ACT_COLOR(i)
+      const nodeShots  = (allShots??[]).filter(s => s.node_id === n.id)
+      const nodeDone   = nodeShots.filter(s => s.status === 'done').length
+      return `<div class="scene" style="border-left-color:${ac}">
+        <div class="scene-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="scene-body">
+          <div class="scene-name">${n.name}</div>
+          <div class="scene-meta">${n.type ?? 'scene'}</div>
+          <div class="scene-status" style="color:${sc}">${n.status ?? 'concept'}</div>
+        </div>
+        ${nodeShots.length > 0 ? `<div class="scene-shots">${nodeDone}/${nodeShots.length} shots</div>` : ''}
+      </div>`
+    }).join('')}
+  </div>
 
-        // Node row
-        doc.setFillColor(...C.bg)
-        doc.rect(M, y, W - M*2, 16, 'F')
+  <!-- SHOT LIST -->
+  ${(allShots??[]).length > 0 ? `
+  <div class="section page">
+    <div class="sec-eye">Production</div>
+    <div class="sec-title">Shot List</div>
+    <div class="sec-rule"></div>
+    ${sortedNodes.map((n, ni) => {
+      const nodeShots = (allShots??[]).filter(s => s.node_id === n.id)
+      if (nodeShots.length === 0) return ''
+      const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2520' }
+      return `<div class="shot-group-label">${n.name}</div>
+      ${nodeShots.map(s => `<div class="shot" style="border-left-color:${SH_COLOR[s.status]??'#2A2520'}">
+        <div class="shot-n">${String(s.number).padStart(2,'0')}</div>
+        <div class="shot-info">
+          <div class="shot-name">${s.name}</div>
+          <div class="shot-meta">${[s.shot_type,s.shot_kind,s.duration].filter(Boolean).join(' · ')}</div>
+        </div>
+      </div>`).join('')}`
+    }).join('')}
+  </div>` : ''}
 
-        // Status indicator
-        doc.setFillColor(...sc)
-        doc.rect(M, y, 2, 16, 'F')
+  <!-- KEY DECISIONS -->
+  ${(allNotes??[]).length > 0 ? `
+  <div class="section page">
+    <div class="sec-eye">Approvals & Feedback</div>
+    <div class="sec-title">Key Decisions</div>
+    <div class="sec-rule"></div>
+    ${(allNotes??[]).slice(0,24).map(n => `
+      <div class="note-item" style="border-left-color:${n.color??'#1E8A8A'}">
+        <div class="note-body">${n.body}</div>
+        <div class="note-meta">${n.nodes?.name ? n.nodes.name + ' · ' : ''}${n.room} · ${new Date(n.created_at).toLocaleDateString('en-GB')}</div>
+      </div>`).join('')}
+  </div>` : ''}
 
-        // Number
-        doc.setFontSize(8)
-        doc.setTextColor(...C.mute)
-        doc.setFont('helvetica', 'normal')
-        doc.text(String(i+1).padStart(2,'0'), M + 6, y + 6, { charSpace: 1 })
+  <!-- TEAM -->
+  ${(contributors??[]).length > 0 ? `
+  <div class="section">
+    <div class="sec-eye">Credits</div>
+    <div class="sec-title">The Team</div>
+    <div class="sec-rule"></div>
+    ${(contributors??[]).map(c => `
+      <div class="team-row">
+        <div class="team-init" style="background:${c.color??'#1E8A8A'}">${c.name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div class="team-name">${c.name}</div>
+          <div class="team-role">${c.role}</div>
+        </div>
+      </div>`).join('')}
+  </div>` : ''}
 
-        // Name
-        doc.setFontSize(11)
-        doc.setTextColor(...C.cream)
-        doc.setFont('helvetica', 'bold')
-        doc.text(node.name, M + 18, y + 6)
+  <!-- FOOTER -->
+  <div class="wrap-footer">
+    <div class="wf-left">The Kentegency · Creative Intelligence Studio</div>
+    <div class="wf-right">${currentProject.name} · ${date}</div>
+  </div>
 
-        // Status
-        doc.setFontSize(8)
-        doc.setTextColor(...sc)
-        doc.setFont('helvetica', 'normal')
-        doc.text((node.status ?? 'concept').toUpperCase(), M + 18, y + 12, { charSpace: 1 })
+</div>
 
-        // Shot count
-        const nodeShots = allShots?.filter(s => s.node_id === node.id) ?? []
-        const doneShots = nodeShots.filter(s => s.status === 'done').length
-        if (nodeShots.length > 0) {
-          doc.setTextColor(...C.mute)
-          doc.text(`${doneShots}/${nodeShots.length} shots`, W - M - 30, y + 9)
-        }
+<script>
+  // Auto-trigger print after fonts load
+  window.addEventListener('load', () => {
+    document.fonts.ready.then(() => {
+      setTimeout(() => {
+        // Don't auto-print — let user decide
+      }, 500)
+    })
+  })
+</script>
+</body>
+</html>`
 
-        y += 20
-      })
+      // Open in new tab
+      const blob = new Blob([html], { type: 'text/html' })
+      const url  = URL.createObjectURL(blob)
+      window.open(url, '_blank')
 
-      // ── SHOT LIST ───────────────────────────────
-      if (allShots?.length > 0) {
-        addPage()
-        doc.setFillColor(...C.black)
-        doc.rect(0, 0, W, H, 'F')
-
-        doc.setFontSize(8)
-        doc.setTextColor(...C.teal)
-        doc.setFont('helvetica', 'normal')
-        doc.text('PRODUCTION', M, y, { charSpace: 2 })
-        y += 10
-
-        doc.setFontSize(18)
-        doc.setTextColor(...C.cream)
-        doc.setFont('helvetica', 'bold')
-        doc.text('SHOT LIST', M, y)
-        y += 4
-
-        doc.setFillColor(...C.teal)
-        doc.rect(M, y + 2, 20, 0.5, 'F')
-        y += 14
-
-        const doneCount = allShots.filter(s => s.status === 'done').length
-        doc.setFontSize(9)
-        doc.setTextColor(...C.dim)
-        doc.setFont('helvetica', 'normal')
-        doc.text(`${doneCount} of ${allShots.length} shots complete`, M, y)
-        y += 10
-
-        // Group by node
-        sortedNodes.forEach(node => {
-          const nodeShots = allShots.filter(s => s.node_id === node.id)
-          if (nodeShots.length === 0) return
-          checkY(16)
-
-          doc.setFontSize(9)
-          doc.setTextColor(...C.orange)
-          doc.setFont('helvetica', 'bold')
-          doc.text(node.name.toUpperCase(), M, y, { charSpace: 1 })
-          y += 8
-
-          nodeShots.forEach(shot => {
-            checkY(10)
-            const sc = shot.status==='done' ? C.green : shot.status==='progress' ? C.orange : C.mute
-            doc.setFillColor(...sc)
-            doc.rect(M, y - 2, 1.5, 5, 'F')
-
-            doc.setFontSize(9)
-            doc.setTextColor(...C.dim)
-            doc.setFont('helvetica', 'normal')
-            doc.text(`${String(shot.number).padStart(2,'0')}  ${shot.name}`, M + 5, y + 1)
-
-            doc.setFontSize(8)
-            doc.setTextColor(...C.mute)
-            const meta = [shot.shot_type, shot.shot_kind, shot.duration].filter(Boolean).join(' · ')
-            doc.text(meta, M + 5, y + 6)
-
-            y += 12
-          })
-          y += 4
-        })
-      }
-
-      // ── KEY NOTES ───────────────────────────────
-      const meetingNotes = allNotes?.filter(n => n.room !== 'studio') ?? []
-      if (meetingNotes.length > 0) {
-        addPage()
-        doc.setFillColor(...C.black)
-        doc.rect(0, 0, W, H, 'F')
-
-        doc.setFontSize(8)
-        doc.setTextColor(...C.green)
-        doc.setFont('helvetica', 'normal')
-        doc.text('APPROVALS & NOTES', M, y, { charSpace: 2 })
-        y += 10
-
-        doc.setFontSize(18)
-        doc.setTextColor(...C.cream)
-        doc.setFont('helvetica', 'bold')
-        doc.text('KEY DECISIONS', M, y)
-        y += 4
-        doc.setFillColor(...C.green)
-        doc.rect(M, y + 2, 25, 0.5, 'F')
-        y += 14
-
-        meetingNotes.slice(0, 20).forEach(note => {
-          checkY(20)
-          const bodyLines = doc.splitTextToSize(note.body, W - M*2 - 10)
-          const blockH = bodyLines.length * 5.5 + 14
-
-          doc.setFillColor(...C.bg)
-          doc.rect(M, y, W - M*2, blockH, 'F')
-
-          // Color stripe
-          const nc = note.color ? note.color.match(/\w\w/g)?.map(h => parseInt(h,16)) : C.teal
-          doc.setFillColor(nc[0]??30, nc[1]??138, nc[2]??138)
-          doc.rect(M, y, 2, blockH, 'F')
-
-          doc.setFontSize(9)
-          doc.setTextColor(...C.dim)
-          doc.setFont('helvetica', 'normal')
-          bodyLines.forEach((line, i) => {
-            doc.text(line, M + 7, y + 7 + i * 5.5)
-          })
-
-          const meta = `${note.nodes?.name ?? ''} · ${note.room} · ${new Date(note.created_at).toLocaleDateString('en-GB')}`
-          doc.setFontSize(7.5)
-          doc.setTextColor(...C.mute)
-          doc.text(meta, M + 7, y + blockH - 4, { charSpace: 0.5 })
-
-          y += blockH + 5
-        })
-      }
-
-      // ── CONTRIBUTORS ────────────────────────────
-      if (contributors?.length > 0) {
-        checkY(60)
-        y += 10
-
-        doc.setFontSize(8)
-        doc.setTextColor(...C.dim)
-        doc.setFont('helvetica', 'normal')
-        doc.text('THE TEAM', M, y, { charSpace: 2 })
-        y += 8
-
-        contributors.forEach(c => {
-          checkY(10)
-          doc.setFontSize(10)
-          doc.setTextColor(...C.cream)
-          doc.setFont('helvetica', 'bold')
-          doc.text(c.name, M, y)
-          doc.setFontSize(8)
-          doc.setTextColor(...C.mute)
-          doc.setFont('helvetica', 'normal')
-          doc.text(c.role, M + 60, y, { charSpace: 0.5 })
-          y += 8
-        })
-      }
-
-      // Save
-      const filename = `${currentProject.name.replace(/[^a-z0-9]/gi,'_')}_wrap.pdf`
-      doc.save(filename)
-      showToast(`${filename} downloaded.`, '#4ADE80')
-      setPreview(true)
+      showToast('Wrap document opened. Click "Download PDF" in the new tab.', '#4ADE80')
 
     } catch (err) {
       console.error('Wrap error:', err)
-      showToast('Could not generate PDF. Check console.', '#E05050')
+      showToast('Could not generate wrap. Check console.', '#E05050')
     }
 
     setGenerating(false)
   }
-
-  const totalShots    = 0
-  const approvedNodes = nodes.filter(n => n.status === 'approved' || n.status === 'locked').length
 
   return (
     <div className="wrap-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -327,23 +267,16 @@ export default function WrapPanel({ onClose }) {
         <div className="wrap-head">
           <div>
             <div className="wrap-title">Wrap it</div>
-            <div className="wrap-sub">Generate your project case study as a PDF</div>
+            <div className="wrap-sub">Generate your project case study</div>
           </div>
           <button className="wrap-close" onClick={onClose}>×</button>
         </div>
 
-        {/* PROJECT SUMMARY */}
         <div className="wrap-summary">
           <div className="ws-project">{currentProject?.name ?? 'No project open'}</div>
           <div className="ws-stats">
-            <div className="ws-stat">
-              <div className="ws-val">{nodes.length}</div>
-              <div className="ws-key">Scenes</div>
-            </div>
-            <div className="ws-stat">
-              <div className="ws-val">{approvedNodes}</div>
-              <div className="ws-key">Approved</div>
-            </div>
+            <div className="ws-stat"><div className="ws-val">{nodes.length}</div><div className="ws-key">Scenes</div></div>
+            <div className="ws-stat"><div className="ws-val">{approvedNodes}</div><div className="ws-key">Approved</div></div>
             <div className="ws-stat">
               <div className="ws-val">{nodes.length > 0 ? Math.round((approvedNodes/nodes.length)*100) : 0}%</div>
               <div className="ws-key">Complete</div>
@@ -351,35 +284,32 @@ export default function WrapPanel({ onClose }) {
           </div>
         </div>
 
-        {/* WHAT'S INCLUDED */}
         <div className="wrap-includes">
-          <div className="wi-label">What's included in the PDF</div>
+          <div className="wi-label">What's included</div>
           {[
-            { icon:'▸', text:'Cover page — project name, logline, Creative Director, date' },
-            { icon:'▸', text:'Scene overview — all scenes with status and shot completion' },
-            { icon:'▸', text:'Full shot list — organised by scene, with status indicators' },
-            { icon:'▸', text:'Key decisions — all approved notes and client feedback' },
-            { icon:'▸', text:'The team — contributors and their roles' },
+            'Cover page — project name, logline, Creative Director, date, key stats',
+            'Scene overview — all scenes with status and shot completion',
+            'Full shot list — organised by scene with status indicators',
+            'Key decisions — all client feedback and approvals',
+            'The team — all contributors and their roles',
           ].map((item, i) => (
             <div key={i} className="wi-item">
-              <span className="wi-icon">{item.icon}</span>
-              <span>{item.text}</span>
+              <span className="wi-icon">▸</span>
+              <span>{item}</span>
             </div>
           ))}
-        </div>
-
-        {preview && (
-          <div className="wrap-success">
-            ✓ PDF generated and downloaded. Check your Downloads folder.
+          <div className="wi-note">
+            Opens as a styled page in a new tab. Click "Download PDF" in that tab to save it.
           </div>
-        )}
+        </div>
 
         <div className="wrap-foot">
           <button className="wrap-cancel" onClick={onClose} data-hover>Cancel</button>
           <button className="wrap-generate"
-            onClick={generate} disabled={generating || !currentProject}
+            onClick={generate}
+            disabled={generating || !currentProject}
             data-hover>
-            {generating ? 'Generating…' : 'Generate PDF →'}
+            {generating ? 'Building…' : 'Generate Wrap →'}
           </button>
         </div>
       </div>
