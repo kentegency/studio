@@ -23,12 +23,3 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-
-      - name: Tag version
-        run: |
-          git config user.email "ci@kentegency.com"
-          git config user.name "Kentegency CI"
-          git tag -a "v$(date +'%Y%m%d%H%M')" -m "Auto-deploy $(date)"
-          git push origin --tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
