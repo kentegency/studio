@@ -137,13 +137,11 @@ export default function NodePane({ onUpload }) {
   const windowUrl = currentProject?.window_token
     ? `${window.location.origin}/#/window/${currentProject.window_token}` : ''
 
-  const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2720' }
-
   return (
     <div className="node-pane">
       {/* Header */}
       <div className="rph">
-        <div className="rp-ey">{act}</div>
+        <div className="rp-ey">{act || `${selectedNode.type ?? 'scene'} · ${Math.round((selectedNode.position ?? 0) * 100)}%`}</div>
         <div className="rp-ti">{name}</div>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div className="rp-st" style={{ cursor:'pointer' }}
@@ -208,12 +206,18 @@ export default function NodePane({ onUpload }) {
               onAction={onUpload} />
           </div>
         )}
-        <div className="waveform" style={{ marginTop:'8px' }}>
-          {WAVEFORM.map((h, i) => (
-            <div key={i} className={`wb ${i < 20 ? 'active' : ''}`}
-              style={{ height:`${h*22}px`, minWidth:'3px' }} />
-          ))}
-        </div>
+        {/* Waveform — only shown when audio assets are attached */}
+        {assets.some(a => getType(a) === 'audio') && (
+          <div className="waveform-wrap">
+            <div className="waveform-label">Audio reference</div>
+            <div className="waveform">
+              {WAVEFORM.map((h, i) => (
+                <div key={i} className={`wb ${i < 20 ? 'active' : ''}`}
+                  style={{ height:`${h*22}px`, minWidth:'3px' }} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Shot List */}
@@ -247,17 +251,27 @@ export default function NodePane({ onUpload }) {
         )}
         {shots.length > 0 ? (
           <div className="shot-list-mini">
-            {shots.map(sh => (
-              <div key={sh.id} className="shm" data-hover
-                onClick={() => toggleShotStatus(sh)} title="Click to advance status">
-                <span className="shm-n">{String(sh.number).padStart(2,'0')}</span>
-                <div className="shm-info">
-                  <div className="shm-name">{sh.name}</div>
-                  <div className="shm-meta">{sh.shot_type} · {sh.shot_kind} · {sh.duration}</div>
+            {shots.map(sh => {
+              const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2720' }
+              const dotColor = SH_COLOR[sh.status] ?? '#2A2720'
+              return (
+                <div key={sh.id} className="shm"
+                  style={{ borderLeftColor: dotColor }}
+                  data-hover onClick={() => toggleShotStatus(sh)}
+                  title={`${sh.name} — ${sh.shot_type} · ${sh.shot_kind} · ${sh.duration} — click to advance status`}>
+                  <span className="shm-n">{String(sh.number).padStart(2,'0')}</span>
+                  <div className="shm-info">
+                    <div className="shm-name">{sh.name}</div>
+                    <div className="shm-meta">
+                      <span className="shm-type">{sh.shot_type}</span>
+                      <span className="shm-kind">{sh.shot_kind}</span>
+                      <span className="shm-dur">{sh.duration}</span>
+                    </div>
+                  </div>
+                  <div className="shm-dot" style={{ background: dotColor }} />
                 </div>
-                <div className="shm-dot" style={{ background:SH_COLOR[sh.status]??'#2A2720' }} />
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : !addingShot && (
           <EmptyState compact icon={<ShotIcon />}

@@ -236,19 +236,47 @@
 .wl-copy:hover { background: rgba(30,138,138,.07); }
 
 /* SHOT LIST MINI */
-.shot-list-mini { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.shot-list-mini { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
 .shm {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 8px; background: var(--s2); border-radius: 2px;
-  border: .5px solid var(--b);
-  transition: background var(--dur-mid) var(--ease), padding-left var(--dur-mid) var(--ease);
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; background: var(--s2); border-radius: 2px;
+  border: .5px solid var(--b); border-left: 2px solid transparent;
+  transition: background var(--dur-mid) var(--ease), border-left-color var(--dur-mid) var(--ease);
+  cursor: pointer;
 }
-.shm:hover { background: var(--s3); padding-left: 12px; }
-.shm-n    { font-size: 12px; color: var(--orange); min-width: 20px; opacity: .6; }
-.shm-info { flex: 1; min-width: 0; }
-.shm-name { font-size: 12.5px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.shm-meta { font-size: 11px; color: var(--mute); letter-spacing: .05em; margin-top: 1px; }
-.shm-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.shm:hover { background: var(--s3); }
+.shm-n {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--orange);
+  min-width: 20px; opacity: .7;
+  padding-top: 1px; flex-shrink: 0;
+}
+.shm-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.shm-name {
+  font-size: 13px; color: var(--dim);
+  white-space: normal;          /* ALLOW WRAP — no more blind truncation */
+  line-height: 1.4;
+  word-break: break-word;
+}
+.shm-meta {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  margin-top: 1px;
+}
+.shm-type {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--cream);  /* HIGHEST hierarchy — shot type */
+  letter-spacing: .04em; font-weight: 500;
+}
+.shm-kind {
+  font-size: 11px; color: var(--mute);   /* MIDDLE — shot kind */
+  letter-spacing: .04em;
+}
+.shm-dur {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--ghost);  /* LOWEST — duration, right-aligned */
+  letter-spacing: .06em; margin-left: auto;
+}
+.shm-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 
 /* ADD SHOT FORM */
 .add-shot-form {
@@ -368,4 +396,12 @@
   font-size: 11px; letter-spacing: .04em;
   padding: 1px 4px; border-radius: 1px;
   text-transform: uppercase; font-weight: 500;
+}
+
+/* WAVEFORM — only shown with audio */
+.waveform-wrap { margin-top: 10px; }
+.waveform-label {
+  font-size: 11px; letter-spacing: .2em; color: var(--ghost);
+  text-transform: uppercase; margin-bottom: 5px;
+  font-family: var(--font-mono);
 }

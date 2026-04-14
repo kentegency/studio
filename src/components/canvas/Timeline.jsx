@@ -101,7 +101,7 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
           <button className="sm-status" onClick={cycleStatus}>
             <div className="sm-status-dot" style={{ background: accent }} />
             <span style={{ color: accent }}>{STATUS_LABEL[node.status ?? 'concept']}</span>
-            <span className="sm-status-hint">click to advance ↻</span>
+            <span className="sm-status-hint">↻ advance</span>
           </button>
 
           {/* Arc position dots */}
@@ -338,16 +338,19 @@ export default function Timeline() {
         </svg>
       </div>
 
-      {/* Keyboard shortcut strip */}
-      <div className="tl-kb-strip">
-        <span>Z zoom in</span>
-        <span>·</span>
-        <span>X zoom out</span>
-        <span>·</span>
-        <span>F fit arc</span>
-        <span>·</span>
-        <span>click node to open scene</span>
-      </div>
+      {/* Keyboard shortcut strip — first visit only */}
+      {!localStorage.getItem('kb_hint_seen') && (
+        <div className="tl-kb-strip"
+          onAnimationEnd={() => localStorage.setItem('kb_hint_seen', '1')}>
+          <span>Z zoom in</span>
+          <span>·</span>
+          <span>X zoom out</span>
+          <span>·</span>
+          <span>F fit arc</span>
+          <span>·</span>
+          <span>click node to open scene</span>
+        </div>
+      )}
     </div>
   )
 }
