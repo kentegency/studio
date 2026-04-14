@@ -3,34 +3,96 @@ import { supabase } from '../../lib/supabase'
 import { useProjectStore, useNodeStore, useAuthStore, useUIStore } from '../../stores'
 import './Wrap.css'
 
+// ── PDF generation via Edge Function ─────────────────────────
+async function generatePDF(html, filename) {
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pdf`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey':        import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ html, filename }),
+    }
+  )
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`PDF function error: ${res.status} ${text}`)
+  }
+
+  const contentType = res.headers.get('content-type') ?? ''
+
+  // If function returns JSON fallback (no Browserless token configured)
+  if (contentType.includes('application/json')) {
+    const json = await res.json()
+    if (json.fallback) return { fallback: true }
+    throw new Error(json.error ?? 'Unknown error from PDF function')
+  }
+
+  // Real PDF binary — trigger download
+  const blob = await res.blob()
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+  return { fallback: false }
+}
+
+// ── HTML fallback — open in new tab for browser print ─────────
+function openHTMLFallback(html) {
+  const blob = new Blob([html], { type: 'text/html' })
+  const url  = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+}
+
 export default function WrapPanel({ onClose }) {
   const { currentProject } = useProjectStore()
   const { nodes }          = useNodeStore()
   const { profile }        = useAuthStore()
   const { showToast }      = useUIStore()
   const [generating, setGenerating] = useState(false)
+  const [progress,   setProgress]   = useState('')
 
   const approvedNodes = nodes.filter(n => n.status === 'approved' || n.status === 'locked').length
 
   const generate = async () => {
     if (!currentProject) { showToast('Open a project first.', '#E05050'); return }
     setGenerating(true)
-    showToast('Building your wrap…')
+    setProgress('Fetching project data…')
 
     try {
-      const [{ data: allNotes }, { data: allShots }, { data: allAssets }, { data: contributors }] = await Promise.all([
+      const [
+        { data: allNotes },
+        { data: allShots },
+        { data: allAssets },
+        { data: contributors },
+        { data: subjects },
+      ] = await Promise.all([
         supabase.from('notes').select('*, nodes(name)').eq('project_id', currentProject.id).neq('room','studio').order('created_at'),
         supabase.from('shots').select('*, nodes(name)').eq('project_id', currentProject.id).order('number'),
         supabase.from('assets').select('*, nodes(name)').eq('project_id', currentProject.id),
         supabase.from('contributors').select('*').eq('project_id', currentProject.id),
+        supabase.from('subjects').select('*').eq('project_id', currentProject.id).order('name'),
       ])
 
       const sortedNodes = [...nodes].sort((a,b) => (a.position??0)-(b.position??0))
-      const date = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
-      const doneShots = (allShots??[]).filter(s => s.status==='done').length
+      const date        = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
+      const doneShots   = (allShots??[]).filter(s => s.status==='done').length
+      const filmedSubjects = (subjects??[]).filter(s => s.contact_status === 'filmed')
 
       const STATUS_COLOR = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
-      const ACT_COLOR    = (i) => i<=2 ? '#1E8A8A' : i<=5 ? '#F5920C' : '#B43C1E'
+      const ACT_COLOR    = (i) => i <= 2 ? '#1E8A8A' : i <= 5 ? '#F5920C' : '#B43C1E'
+      const SH_COLOR     = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2520' }
+
+      setProgress('Assembling document…')
 
       const html = `<!DOCTYPE html>
 <html lang="en">
@@ -41,14 +103,13 @@ export default function WrapPanel({ onClose }) {
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#040402; color:#F4EFD8; font-family:'IBM Plex Mono',monospace; }
+  @page { size: A4; margin: 0; }
   @media print {
-    body { background:white; color:#111; }
-    .cover { background:#111 !important; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .page { page-break-after: always; }
-    .no-print { display:none; }
+    .no-print { display:none !important; }
   }
 
-  /* PRINT BUTTON */
   .print-bar {
     position:fixed; top:0; left:0; right:0; height:52px;
     background:rgba(4,4,2,.98); border-bottom:.5px solid rgba(255,255,255,.08);
@@ -61,41 +122,37 @@ export default function WrapPanel({ onClose }) {
     text-transform:uppercase; color:#F5920C;
     border:.5px solid rgba(245,146,12,.3); border-radius:2px;
     background:transparent; font-family:'IBM Plex Mono',monospace;
-    cursor:pointer; transition:background .2s;
+    cursor:pointer;
   }
-  .print-btn:hover { background:rgba(245,146,12,.06); }
 
   .doc { max-width:860px; margin:0 auto; padding:72px 0 80px; }
 
   /* COVER */
-  .cover {
-    background:#040402; padding:72px 64px;
-    margin-bottom:2px;
-    min-height:520px; display:flex; flex-direction:column; justify-content:space-between;
-  }
-  .cover-type { font-size:11px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:28px; }
-  .cover-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,8vw,96px); color:#F4EFD8; line-height:.9; letter-spacing:.015em; margin-bottom:20px; }
+  .cover { background:#040402; padding:72px 64px; min-height:520px; display:flex; flex-direction:column; justify-content:space-between; margin-bottom:2px; }
+  .cover-type  { font-size:11px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:28px; }
+  .cover-title { font-family:'Bebas Neue',sans-serif; font-size:80px; color:#F4EFD8; line-height:.9; letter-spacing:.015em; margin-bottom:20px; }
   .cover-rule  { width:120px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin-bottom:20px; }
   .cover-log   { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; color:#7A7268; line-height:1.65; max-width:500px; margin-bottom:32px; }
   .cover-meta  { font-size:11px; letter-spacing:.1em; color:#4A4840; line-height:2; }
-  .cover-stats { display:flex; gap:40px; margin-top:24px; }
+  .cover-stats { display:flex; gap:40px; margin-top:24px; flex-wrap:wrap; }
   .cs-val { font-family:'Bebas Neue',sans-serif; font-size:40px; color:#F5920C; line-height:1; }
   .cs-key { font-size:10px; letter-spacing:.22em; color:#4A4840; text-transform:uppercase; margin-top:4px; }
 
   /* SECTIONS */
-  .section { padding:56px 64px; border-top:.5px solid rgba(255,255,255,.06); }
-  .sec-eye  { font-size:10px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:10px; }
-  .sec-title{ font-family:'Bebas Neue',sans-serif; font-size:36px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
-  .sec-rule { width:60px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin:16px 0 28px; }
+  .section   { padding:56px 64px; border-top:.5px solid rgba(255,255,255,.06); }
+  .sec-eye   { font-size:10px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:10px; }
+  .sec-title { font-family:'Bebas Neue',sans-serif; font-size:36px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
+  .sec-rule  { width:60px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin:16px 0 28px; }
 
-  /* SCENE LIST */
+  /* SCENES */
   .scene { display:flex; gap:16px; padding:14px 16px; background:rgba(12,11,8,1); border-radius:2px; margin-bottom:6px; border-left:3px solid; }
-  .scene-num  { font-size:11px; color:#6A6258; min-width:24px; padding-top:2px; }
-  .scene-body { flex:1; }
-  .scene-name { font-size:14px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
-  .scene-meta { font-size:11px; color:#6A6258; letter-spacing:.08em; }
+  .scene-num    { font-size:11px; color:#6A6258; min-width:24px; padding-top:2px; }
+  .scene-body   { flex:1; }
+  .scene-name   { font-size:14px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
+  .scene-meta   { font-size:11px; color:#6A6258; letter-spacing:.08em; }
   .scene-status { font-size:10px; letter-spacing:.18em; text-transform:uppercase; margin-top:4px; }
-  .scene-shots { margin-left:auto; font-size:11px; color:#4A4840; letter-spacing:.08em; padding-top:2px; white-space:nowrap; }
+  .scene-shots  { margin-left:auto; font-size:11px; color:#4A4840; letter-spacing:.08em; padding-top:2px; white-space:nowrap; }
+  .scene-subjects { font-size:10px; color:#4A4840; letter-spacing:.06em; margin-top:3px; }
 
   /* SHOTS */
   .shot-group-label { font-size:11px; letter-spacing:.28em; color:#F5920C; text-transform:uppercase; margin:20px 0 8px; opacity:.7; }
@@ -105,12 +162,20 @@ export default function WrapPanel({ onClose }) {
   .shot-name { font-size:13px; color:#A09890; letter-spacing:.04em; margin-bottom:3px; }
   .shot-meta { font-size:11px; color:#4A4840; letter-spacing:.06em; }
 
+  /* PEOPLE */
+  .person { display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:.5px solid rgba(255,255,255,.05); }
+  .person-init { width:36px; height:36px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:500; flex-shrink:0; }
+  .person-name { font-size:13px; color:#A09890; letter-spacing:.04em; margin-bottom:2px; }
+  .person-title { font-size:11px; color:#6A6258; letter-spacing:.06em; margin-bottom:2px; }
+  .person-org   { font-size:11px; color:#4A4840; letter-spacing:.06em; }
+  .person-scenes { font-size:10px; color:#4A4840; letter-spacing:.06em; margin-top:4px; }
+
   /* NOTES */
   .note-item { padding:14px 16px; background:rgba(12,11,8,1); border-radius:2px; border-left:3px solid; margin-bottom:8px; }
   .note-body { font-size:13px; color:#A09890; line-height:1.65; margin-bottom:6px; }
   .note-meta { font-size:10px; color:#4A4840; letter-spacing:.08em; }
 
-  /* TEAM */
+  /* TEAM / CREDITS */
   .team-row { display:flex; gap:16px; align-items:center; padding:12px 0; border-bottom:.5px solid rgba(255,255,255,.05); }
   .team-init { width:36px; height:36px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; color:#040402; flex-shrink:0; }
   .team-name { font-size:13px; color:#A09890; letter-spacing:.04em; }
@@ -120,13 +185,15 @@ export default function WrapPanel({ onClose }) {
   .wrap-footer { padding:32px 64px; border-top:.5px solid rgba(255,255,255,.06); display:flex; justify-content:space-between; align-items:center; }
   .wf-left  { font-size:10px; letter-spacing:.22em; color:#4A4840; text-transform:uppercase; }
   .wf-right { font-size:10px; letter-spacing:.14em; color:#4A4840; }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:0 32px; }
 </style>
 </head>
 <body>
 
 <div class="print-bar no-print">
-  <span class="print-label">The Kentegency — Wrap Document</span>
-  <button class="print-btn" onclick="window.print()">Download PDF →</button>
+  <span class="print-label">The Kentegency — ${currentProject.name} — Wrap</span>
+  <button class="print-btn" onclick="window.print()">Print / Save PDF →</button>
 </div>
 
 <div class="doc">
@@ -148,7 +215,8 @@ export default function WrapPanel({ onClose }) {
       <div><div class="cs-val">${nodes.length}</div><div class="cs-key">Scenes</div></div>
       <div><div class="cs-val">${approvedNodes}</div><div class="cs-key">Approved</div></div>
       <div><div class="cs-val">${(allShots??[]).length}</div><div class="cs-key">Shots</div></div>
-      <div><div class="cs-val">${doneShots}</div><div class="cs-key">Shot done</div></div>
+      <div><div class="cs-val">${doneShots}</div><div class="cs-key">Shots done</div></div>
+      <div><div class="cs-val">${(subjects??[]).length}</div><div class="cs-key">Subjects</div></div>
       <div><div class="cs-val">${(contributors??[]).length}</div><div class="cs-key">Team</div></div>
     </div>
   </div>
@@ -159,16 +227,18 @@ export default function WrapPanel({ onClose }) {
     <div class="sec-title">Scene Overview</div>
     <div class="sec-rule"></div>
     ${sortedNodes.map((n, i) => {
-      const sc = STATUS_COLOR[n.status] ?? '#6A6258'
-      const ac = ACT_COLOR(i)
-      const nodeShots  = (allShots??[]).filter(s => s.node_id === n.id)
-      const nodeDone   = nodeShots.filter(s => s.status === 'done').length
+      const sc        = STATUS_COLOR[n.status] ?? '#6A6258'
+      const ac        = ACT_COLOR(i)
+      const nodeShots = (allShots??[]).filter(s => s.node_id === n.id)
+      const nodeDone  = nodeShots.filter(s => s.status === 'done').length
+      const nodeSubjects = (subjects??[]).filter(s => (s.node_ids??[]).includes(n.id))
       return `<div class="scene" style="border-left-color:${ac}">
         <div class="scene-num">${String(i+1).padStart(2,'0')}</div>
         <div class="scene-body">
           <div class="scene-name">${n.name}</div>
-          <div class="scene-meta">${n.type ?? 'scene'}</div>
+          <div class="scene-meta">${n.type ?? 'scene'} · ${Math.round((n.position??0)*100)}% through arc</div>
           <div class="scene-status" style="color:${sc}">${n.status ?? 'concept'}</div>
+          ${nodeSubjects.length > 0 ? `<div class="scene-subjects">Subjects: ${nodeSubjects.map(s=>s.name).join(', ')}</div>` : ''}
         </div>
         ${nodeShots.length > 0 ? `<div class="scene-shots">${nodeDone}/${nodeShots.length} shots</div>` : ''}
       </div>`
@@ -181,19 +251,43 @@ export default function WrapPanel({ onClose }) {
     <div class="sec-eye">Production</div>
     <div class="sec-title">Shot List</div>
     <div class="sec-rule"></div>
-    ${sortedNodes.map((n, ni) => {
+    ${sortedNodes.map(n => {
       const nodeShots = (allShots??[]).filter(s => s.node_id === n.id)
-      if (nodeShots.length === 0) return ''
-      const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2520' }
+      if (!nodeShots.length) return ''
       return `<div class="shot-group-label">${n.name}</div>
       ${nodeShots.map(s => `<div class="shot" style="border-left-color:${SH_COLOR[s.status]??'#2A2520'}">
         <div class="shot-n">${String(s.number).padStart(2,'0')}</div>
         <div class="shot-info">
           <div class="shot-name">${s.name}</div>
-          <div class="shot-meta">${[s.shot_type,s.shot_kind,s.duration].filter(Boolean).join(' · ')}</div>
+          <div class="shot-meta">${[s.shot_type,s.shot_kind,s.duration].filter(Boolean).join(' · ') || '—'}</div>
         </div>
       </div>`).join('')}`
     }).join('')}
+  </div>` : ''}
+
+  <!-- INTERVIEW SUBJECTS -->
+  ${(subjects??[]).length > 0 ? `
+  <div class="section page">
+    <div class="sec-eye">Production Bible</div>
+    <div class="sec-title">Interview Subjects</div>
+    <div class="sec-rule"></div>
+    <div class="two-col">
+    ${(subjects??[]).map(s => {
+      const sceneNames = sortedNodes.filter(n => (s.node_ids??[]).includes(n.id)).map(n=>n.name)
+      const initials   = s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
+      const CONTACT_COLORS = { prospect:'#6A6258', contacted:'#F5920C', confirmed:'#1E8A8A', filmed:'#4ADE80', declined:'#E05050' }
+      return `<div class="person">
+        <div class="person-init" style="background:${s.color??'#1E8A8A'}22;color:${s.color??'#1E8A8A'};border:.5px solid ${s.color??'#1E8A8A'}44">${initials}</div>
+        <div>
+          <div class="person-name">${s.name}</div>
+          ${s.title ? `<div class="person-title">${s.title}</div>` : ''}
+          ${s.organisation ? `<div class="person-org">${s.organisation}</div>` : ''}
+          <div class="person-title" style="color:${CONTACT_COLORS[s.contact_status]??'#6A6258'};margin-top:3px">${s.contact_status ?? 'prospect'}</div>
+          ${sceneNames.length > 0 ? `<div class="person-scenes">Scenes: ${sceneNames.join(', ')}</div>` : ''}
+        </div>
+      </div>`
+    }).join('')}
+    </div>
   </div>` : ''}
 
   <!-- KEY DECISIONS -->
@@ -209,12 +303,18 @@ export default function WrapPanel({ onClose }) {
       </div>`).join('')}
   </div>` : ''}
 
-  <!-- TEAM -->
-  ${(contributors??[]).length > 0 ? `
+  <!-- CREDITS -->
   <div class="section">
     <div class="sec-eye">Credits</div>
     <div class="sec-title">The Team</div>
     <div class="sec-rule"></div>
+    <div class="team-row">
+      <div class="team-init" style="background:${currentProject.accent_color??'#F5920C'}">${(profile?.name??'CD').slice(0,2).toUpperCase()}</div>
+      <div>
+        <div class="team-name">${profile?.name ?? 'Creative Director'}</div>
+        <div class="team-role">Creative Director · The Kentegency</div>
+      </div>
+    </div>
     ${(contributors??[]).map(c => `
       <div class="team-row">
         <div class="team-init" style="background:${c.color??'#1E8A8A'}">${c.name.slice(0,2).toUpperCase()}</div>
@@ -223,7 +323,7 @@ export default function WrapPanel({ onClose }) {
           <div class="team-role">${c.role}</div>
         </div>
       </div>`).join('')}
-  </div>` : ''}
+  </div>
 
   <!-- FOOTER -->
   <div class="wrap-footer">
@@ -232,26 +332,30 @@ export default function WrapPanel({ onClose }) {
   </div>
 
 </div>
-
-<script>
-  // Auto-trigger print after fonts load
-  window.addEventListener('load', () => {
-    document.fonts.ready.then(() => {
-      setTimeout(() => {
-        // Don't auto-print — let user decide
-      }, 500)
-    })
-  })
-</script>
 </body>
 </html>`
 
-      // Open in new tab
-      const blob = new Blob([html], { type: 'text/html' })
-      const url  = URL.createObjectURL(blob)
-      window.open(url, '_blank')
+      setProgress('Generating PDF…')
 
-      showToast('Wrap document opened. Click "Download PDF" in the new tab.', '#4ADE80')
+      const filename = `${currentProject.name.replace(/[^a-z0-9]/gi,'_').toLowerCase()}_wrap_${new Date().toISOString().slice(0,10)}.pdf`
+
+      // Try Edge Function first
+      try {
+        const result = await generatePDF(html, filename)
+        if (result.fallback) {
+          // No Browserless token — open HTML in new tab with print button
+          openHTMLFallback(html)
+          showToast('Opened in new tab. Click "Print / Save PDF" to download.', '#F5920C')
+        } else {
+          showToast(`${filename} downloaded.`, '#4ADE80')
+          onClose()
+        }
+      } catch (fnErr) {
+        // Edge Function not deployed yet — fall back to HTML tab
+        console.warn('PDF function unavailable, using HTML fallback:', fnErr)
+        openHTMLFallback(html)
+        showToast('Opened in new tab. Click "Print / Save PDF" to download.', '#F5920C')
+      }
 
     } catch (err) {
       console.error('Wrap error:', err)
@@ -259,6 +363,7 @@ export default function WrapPanel({ onClose }) {
     }
 
     setGenerating(false)
+    setProgress('')
   }
 
   return (
@@ -267,7 +372,7 @@ export default function WrapPanel({ onClose }) {
         <div className="wrap-head">
           <div>
             <div className="wrap-title">Wrap it</div>
-            <div className="wrap-sub">Generate your project case study</div>
+            <div className="wrap-sub">Generate your project document</div>
           </div>
           <button className="wrap-close" onClick={onClose}>×</button>
         </div>
@@ -287,19 +392,21 @@ export default function WrapPanel({ onClose }) {
         <div className="wrap-includes">
           <div className="wi-label">What's included</div>
           {[
-            'Cover page — project name, logline, Creative Director, date, key stats',
-            'Scene overview — all scenes with status and shot completion',
-            'Full shot list — organised by scene with status indicators',
+            'Cover — project name, logline, Creative Director, date, stats',
+            'Scene overview — all scenes with status, position, subjects',
+            'Shot list — organised by scene, status colour-coded',
+            'Interview subjects — from People tab, with scene assignments',
             'Key decisions — all client feedback and approvals',
-            'The team — all contributors and their roles',
+            'Credits — the full team',
           ].map((item, i) => (
             <div key={i} className="wi-item">
               <span className="wi-icon">▸</span>
               <span>{item}</span>
             </div>
           ))}
-          <div className="wi-note">
-            Opens as a styled page in a new tab. Click "Download PDF" in that tab to save it.
+          <div className="wi-note" style={{ marginTop: 8 }}>
+            Downloads as a PDF directly. If the PDF service is unavailable,
+            opens in a new tab with a print button as fallback.
           </div>
         </div>
 
@@ -309,7 +416,7 @@ export default function WrapPanel({ onClose }) {
             onClick={generate}
             disabled={generating || !currentProject}
             data-hover>
-            {generating ? 'Building…' : 'Generate Wrap →'}
+            {generating ? (progress || 'Building…') : 'Generate PDF →'}
           </button>
         </div>
       </div>

@@ -28,3 +28,10 @@
   box-shadow: 0 0 8px rgba(245,146,12,.5);
   transition: left .4s var(--ease);
 }
+
+/* Completion fill — behind node markers */
+.cm-progress-fill {
+  position: absolute; top: 0; left: 0; height: 100%;
+  border-radius: 1px; pointer-events: none;
+  transition: width .8s var(--ease);
+}

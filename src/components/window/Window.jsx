@@ -2,6 +2,56 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import './Window.css'
 
+// ── CLIENT COMMENT — text feedback from client to CD ──────────
+function ClientComment({ project, selected, accent }) {
+  const [comment,  setComment]  = useState('')
+  const [sent,     setSent]     = useState(false)
+  const [sending,  setSending]  = useState(false)
+
+  // Reset when scene changes
+  useEffect(() => { setSent(false); setComment('') }, [selected?.id])
+
+  const send = async () => {
+    if (!comment.trim() || !project?.id || !selected?.id) return
+    setSending(true)
+    await supabase.from('notes').insert({
+      project_id: project.id,
+      node_id:    selected.id,
+      body:       `Client note: ${comment.trim()}`,
+      color:      '#A09890',
+      room:       'meeting',
+      resolved:   false,
+    })
+    setSent(true)
+    setSending(false)
+  }
+
+  if (sent) return (
+    <div className="win-comment-sent">
+      Note sent to the Creative Director ✓
+    </div>
+  )
+
+  return (
+    <div className="win-comment">
+      <div className="win-react-label">Leave a note for the Creative Director</div>
+      <textarea
+        className="win-comment-input"
+        placeholder="The colour grade feels too dark… The pacing in the second half works really well… Could we see an alternative opening?"
+        value={comment}
+        onChange={e => setComment(e.target.value)}
+        rows={3} />
+      <button
+        className="win-comment-send"
+        style={{ borderColor: accent, color: accent }}
+        disabled={!comment.trim() || sending}
+        onClick={send}>
+        {sending ? 'Sending…' : 'Send note →'}
+      </button>
+    </div>
+  )
+}
+
 const LOGO_PIXELS = [
   '#F4EFD8','#040402','#7A7A7A',
   '#F5920C','#7A7A7A','#040402',
@@ -205,6 +255,12 @@ export default function Window({ token }) {
             </div>
             {reaction && <div className="win-react-confirm">Reaction sent ✓</div>}
           </div>
+
+          {/* Client comment */}
+          <ClientComment
+            project={project}
+            selected={selected}
+            accent={accent} />
 
           {/* FOUR — Two-step approval */}
           {approvalState === 'idle' && (

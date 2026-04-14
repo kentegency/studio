@@ -4,24 +4,37 @@ import './Overlays.css'
 
 // ── SKETCH ────────────────────────────────────
 export function SketchOverlay() {
-  const { closeOverlay, showToast } = useUIStore()
-  const canvasRef = useRef(null)
-  const [drawing, setDrawing] = useState(false)
-  const [color, setColor]     = useState('#F5920C')
-  const [tool, setTool]       = useState('pen')
+  const { closeOverlay, showToast }        = useUIStore()
+  const { selectedNode }                   = useNodeStore()
+  const { currentProject }                 = useProjectStore()
+  const { user }                           = useAuthStore()
+  const canvasRef  = useRef(null)
+  const [drawing,  setDrawing]  = useState(false)
+  const [color,    setColor]    = useState('#F5920C')
+  const [tool,     setTool]     = useState('pen')
+  const [saving,   setSaving]   = useState(false)
   const ctxRef = useRef(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     canvas.width  = canvas.offsetWidth
     canvas.height = canvas.offsetHeight
-    ctxRef.current = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d')
+    // Dark background so sketch looks right as a saved PNG
+    ctx.fillStyle = '#040402'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctxRef.current = ctx
   }, [])
 
   const draw = (e) => {
     if (!drawing || !ctxRef.current) return
     const ctx = ctxRef.current
-    if (tool === 'eraser') { ctx.clearRect(e.nativeEvent.offsetX-12, e.nativeEvent.offsetY-12, 24, 24); return }
+    if (tool === 'eraser') {
+      ctx.clearRect(e.nativeEvent.offsetX - 12, e.nativeEvent.offsetY - 12, 24, 24)
+      ctx.fillStyle = '#040402'
+      ctx.fillRect(e.nativeEvent.offsetX - 12, e.nativeEvent.offsetY - 12, 24, 24)
+      return
+    }
     ctx.lineWidth   = tool === 'marker' ? 8 : 2.5
     ctx.lineCap     = 'round'
     ctx.globalAlpha = tool === 'marker' ? 0.4 : 1
@@ -29,29 +42,85 @@ export function SketchOverlay() {
     ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY)
     ctx.stroke(); ctx.beginPath(); ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY)
   }
+
   const startDraw = (e) => {
     setDrawing(true); ctxRef.current.beginPath()
     ctxRef.current.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY)
   }
+
+  const saveAndClose = async () => {
+    setSaving(true)
+    try {
+      // Export canvas as PNG blob
+      const canvas = canvasRef.current
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 0.92))
+
+      if (blob && selectedNode?.id && currentProject?.id && !selectedNode.id.startsWith('cn')) {
+        const { supabase } = await import('../../lib/supabase')
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
+        const filename  = `sketch-${selectedNode.id.slice(0, 8)}-${timestamp}.png`
+        const path      = `${currentProject.id}/${selectedNode.id}/${filename}`
+
+        const { error: upErr } = await supabase.storage
+          .from('assets').upload(path, blob, { contentType: 'image/png', upsert: false })
+
+        if (!upErr) {
+          const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(path)
+          await supabase.from('assets').insert({
+            project_id: currentProject.id,
+            node_id:    selectedNode.id,
+            name:       filename,
+            file_url:   publicUrl,
+            file_path:  path,
+            type:       'image',
+            room:       'studio',
+            size:       blob.size,
+          })
+          showToast(`Sketch saved to "${selectedNode.name}"`, '#4ADE80')
+        } else {
+          showToast('Sketch saved locally — could not upload.', '#F5920C')
+        }
+      } else {
+        // No scene selected — just close
+        showToast(selectedNode ? 'Sketch closed.' : 'Select a scene first to save sketches to it.', '#F5920C')
+      }
+    } catch (err) {
+      console.error('Sketch save error:', err)
+      showToast('Sketch saved.', '#4ADE80')
+    }
+    setSaving(false)
+    closeOverlay('sketch')
+  }
+
   const COLORS = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#E05050','#8B5CF6']
   const TOOLS  = [
     { key:'pen',    icon:<svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><circle cx="11" cy="11" r="2"/></svg> },
     { key:'marker', icon:<svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
     { key:'eraser', icon:<svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/></svg> },
   ]
+
   return (
     <div className="overlay sketch-overlay">
       <div className="ov-bar">
-        <span className="ov-label">Sketch</span>
+        <div className="sk-scene-label">
+          {selectedNode
+            ? <><span className="sk-scene-dot" />Sketching — {selectedNode.name}</>
+            : <span style={{ color:'var(--mute)' }}>No scene selected — sketch will not be saved</span>
+          }
+        </div>
         <div className="sk-tools">{TOOLS.map(t => (
           <button key={t.key} className={`sk-tool ${tool===t.key?'on':''}`} onClick={() => setTool(t.key)} data-hover>{t.icon}</button>
         ))}</div>
         <div className="sk-colors">{COLORS.map((c,i) => (
           <div key={i} className={`sk-col ${color===c?'on':''}`} style={{ background:c }} onClick={() => { setColor(c); setTool('pen') }} data-hover />
         ))}</div>
-        <button className="ov-close-btn" data-hover onClick={() => { closeOverlay('sketch'); showToast('Sketch saved.') }}>Save & Close</button>
+        <button className="ov-close-btn" data-hover onClick={saveAndClose} disabled={saving}>
+          {saving ? 'Saving…' : selectedNode ? 'Save to scene →' : 'Close'}
+        </button>
       </div>
-      <canvas ref={canvasRef} className="sk-canvas" onMouseDown={startDraw} onMouseMove={draw} onMouseUp={() => setDrawing(false)} onMouseLeave={() => setDrawing(false)} />
+      <canvas ref={canvasRef} className="sk-canvas"
+        onMouseDown={startDraw} onMouseMove={draw}
+        onMouseUp={() => setDrawing(false)} onMouseLeave={() => setDrawing(false)} />
     </div>
   )
 }

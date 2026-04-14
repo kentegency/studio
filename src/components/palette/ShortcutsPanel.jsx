@@ -11,6 +11,7 @@ const SHORTCUTS = [
   { key: 'Z',         label: 'Zoom in on arc' },
   { key: 'X',         label: 'Zoom out on arc' },
   { key: 'F',         label: 'Fit arc to canvas' },
+  { key: 'S',         label: 'Advance status on selected scene' },
   { key: 'Click node', label: 'Open scene inspector' },
 
   { section: 'Scene mode' },

@@ -325,3 +325,38 @@
   transition: background var(--dur-mid) var(--ease);
 }
 .win-session-btn:hover { background: rgba(245,146,12,.06); }
+
+/* CLIENT COMMENT */
+.win-comment {
+  margin-top: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.win-comment-input {
+  width: 100%; background: rgba(12,11,8,.6);
+  border: .5px solid rgba(255,255,255,.08);
+  border-radius: 3px; padding: 12px 14px;
+  font-family: var(--font-body, Georgia, serif);
+  font-size: 15px; font-style: italic;
+  color: rgba(244,239,216,.8);
+  line-height: 1.65; resize: none; outline: none;
+  caret-color: var(--accent, #F5920C);
+  transition: border-color .25s ease;
+}
+.win-comment-input:focus { border-color: rgba(255,255,255,.16); }
+.win-comment-input::placeholder { color: rgba(106,98,88,.7); font-style: italic; }
+.win-comment-send {
+  align-self: flex-end;
+  font-size: 11px; letter-spacing: .16em; padding: 8px 18px;
+  text-transform: uppercase; border: .5px solid;
+  border-radius: 2px; background: transparent;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: background .2s ease;
+}
+.win-comment-send:hover:not(:disabled) { background: rgba(245,146,12,.06); }
+.win-comment-send:disabled { opacity: .4; }
+.win-comment-sent {
+  margin-top: 16px; font-size: 13px;
+  color: rgba(74,222,128,.7);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: .1em;
+}

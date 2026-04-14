@@ -338,3 +338,11 @@
   font-family: var(--font-mono); letter-spacing: .1em;
   white-space: nowrap;
 }
+
+/* Scene description in scene mode — Cormorant italic, subdued */
+.sm-scene-desc {
+  font-family: var(--font-body); font-style: italic;
+  font-size: 14px; color: var(--mute); line-height: 1.65;
+  letter-spacing: .02em; max-width: 320px;
+  text-align: center; margin-top: 2px;
+}

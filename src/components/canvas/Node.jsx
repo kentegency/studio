@@ -118,16 +118,18 @@ export default function Node({ node, selected, onClick }) {
         </text>
       )}
 
-      {/* Label */}
+      {/* Label — always visible below node */}
       <text
-        x={cx} y={cy + node.r + 14}
+        x={cx} y={cy + node.r + 13}
         textAnchor="middle"
-        fontSize={10}
+        fontSize={9}
         fontFamily="IBM Plex Mono"
-        letterSpacing={1.2}
+        letterSpacing={0.8}
         fill={selected ? ring.color : node.labelFill}
         style={{ pointerEvents:'none', transition:'fill .25s ease' }}>
-        {node.label}
+        {(node.label ?? '').length > 12
+          ? (node.label ?? '').slice(0, 11) + '…'
+          : (node.label ?? '')}
       </text>
 
       {/* Hover tooltip */}

@@ -115,9 +115,45 @@ export function ShotsPane() {
         )}
       </div>
 
-      {/* Add shot form */}
+      {/* Shot presets — quick-add common sequences */}
       {addingShot && (
         <div style={{ padding:'10px 14px 0' }}>
+          <div className="shot-presets">
+            <div className="shot-preset-label">Quick add</div>
+            <div className="shot-preset-row">
+              {[
+                { label:'Interview',  shots:[{name:'Wide establishing', shot_type:'WS', shot_kind:'Interview', duration:'00:10'},{name:'Medium interview', shot_type:'MS', shot_kind:'Interview', duration:'00:08'},{name:'Close-up interview', shot_type:'CU', shot_kind:'Interview', duration:'00:06'}] },
+                { label:'B-roll pack', shots:[{name:'Establishing wide', shot_type:'EWS', shot_kind:'Candid', duration:'00:08'},{name:'Mid detail', shot_type:'MS', shot_kind:'Candid', duration:'00:05'},{name:'Close detail', shot_type:'ECU', shot_kind:'Candid', duration:'00:04'}] },
+                { label:'Drama',      shots:[{name:'Scene wide', shot_type:'WS', shot_kind:'Drama enactment', duration:'00:12'},{name:'Over the shoulder', shot_type:'MCU', shot_kind:'Drama enactment', duration:'00:08'},{name:'Reaction CU', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05'}] },
+              ].map(preset => (
+                <button key={preset.label}
+                  className="shot-preset-btn" data-hover
+                  onClick={async () => {
+                    if (!selectedNode?.id || !currentProject?.id) return
+                    setSaving(true)
+                    const base = shots.length
+                    for (let i = 0; i < preset.shots.length; i++) {
+                      const s = preset.shots[i]
+                      const num = base + i + 1
+                      const { data } = await supabase.from('shots').insert({
+                        node_id: selectedNode.id, project_id: currentProject.id,
+                        number: num, name: s.name, shot_type: s.shot_type,
+                        shot_kind: s.shot_kind, duration: s.duration,
+                        status: 'pending', order_index: num,
+                      }).select().single()
+                      if (data) setShots(prev => [...prev, data])
+                    }
+                    setSaving(false)
+                    setAddingShot(false)
+                    showToast(`${preset.label} preset added — ${preset.shots.length} shots.`, '#4ADE80')
+                  }}>
+                  {preset.label}
+                  <span>{preset.shots.length} shots</span>
+                </button>
+              ))}
+            </div>
+            <div className="shot-preset-divider">or add manually</div>
+          </div>
           <form className="add-shot-form" onSubmit={saveShot}>
             <input className="nn-input" placeholder="Shot description" required autoFocus
               value={newShot.name}

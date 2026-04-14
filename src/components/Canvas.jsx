@@ -36,7 +36,7 @@ import './shell/Notifications.css'
 import './viewer/Viewer.css'
 
 export default function Canvas() {
-  const { overlays } = useUIStore()
+  const { overlays, activeRoom } = useUIStore()
   const { currentProject } = useProjectStore()
 
   // Inject project accent colour as CSS variable
@@ -111,7 +111,7 @@ export default function Canvas() {
   const prevAsset   = () => { const i = viewerIdx - 1; if (i >= 0) { setViewerAsset(viewerList[i]); setViewerIdx(i) } }
 
   return (
-    <div className="canvas-shell">
+    <div className="canvas-shell" data-room={activeRoom}>
       <div className="canvas-grain" />
       <div className="canvas-scan" />
 

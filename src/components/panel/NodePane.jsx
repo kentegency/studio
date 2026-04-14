@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNodeStore, useUIStore, useAssetsStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
 import { supabase } from '../../lib/supabase'
 import { undoStack } from '../../lib/undo'
@@ -52,6 +52,26 @@ export default function NodePane({ onUpload }) {
 
   const [assetsLoading, setAssetsLoading] = useState(false)
   const [notesLoading,  setNotesLoading]  = useState(false)
+  const [description,   setDescription]  = useState('')
+  const [descSaving,    setDescSaving]   = useState(false)
+  const descTimer = useRef(null)
+
+  // Sync description from selected node
+  useEffect(() => {
+    setDescription(selectedNode?.description ?? '')
+  }, [selectedNode?.id])
+
+  // Auto-save description with debounce
+  const handleDescChange = (val) => {
+    setDescription(val)
+    clearTimeout(descTimer.current)
+    descTimer.current = setTimeout(async () => {
+      if (!selectedNode?.id || selectedNode.id.startsWith('cn')) return
+      setDescSaving(true)
+      await updateNode(selectedNode.id, { description: val })
+      setDescSaving(false)
+    }, 800)
+  }
 
   useEffect(() => {
     if (!selectedNode?.id) return
@@ -206,6 +226,20 @@ export default function NodePane({ onUpload }) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Scene description — auto-saves, uses Cormorant Garamond for creative identity */}
+      <div className="scene-desc-wrap">
+        <textarea
+          className="scene-desc-input"
+          placeholder="What is this scene trying to do? Describe the mood, the purpose, the creative direction…"
+          value={description}
+          onChange={e => handleDescChange(e.target.value)}
+          rows={3}
+        />
+        {descSaving && (
+          <div className="scene-desc-saving">saving…</div>
+        )}
       </div>
 
       {/* Assets */}

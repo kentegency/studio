@@ -38,7 +38,13 @@ export default function Minimap() {
     ? nodes.filter(n => n.status === 'approved' || n.status === 'locked').length
     : 0
 
-  const totalRuntime = '40 min'
+  const inReview = hasReal
+    ? nodes.filter(n => n.status === 'review' || n.status === 'progress').length
+    : 0
+
+  const pct = hasReal && nodes.length > 0
+    ? Math.round((approvedCount / nodes.length) * 100)
+    : 0
 
   return (
     <div className="minimap">
@@ -48,6 +54,12 @@ export default function Minimap() {
         <div className="cm-zone" style={{ left:'1%',  width:'28%', background:'rgba(30,138,138,0.28)'  }} />
         <div className="cm-zone" style={{ left:'31%', width:'32%', background:'rgba(245,146,12,0.22)' }} />
         <div className="cm-zone" style={{ left:'65%', width:'33%', background:'rgba(180,60,30,0.24)'  }} />
+
+        {/* Completion fill — green bar showing approved proportion */}
+        {hasReal && approvedCount > 0 && (
+          <div className="cm-progress-fill"
+            style={{ width: `${pct}%`, background: 'rgba(74,222,128,0.15)' }} />
+        )}
 
         {/* Node markers — coloured by status */}
         {marks.map((m, i) => (
@@ -62,10 +74,22 @@ export default function Minimap() {
         {/* Current position cursor */}
         <div className="cm-pos" style={{ left: `${minimapPos}%` }} />
       </div>
-      <span className="cm-l">
-        {hasReal
-          ? `${nodes.length} scenes · ${approvedCount} approved`
-          : `9 scenes · ${totalRuntime}`}
+
+      {/* Right stat — completion pct when real project */}
+      <span className="cm-l" style={{ flexShrink: 0 }}>
+        {hasReal ? (
+          <>
+            <span style={{ color: approvedCount > 0 ? 'rgba(74,222,128,0.7)' : 'var(--ghost)' }}>
+              {pct}%
+            </span>
+            {' '}
+            <span style={{ color: 'var(--ghost)' }}>
+              {nodes.length} scenes
+            </span>
+          </>
+        ) : (
+          '9 scenes'
+        )}
       </span>
     </div>
   )

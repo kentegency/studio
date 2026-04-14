@@ -16,6 +16,33 @@
 
   background: var(--black);
   animation: fadeIn var(--dur-cinema) var(--ease) forwards;
+
+  /* Room identity vars — overridden per room below */
+  --room-glow-a: rgba(245,146,12,.022);
+  --room-glow-b: rgba(30,138,138,.018);
+  --room-glow-c: rgba(96,20,8,.015);
+  --room-transition: background var(--dur-cinema) var(--ease);
+}
+
+/* Studio — warm amber, the working environment */
+.canvas-shell[data-room="studio"] {
+  --room-glow-a: rgba(245,146,12,.028);
+  --room-glow-b: rgba(30,138,138,.014);
+  --room-glow-c: rgba(96,20,8,.018);
+}
+
+/* Meeting — cooler teal, collaborative */
+.canvas-shell[data-room="meeting"] {
+  --room-glow-a: rgba(30,138,138,.032);
+  --room-glow-b: rgba(245,146,12,.010);
+  --room-glow-c: rgba(30,80,138,.016);
+}
+
+/* Window — neutral, clean, client-facing */
+.canvas-shell[data-room="window"] {
+  --room-glow-a: rgba(244,239,216,.012);
+  --room-glow-b: rgba(30,138,138,.010);
+  --room-glow-c: rgba(245,146,12,.008);
 }
 
 .canvas-grain {
@@ -37,33 +64,15 @@
   min-height: 0;
 }
 
-/* Ambient depth — radial gradients */
-.canvas-main::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 35% 55%, rgba(245,146,12,.018) 0%, transparent 65%),
-    radial-gradient(ellipse 35% 35% at 5%  85%, rgba(30,138,138,.014) 0%, transparent 55%),
-    radial-gradient(ellipse 25% 30% at 95% 15%, rgba(96,20,8,.012)    0%, transparent 55%);
-}
-
-/* Dot grid — very subtle */
-.canvas-main::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255,255,255,.022) 1px, transparent 1px);
-  background-size: 32px 32px;
-  background-position: 16px 16px;
-  mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, black 10%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, black 10%, transparent 80%);
-}
-
-/* Ambient depth */
+/* Ambient depth — reacts to room identity */
 .canvas-main::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse 70% 55% at 38% 50%, rgba(245,146,12,.022) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 40% at 5%  80%, rgba(30,138,138,.018) 0%, transparent 55%),
-    radial-gradient(ellipse 30% 30% at 95% 20%, rgba(96,20,8,.015)    0%, transparent 55%);
+    radial-gradient(ellipse 70% 55% at 38% 50%, var(--room-glow-a, rgba(245,146,12,.022)) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 5%  80%, var(--room-glow-b, rgba(30,138,138,.018)) 0%, transparent 55%),
+    radial-gradient(ellipse 30% 30% at 95% 20%, var(--room-glow-c, rgba(96,20,8,.015))    0%, transparent 55%);
+  transition: background var(--dur-cinema) var(--ease);
 }
 
 /* Dot grid */
@@ -76,3 +85,22 @@
   mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 80%);
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 80%);
 }
+
+/* ── ROOM IDENTITY LINE — top of canvas, 1px, shifts per room ── */
+.canvas-main::before {
+  /* Room identity accent on the top edge of the canvas */
+}
+
+/* Room indicator — topbar accent line shifts per room */
+.topbar::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  transition: background var(--dur-cinema) var(--ease);
+}
+.canvas-shell[data-room="studio"]  .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(245,146,12,.18) 30%, rgba(245,146,12,.08) 70%, transparent 100%); }
+.canvas-shell[data-room="meeting"] .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(30,138,138,.2)  30%, rgba(30,138,138,.10) 70%, transparent 100%); }
+.canvas-shell[data-room="window"]  .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(244,239,216,.08) 30%, rgba(244,239,216,.04) 70%, transparent 100%); }
+
+/* Room label in topbar shifts tone */
+.canvas-shell[data-room="meeting"] .tb-room-badge { color: var(--teal); border-color: rgba(30,138,138,.25); }
+.canvas-shell[data-room="window"]  .tb-room-badge { color: var(--dim); border-color: rgba(160,152,144,.2); }

@@ -149,6 +149,9 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
         <div className="sm-identity">
           <div className="sm-scene-name">{node.name}</div>
           <div className="sm-act-path">{actPath}</div>
+          {node.description && (
+            <div className="sm-scene-desc">{node.description}</div>
+          )}
         </div>
 
         {/* ── ARC MINI-VIZ — spatial context ── */}
@@ -208,8 +211,12 @@ export default function Timeline() {
         cy:       53,
         r:        Math.max(5, Math.min(14, (n.emphasis ?? 1) * 7)),
         fill:     STATUS_FILL[n.status] ?? '#3A3020',
-        label:    (n.name ?? '').toUpperCase().slice(0, 9),
-        labelFill:'#6A6258',
+        label:    (n.name ?? '').slice(0, 12),
+        labelFill: n.status === 'approved' || n.status === 'locked'
+          ? 'rgba(74,222,128,0.55)'
+          : n.status === 'review' || n.status === 'progress'
+          ? 'rgba(245,146,12,0.5)'
+          : '#4A4840',
         glow:     n.status === 'progress' || n.status === 'review',
         glowFill: 'rgba(245,146,12,0.12)',
         status:   n.status,
@@ -218,6 +225,7 @@ export default function Timeline() {
         position: n.position,
         emphasis: n.emphasis,
         type:     n.type,
+        description: n.description,
         _raw:     n,
       }))
     : DEMO_NODES
@@ -250,13 +258,27 @@ export default function Timeline() {
   useEffect(() => {
     const h = (e) => {
       if (sceneMode) return
+      const active = document.activeElement
+      const inInput = active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable
+      if (inInput) return
       if (e.key === 'z') setZoom(z => Math.min(z + 0.3, 2.5))
       if (e.key === 'x') setZoom(z => Math.max(z - 0.3, 0.5))
       if (e.key === 'f') setZoom(1)
+      // S — advance status on selected node
+      if (e.key === 's' && selectedNode?.id && !selectedNode.id.startsWith('cn')) {
+        const { updateNode, selectNode: storeSelect } = useNodeStore.getState()
+        const statuses = ['concept','progress','review','approved','locked']
+        const curr = selectedNode.status ?? 'concept'
+        const next = statuses[(statuses.indexOf(curr) + 1) % statuses.length]
+        updateNode(selectedNode.id, { status: next }).then(() => {
+          storeSelect({ ...selectedNode, status: next })
+          useUIStore.getState().showToast(`${selectedNode.name} → ${next}`)
+        })
+      }
     }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [sceneMode])
+  }, [sceneMode, selectedNode])
 
   const handleCreate = async (e) => {
     e.preventDefault()
