@@ -88,7 +88,7 @@
   font-size: 11.5px; letter-spacing: .16em;
   color: var(--ghost); text-transform: uppercase;
   background: none; border: none;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   transition: color var(--dur-mid) var(--ease);
 }
 .ob-skip:hover { color: var(--mute); }
@@ -97,7 +97,7 @@
   text-transform: uppercase; color: var(--orange);
   border: .5px solid rgba(245,146,12,.28);
   border-radius: 2px; padding: 7px 18px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   transition: background var(--dur-mid) var(--ease);
 }
 .ob-next:hover { background: rgba(245,146,12,.07); }

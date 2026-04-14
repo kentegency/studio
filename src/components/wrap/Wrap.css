@@ -62,7 +62,7 @@
   font-size: 12px; letter-spacing: .16em; padding: 9px 16px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   transition: color var(--dur-mid) var(--ease);
 }
 .wrap-cancel:hover { color: var(--dim); }
@@ -70,7 +70,7 @@
   font-size: 12px; letter-spacing: .16em; padding: 9px 22px;
   text-transform: uppercase; color: var(--orange);
   border: .5px solid rgba(245,146,12,.28); border-radius: 2px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   transition: background var(--dur-mid) var(--ease);
 }
 .wrap-generate:hover:not(:disabled) { background: rgba(245,146,12,.06); }

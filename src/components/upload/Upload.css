@@ -121,7 +121,7 @@
   font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
   color: var(--orange); border: .5px solid rgba(245,146,12,.25);
   background: transparent; border-radius: 2px;
-  padding: 7px 16px; font-family: var(--font-mono);
+  padding: 7px 16px; font-family: var(--font-ui);
   transition: background var(--dur-mid) var(--ease);
 }
 .upload-done-btn:hover { background: rgba(245,146,12,.06); }

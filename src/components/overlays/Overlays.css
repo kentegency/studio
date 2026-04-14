@@ -21,7 +21,7 @@
 .ov-close-btn {
   font-size: 12px; letter-spacing: .2em; color: var(--mute);
   padding: 5px 13px; border: .5px solid var(--b); border-radius: 2px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   transition: color var(--dur-mid) var(--ease), border-color var(--dur-mid) var(--ease);
 }
 .ov-close-btn:hover { color: var(--cream); border-color: var(--b2); }
@@ -77,7 +77,7 @@
 .cmp-sel {
   padding: 9px 22px; border-radius: 2px;
   font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   background: transparent;
   transition: background var(--dur-mid) var(--ease);
 }
@@ -216,7 +216,7 @@
   font-size: 11px; letter-spacing: .16em; padding: 6px 12px;
   text-transform: uppercase; color: var(--dim);
   border: .5px solid rgba(255,255,255,.1); border-radius: 2px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   white-space: nowrap;
   transition: color var(--dur-mid) var(--ease), background var(--dur-mid) var(--ease);
 }
@@ -293,7 +293,7 @@
   font-size: 12px; letter-spacing: .18em; padding: 5px 12px; border-radius: 2px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); background: transparent;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   transition: all var(--dur-mid) var(--ease);
 }
 .bt:hover { color: var(--dim); }
@@ -305,7 +305,7 @@
 .bq-input {
   width: 100%; background: var(--s2);
   border: .5px solid var(--b); border-radius: 2px;
-  padding: 8px 10px; font-family: var(--font-mono);
+  padding: 8px 10px; font-family: var(--font-ui);
   font-size: 13px; color: var(--cream); outline: none; resize: none;
   transition: border-color var(--dur-mid) var(--ease);
 }
@@ -314,7 +314,7 @@
 .modal-foot { padding: 12px 22px; border-top: .5px solid var(--b); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
 .bf-btn {
   font-size: 12px; letter-spacing: .18em; padding: 6px 14px; border-radius: 2px;
-  text-transform: uppercase; font-family: var(--font-mono);
+  text-transform: uppercase; font-family: var(--font-ui);
   transition: all var(--dur-mid) var(--ease);
 }
 .bf-btn.cancel { color: var(--mute);   border: .5px solid var(--b);  background: transparent; }

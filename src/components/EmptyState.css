@@ -40,7 +40,7 @@
   text-transform: uppercase; color: var(--orange);
   border: .5px solid rgba(245,146,12,.25);
   border-radius: 2px; padding: 7px 16px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   margin-top: 4px;
   transition: background var(--dur-mid) var(--ease);
 }

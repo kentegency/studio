@@ -29,7 +29,7 @@
   font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase;
   color: var(--mute); background: transparent;
   border: .5px solid var(--b); border-radius: 2px;
-  padding: 4px 10px; font-family: var(--font-mono);
+  padding: 4px 10px; font-family: var(--font-ui);
   transition: color var(--dur-mid) var(--ease), border-color var(--dur-mid) var(--ease);
 }
 .dash-signout:hover { color: var(--cream); border-color: var(--b2); }
@@ -60,7 +60,7 @@
   font-size: 13px; letter-spacing: .22em; text-transform: uppercase;
   color: var(--orange); border: .5px solid rgba(245,146,12,.28);
   background: transparent; border-radius: 2px;
-  padding: 10px 20px; font-family: var(--font-mono);
+  padding: 10px 20px; font-family: var(--font-ui);
   transition: background var(--dur-mid) var(--ease);
   flex-shrink: 0;
 }
@@ -90,7 +90,7 @@
 .dcf-input  {
   width: 100%; padding: 9px 12px;
   background: var(--s2); border: .5px solid var(--b);
-  border-radius: 2px; font-family: var(--font-mono);
+  border-radius: 2px; font-family: var(--font-ui);
   font-size: 10px; color: var(--cream); outline: none;
   transition: border-color var(--dur-mid) var(--ease);
   caret-color: var(--orange);
@@ -100,7 +100,7 @@
 .dcf-select {
   width: 100%; padding: 9px 12px;
   background: var(--s2); border: .5px solid var(--b);
-  border-radius: 2px; font-family: var(--font-mono);
+  border-radius: 2px; font-family: var(--font-ui);
   font-size: 10px; color: var(--cream); outline: none;
   transition: border-color var(--dur-mid) var(--ease);
 }
@@ -125,7 +125,7 @@
   font-size: 12px; letter-spacing: .18em; padding: 8px 16px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   transition: color var(--dur-mid) var(--ease);
 }
 .dcf-cancel:hover { color: var(--dim); }
@@ -133,7 +133,7 @@
   font-size: 12px; letter-spacing: .18em; padding: 8px 18px;
   text-transform: uppercase; color: var(--orange);
   border: .5px solid rgba(245,146,12,.28); border-radius: 2px;
-  background: transparent; font-family: var(--font-mono);
+  background: transparent; font-family: var(--font-ui);
   transition: background var(--dur-mid) var(--ease);
 }
 .dcf-save:hover    { background: rgba(245,146,12,.06); }

@@ -51,7 +51,7 @@
   background: var(--s1);
   border: .5px solid var(--b2);
   border-radius: 2px;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 10px; color: var(--cream);
   outline: none;
   transition: border-color var(--dur-mid) var(--ease);
@@ -73,7 +73,7 @@
   width: 100%; padding: 12px;
   background: var(--orange);
   border: none; border-radius: 2px;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 13px; letter-spacing: .25em;
   color: var(--black); text-transform: uppercase;
   transition: opacity var(--dur-mid) var(--ease), transform var(--dur-fast) var(--ease);
