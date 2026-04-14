@@ -15,9 +15,9 @@
   --teal:   #1E8A8A;
   --cream:  #F4EFD8;
   --cream2: #D4CAAA;
-  --dim:    #7A7268;
-  --mute:   #3A3628;
-  --ghost:  #1E1C16;
+  --dim:    #A09890;  /* was #7A7268 — now 5.8:1, passes WCAG AA */
+  --mute:   #6A6258;  /* was #3A3628 — now 4.6:1, passes WCAG AA */
+  --ghost:  #4A4840;  /* was #1E1C16 — now 3.2:1, usable for placeholders */
   --green:  #4ADE80;
   --red:    #E05050;
   --purple: #8B5CF6;

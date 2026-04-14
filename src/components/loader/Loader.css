@@ -18,7 +18,7 @@
 }
 .loader-px.on { opacity: 1; transform: scale(1) rotate(0deg); }
 .loader-wordmark {
-  font-size: 8px; letter-spacing: .55em;
+  font-size: 12px; letter-spacing: .55em;
   color: var(--ghost); text-transform: uppercase;
   opacity: 0; transform: translateY(8px);
   transition: opacity 1s var(--ease), transform 1s var(--ease);

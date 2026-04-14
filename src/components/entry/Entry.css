@@ -10,7 +10,7 @@
 }
 
 .entry-eye {
-  font-size: 8.5px; letter-spacing: .44em;
+  font-size: 12.5px; letter-spacing: .44em;
   color: var(--orange); text-transform: uppercase;
   margin-bottom: 22px;
   opacity: 0; transform: translateY(18px);
@@ -70,7 +70,7 @@
 
 /* Invite */
 .entry-invite {
-  font-size: 8.5px; letter-spacing: .3em;
+  font-size: 12.5px; letter-spacing: .3em;
   color: var(--mute); text-transform: lowercase;
   margin-bottom: 32px;
   opacity: 0;
@@ -97,4 +97,4 @@
   background: var(--orange); border-radius: 1px;
   box-shadow: 0 0 8px rgba(245,146,12,.55);
 }
-.em-l { font-size: 7.5px; letter-spacing: .22em; color: var(--mute); text-transform: uppercase; }
+.em-l { font-size: 11.5px; letter-spacing: .22em; color: var(--mute); text-transform: uppercase; }

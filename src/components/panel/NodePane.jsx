@@ -1,121 +1,163 @@
 import { useEffect, useState } from 'react'
 import { useNodeStore, useUIStore, useAssetsStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
+import { supabase } from '../../lib/supabase'
+import EmptyState from '../EmptyState'
 import './Panes.css'
+import '../EmptyState.css'
 
-const STATUS_COLORS = {
-  concept:  '#3A3628',
-  progress: '#F5920C',
-  review:   '#F4EFD8',
-  approved: '#4ADE80',
-  locked:   '#4ADE80',
-}
-const STATUS_LABELS = {
-  concept:'Concept', progress:'In Progress',
-  review:'In Review', approved:'Approved', locked:'Locked'
-}
-
+const STATUSES = ['concept','progress','review','approved','locked']
+const STATUS_COLORS = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+const STATUS_LABELS = { concept:'Concept', progress:'In Progress', review:'In Review', approved:'Approved ✓', locked:'Locked ✓' }
+const NOTE_COLORS = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
 const WAVEFORM = [.3,.5,.8,.6,.9,.4,.7,.55,.8,.6,.4,.9,.7,.5,.3,.65,.8,.4,.7,.5,.9,.6,.4,.8,.5,.7,.35,.6,.9,.4,.8,.6,.5,.7,.3,.9,.6,.4,.75,.5]
 
-const NOTE_COLORS = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
+const UpIcon   = () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+const NoteIcon = () => <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+const ImgIcon  = () => <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+const LinkIcon = () => <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+const ShotIcon = () => <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+const SaveIcon = () => <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
 
-const AddIcon = () => <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-const UpIcon  = () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-const LinkIcon= () => <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+export default function NodePane({ onUpload, onPublish }) {
+  const { selectedNode, selectNode, updateNode } = useNodeStore()
+  const { assets, fetchAssets }                  = useAssetsStore()
+  const { notes, fetchNotes, addNote }           = useNotesStore()
+  const { openOverlay, showToast }               = useUIStore()
+  const { user }                                 = useAuthStore()
+  const { currentProject }                       = useProjectStore()
 
-export default function NodePane({ onUpload }) {
-  const selectedNode = useNodeStore(s => s.selectedNode)
-  const { assets, fetchAssets }     = useAssetsStore()
-  const { notes, fetchNotes, addNote } = useNotesStore()
-  const { openOverlay, showToast }  = useUIStore()
-  const { user }                    = useAuthStore()
-  const { currentProject }          = useProjectStore()
-
-  const [newNote, setNewNote]       = useState('')
-  const [noteColor, setNoteColor]   = useState('#F5920C')
-  const [addingNote, setAddingNote] = useState(false)
-  const [windowUrl, setWindowUrl]   = useState('')
-  const [showWindow, setShowWindow] = useState(false)
+  const [newNote, setNewNote]           = useState('')
+  const [noteColor, setNoteColor]       = useState('#F5920C')
+  const [addingNote, setAddingNote]     = useState(false)
+  const [showWindow, setShowWindow]     = useState(false)
+  const [shots, setShots]               = useState([])
+  const [addingShot, setAddingShot]     = useState(false)
+  const [newShot, setNewShot]           = useState({ name:'', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05' })
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [saveIndicator, setSaveIndicator]   = useState(false)
 
   useEffect(() => {
     if (selectedNode?.id) {
       fetchAssets(selectedNode.id)
       fetchNotes(selectedNode.id)
+      fetchShots(selectedNode.id)
     }
   }, [selectedNode?.id])
 
-  useEffect(() => {
-    if (currentProject?.window_token) {
-      setWindowUrl(`${window.location.origin}/window/${currentProject.window_token}`)
-    }
-  }, [currentProject])
+  const fetchShots = async (nodeId) => {
+    const { data } = await supabase.from('shots').select('*')
+      .eq('node_id', nodeId).order('number')
+    setShots(data ?? [])
+  }
 
-  const name   = selectedNode?.label  ?? selectedNode?.name ?? 'SELECT A NODE'
-  const act    = selectedNode?.act    ?? 'Click any node on the timeline to begin'
+  const showSaved = () => {
+    setSaveIndicator(true)
+    setTimeout(() => setSaveIndicator(false), 2000)
+  }
+
+  if (!selectedNode) return (
+    <div className="node-pane">
+      <EmptyState
+        icon={<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
+        title="No scene selected"
+        body="Click any node on the timeline to open its details here."
+      />
+    </div>
+  )
+
+  const name   = selectedNode?.name  ?? selectedNode?.label ?? 'Untitled'
+  const act    = selectedNode?.act   ?? ''
   const status = selectedNode?.status ?? 'concept'
-  const color  = STATUS_COLORS[status] ?? '#3A3628'
+  const color  = STATUS_COLORS[status] ?? '#6A6258'
   const label  = STATUS_LABELS[status] ?? 'Concept'
 
-  const lock = () => {
-    if (!selectedNode) return
+  const cycleStatus = async () => {
+    if (!selectedNode?.id || updatingStatus) return
+    const idx  = STATUSES.indexOf(status)
+    const next = STATUSES[(idx + 1) % STATUSES.length]
+    setUpdatingStatus(true)
+    const { data } = await updateNode(selectedNode.id, { status: next })
+    if (data) {
+      selectNode({ ...selectedNode, status: next })
+      showSaved()
+      showToast(`Status → ${STATUS_LABELS[next]}`)
+    }
+    setUpdatingStatus(false)
+  }
+
+  const lockNode = async () => {
+    if (!selectedNode?.id) return
+    await updateNode(selectedNode.id, { locked: true, status: 'locked', locked_by: user?.id, locked_at: new Date().toISOString() })
+    selectNode({ ...selectedNode, status: 'locked', locked: true })
+    showSaved()
     showToast('Node locked. Producer notified.', '#4ADE80')
   }
 
   const saveNote = async () => {
     if (!newNote.trim() || !selectedNode) return
-    await addNote({
-      project_id: currentProject?.id ?? selectedNode.project_id,
-      node_id:    selectedNode.id,
-      author_id:  user?.id,
-      body:       newNote,
-      color:      noteColor,
-      room:       'studio',
-    })
+    const pid = currentProject?.id
+    if (!pid) { showToast('Open a project first.', '#E05050'); return }
+    await addNote({ project_id: pid, node_id: selectedNode.id, author_id: user?.id, body: newNote, color: noteColor, room: 'studio' })
     setNewNote('')
     setAddingNote(false)
+    showSaved()
     showToast('Note saved.')
   }
 
+  const saveShot = async (e) => {
+    e.preventDefault()
+    if (!selectedNode?.id || !currentProject?.id) return
+    const num = shots.length + 1
+    const { data, error } = await supabase.from('shots').insert({
+      node_id: selectedNode.id, project_id: currentProject.id,
+      number: num, name: newShot.name, shot_type: newShot.shot_type,
+      shot_kind: newShot.shot_kind, duration: newShot.duration,
+      status: 'pending', order_index: num,
+    }).select().single()
+    if (!error && data) {
+      setShots(s => [...s, data])
+      setNewShot({ name:'', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05' })
+      setAddingShot(false)
+      showSaved()
+      showToast(`Shot ${num} added.`)
+    }
+  }
+
+  const toggleShotStatus = async (shot) => {
+    const next = shot.status === 'done' ? 'pending' : shot.status === 'pending' ? 'progress' : 'done'
+    await supabase.from('shots').update({ status: next }).eq('id', shot.id)
+    setShots(s => s.map(sh => sh.id === shot.id ? { ...sh, status: next } : sh))
+    showSaved()
+  }
+
+  const windowUrl = currentProject?.window_token
+    ? `${window.location.origin}/#/window/${currentProject.window_token}` : ''
+
   const copyWindow = () => {
+    if (!windowUrl) return
     navigator.clipboard.writeText(windowUrl)
     showToast('Window link copied. Send to your client.', '#4ADE80')
     setShowWindow(false)
   }
 
-  // Asset type icon
+  const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2720' }
+
   const AssetThumb = ({ asset }) => {
-    if (asset.type === 'image' || asset.type === 'gif') {
-      return (
-        <div className="at" data-hover
-          onClick={() => window.open(asset.file_url, '_blank')}>
-          <img src={asset.file_url} alt={asset.name}
-            style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'2px' }} />
-          <span className="at-b">{asset.type.slice(0,3)}</span>
-        </div>
-      )
-    }
-    if (asset.type === 'video') {
-      return (
-        <div className="at" data-hover
-          onClick={() => window.open(asset.file_url, '_blank')}>
-          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span className="at-b">vid</span>
-        </div>
-      )
-    }
-    if (asset.type === 'audio') {
-      return (
-        <div className="at" data-hover
-          onClick={() => window.open(asset.file_url, '_blank')}>
-          <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          <span className="at-b">aud</span>
-        </div>
-      )
+    const open = () => window.open(asset.file_url, '_blank')
+    if (asset.type === 'image' || asset.type === 'gif') return (
+      <div className="at" data-hover onClick={open} title={asset.name}>
+        <img src={asset.file_url} alt={asset.name} style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'2px' }} />
+        <span className="at-b">{asset.type.slice(0,3)}</span>
+      </div>
+    )
+    const icons = {
+      video: <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+      audio: <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
     }
     return (
-      <div className="at" data-hover
-        onClick={() => window.open(asset.file_url, '_blank')}>
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <span className="at-b">{asset.type?.slice(0,3) ?? 'doc'}</span>
+      <div className="at" data-hover onClick={open} title={asset.name}>
+        {icons[asset.type] ?? <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+        <span className="at-b">{(asset.type??'doc').slice(0,3)}</span>
       </div>
     )
   }
@@ -126,9 +168,22 @@ export default function NodePane({ onUpload }) {
       <div className="rph">
         <div className="rp-ey">{act}</div>
         <div className="rp-ti">{name}</div>
-        <div className="rp-st">
-          <span className="rp-dot" style={{ background: color }} />
-          <span style={{ color }}>{label}</span>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div className="rp-st" style={{ cursor:'pointer' }}
+            onClick={cycleStatus} data-hover title="Click to advance status">
+            <span className="rp-dot" style={{ background: color }} />
+            <span style={{ color }}>{label}</span>
+            <span style={{ color:'var(--ghost)', fontSize:'11px', marginLeft:'4px' }}>↻</span>
+          </div>
+          {/* THREE — Save indicator */}
+          {saveIndicator && (
+            <div className="save-indicator">
+              <svg viewBox="0 0 24 24" style={{ width:'11px',height:'11px',stroke:'var(--green)',fill:'none',strokeWidth:'2.5',strokeLinecap:'round' }}>
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Saved
+            </div>
+          )}
         </div>
       </div>
 
@@ -138,19 +193,26 @@ export default function NodePane({ onUpload }) {
           Assets — {assets.length}
           <span onClick={() => openOverlay('compare')} data-hover>Compare</span>
         </div>
-
         <button className="upload-trigger" onClick={onUpload} data-hover>
           <UpIcon /><span>Upload files to this node</span>
         </button>
-
-        {assets.length > 0 && (
+        {assets.length > 0 ? (
           <div className="asset-grid" style={{ marginTop:'8px' }}>
-            {assets.slice(0, 7).map(a => <AssetThumb key={a.id} asset={a} />)}
-            <div className="at at-add" onClick={onUpload} data-hover><AddIcon /></div>
+            {assets.slice(0,7).map(a => <AssetThumb key={a.id} asset={a} />)}
+            <div className="at at-add" onClick={onUpload} data-hover>
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+        ) : (
+          <div style={{ marginTop:'6px' }}>
+            <EmptyState compact icon={<ImgIcon />}
+              title="No assets yet"
+              body="Upload images, video, audio, or documents."
+              action="Upload first asset →"
+              onAction={onUpload} />
           </div>
         )}
-
-        <div className="waveform">
+        <div className="waveform" style={{ marginTop:'8px' }}>
           {WAVEFORM.map((h, i) => (
             <div key={i} className={`wb ${i < 20 ? 'active' : ''}`}
               style={{ height:`${h*22}px`, minWidth:'3px' }} />
@@ -158,70 +220,124 @@ export default function NodePane({ onUpload }) {
         </div>
       </div>
 
-      {/* Window Link — FIVE */}
+      {/* Shot List */}
+      <div className="sec">
+        <div className="sec-l">
+          Shot List — {shots.length}
+          <span onClick={() => setAddingShot(s => !s)} data-hover>+ Add shot</span>
+        </div>
+        {addingShot && (
+          <form className="add-shot-form" onSubmit={saveShot}>
+            <input className="nn-input" placeholder="Shot description" required
+              value={newShot.name} onChange={e => setNewShot(s => ({ ...s, name: e.target.value }))} autoFocus />
+            <div className="shot-form-row">
+              <select className="nn-select" value={newShot.shot_type}
+                onChange={e => setNewShot(s => ({ ...s, shot_type: e.target.value }))}>
+                {['ECU','CU','MCU','MS','MWS','WS','EWS'].map(t => <option key={t}>{t}</option>)}
+              </select>
+              <select className="nn-select" value={newShot.shot_kind}
+                onChange={e => setNewShot(s => ({ ...s, shot_kind: e.target.value }))}>
+                {['Drama enactment','Archival','Candid','Staged','Animation','Interview'].map(k => <option key={k}>{k}</option>)}
+              </select>
+              <input className="nn-input" style={{ width:'70px',flexShrink:0 }}
+                placeholder="00:05" value={newShot.duration}
+                onChange={e => setNewShot(s => ({ ...s, duration: e.target.value }))} />
+            </div>
+            <div className="nn-foot">
+              <button type="button" className="nn-cancel" onClick={() => setAddingShot(false)}>Cancel</button>
+              <button type="submit" className="nn-save">Add shot →</button>
+            </div>
+          </form>
+        )}
+        {shots.length > 0 ? (
+          <div className="shot-list-mini">
+            {shots.map(sh => (
+              <div key={sh.id} className="shm" data-hover onClick={() => toggleShotStatus(sh)}
+                title="Click to advance status">
+                <span className="shm-n">{String(sh.number).padStart(2,'0')}</span>
+                <div className="shm-info">
+                  <div className="shm-name">{sh.name}</div>
+                  <div className="shm-meta">{sh.shot_type} · {sh.shot_kind} · {sh.duration}</div>
+                </div>
+                <div className="shm-dot" style={{ background: SH_COLOR[sh.status] ?? '#2A2720' }}
+                  title={sh.status} />
+              </div>
+            ))}
+          </div>
+        ) : !addingShot && (
+          <EmptyState compact
+            icon={<ShotIcon />}
+            title="No shots yet"
+            body="Build your shot list for this scene."
+            action="Add first shot →"
+            onAction={() => setAddingShot(true)} />
+        )}
+      </div>
+
+      {/* Window Link */}
       {currentProject && (
         <div className="sec" style={{ flexShrink:0 }}>
           <div className="sec-l">Client Window</div>
           <button className="window-link-btn" onClick={() => setShowWindow(s => !s)} data-hover>
-            <LinkIcon />
-            <span>Share Window link with client</span>
+            <LinkIcon /><span>Share Window link with client</span>
           </button>
           {showWindow && (
             <div className="window-link-box">
-              <div className="wl-url">{windowUrl || 'No window token — save project first'}</div>
-              <button className="wl-copy" onClick={copyWindow} data-hover>Copy link</button>
+              <div className="wl-url">{windowUrl || 'Save project first'}</div>
+              {windowUrl && <button className="wl-copy" onClick={copyWindow} data-hover>Copy</button>}
             </div>
           )}
         </div>
       )}
 
-      {/* Notes — FOUR: real save */}
+      {/* Notes */}
       <div className="notes-wrap">
         <div className="notes-header">
           <span className="nh-l">Notes — {notes.length}</span>
           <span className="nh-a" onClick={() => setAddingNote(s => !s)} data-hover>
-            {addingNote ? 'Cancel' : '+ Add note'}
+            {addingNote ? 'Cancel' : '+ Add'}
           </span>
         </div>
-
         {addingNote && (
           <div className="add-note-form">
             <textarea className="an-input" rows={3}
               placeholder="What are you thinking about this scene?"
-              value={newNote}
-              onChange={e => setNewNote(e.target.value)}
-              autoFocus />
+              value={newNote} onChange={e => setNewNote(e.target.value)} autoFocus />
             <div className="an-footer">
               <div className="an-colors">
                 {NOTE_COLORS.map((c, i) => (
-                  <div key={i}
-                    className={`an-color ${noteColor === c ? 'on' : ''}`}
-                    style={{ background: c }}
-                    onClick={() => setNoteColor(c)} />
+                  <div key={i} className={`an-color ${noteColor===c?'on':''}`}
+                    style={{ background:c }} onClick={() => setNoteColor(c)} />
                 ))}
               </div>
-              <button className="an-save" onClick={saveNote} data-hover>Save note</button>
+              <button className="an-save" onClick={saveNote} data-hover>Save</button>
             </div>
           </div>
         )}
-
-        {/* Real notes from DB */}
-        {notes.map((n, i) => (
-          <div key={n.id ?? i}
-            className={`note ${n.resolved ? 'resolved' : ''}`}
-            style={{ borderLeftColor: n.color ?? '#F5920C' }}
-            data-hover>
-            <div className="nb">{n.body}</div>
-            <div className="nm">
-              {n.room ?? 'studio'} · {formatTime(n.created_at)}
+        {notes.length > 0 ? (
+          notes.map((n, i) => (
+            <div key={n.id ?? i} className={`note ${n.resolved?'resolved':''}`}
+              style={{ borderLeftColor: n.color ?? '#F5920C' }} data-hover>
+              <div className="nb">{n.body}</div>
+              <div className="nm">{n.room ?? 'studio'} · {formatTime(n.created_at)}</div>
             </div>
-          </div>
-        ))}
-
-        {/* Show lock if node is selected */}
-        {selectedNode && (
+          ))
+        ) : !addingNote && (
+          <EmptyState compact
+            icon={<NoteIcon />}
+            title="No notes yet"
+            body="Capture your thinking about this scene."
+            action="Add first note →"
+            onAction={() => setAddingNote(true)} />
+        )}
+        {selectedNode && !selectedNode.locked && notes.length > 0 && (
           <div className="lock-row">
-            <button className="lock-btn" onClick={lock} data-hover>⊠ Lock this node</button>
+            <button className="lock-btn" onClick={lockNode} data-hover>⊠ Lock this node</button>
+          </div>
+        )}
+        {selectedNode?.locked && (
+          <div className="lock-row">
+            <div className="locked-badge">⊠ Locked · {formatTime(selectedNode.locked_at)}</div>
           </div>
         )}
       </div>
@@ -231,11 +347,9 @@ export default function NodePane({ onUpload }) {
 
 function formatTime(iso) {
   if (!iso) return 'just now'
-  const d = new Date(iso)
-  const now = new Date()
-  const diff = now - d
-  if (diff < 60000)   return 'just now'
-  if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`
-  if (diff < 86400000)return `${Math.floor(diff/3600000)}h ago`
+  const diff = Date.now() - new Date(iso)
+  if (diff < 60000)    return 'just now'
+  if (diff < 3600000)  return `${Math.floor(diff/60000)}m ago`
+  if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`
   return `${Math.floor(diff/86400000)}d ago`
 }

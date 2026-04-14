@@ -13,7 +13,7 @@
   padding: 0 4px;
 }
 .add-node-btn {
-  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
   color: var(--orange); border: .5px solid rgba(245,146,12,.25);
   background: transparent; border-radius: 2px;
   padding: 5px 12px; font-family: var(--font-mono);
@@ -39,13 +39,13 @@
 .nn-input::placeholder { color: var(--ghost); }
 
 .nn-pos-wrap { display: flex; align-items: center; gap: 10px; }
-.nn-label    { font-size: 7.5px; letter-spacing: .2em; color: var(--mute); text-transform: uppercase; white-space: nowrap; }
+.nn-label    { font-size: 11.5px; letter-spacing: .2em; color: var(--mute); text-transform: uppercase; white-space: nowrap; }
 .nn-slider   { flex: 1; accent-color: var(--orange); }
-.nn-pos-val  { font-size: 8px; color: var(--orange); min-width: 28px; text-align: right; }
+.nn-pos-val  { font-size: 12px; color: var(--orange); min-width: 28px; text-align: right; }
 
 .nn-foot { display: flex; justify-content: flex-end; gap: 8px; }
 .nn-cancel {
-  font-size: 8px; letter-spacing: .15em; padding: 6px 12px;
+  font-size: 12px; letter-spacing: .15em; padding: 6px 12px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -53,7 +53,7 @@
 }
 .nn-cancel:hover { color: var(--dim); }
 .nn-save {
-  font-size: 8px; letter-spacing: .15em; padding: 6px 14px;
+  font-size: 12px; letter-spacing: .15em; padding: 6px 14px;
   text-transform: uppercase; color: var(--orange);
   border: .5px solid rgba(245,146,12,.25); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);

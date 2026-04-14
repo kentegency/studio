@@ -26,7 +26,7 @@
   font-size: 18px; color: var(--cream); letter-spacing: .04em;
 }
 .upload-node {
-  font-size: 8px; letter-spacing: .15em;
+  font-size: 12px; letter-spacing: .15em;
   color: var(--orange); flex: 1;
 }
 .upload-close {
@@ -63,7 +63,7 @@
   color: var(--dim); text-align: center;
 }
 .dz-sub {
-  font-size: 8px; letter-spacing: .1em;
+  font-size: 12px; letter-spacing: .1em;
   color: var(--mute); text-align: center;
 }
 
@@ -87,11 +87,11 @@
 
 .ui-info { flex: 1; min-width: 0; }
 .ui-name {
-  font-size: 9.5px; color: var(--dim);
+  font-size: 13px; color: var(--dim);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-bottom: 3px;
 }
-.ui-meta { font-size: 7.5px; color: var(--mute); letter-spacing: .08em; }
+.ui-meta { font-size: 11.5px; color: var(--mute); letter-spacing: .08em; }
 .ui-right { flex-shrink: 0; min-width: 80px; }
 
 .ui-bar {
@@ -104,7 +104,7 @@
   transition: width .4s var(--ease);
 }
 .ui-done  { font-size: 11px; color: var(--green); }
-.ui-error { font-size: 8px; color: var(--red); letter-spacing: .08em; }
+.ui-error { font-size: 12px; color: var(--red); letter-spacing: .08em; }
 
 /* FOOT */
 .upload-foot {
@@ -114,11 +114,11 @@
   flex-shrink: 0;
 }
 .upload-hint {
-  font-size: 8px; letter-spacing: .1em;
+  font-size: 12px; letter-spacing: .1em;
   color: var(--mute); flex: 1; line-height: 1.5;
 }
 .upload-done-btn {
-  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
   color: var(--orange); border: .5px solid rgba(245,146,12,.25);
   background: transparent; border-radius: 2px;
   padding: 7px 16px; font-family: var(--font-mono);

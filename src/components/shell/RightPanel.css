@@ -10,7 +10,7 @@
 
 .rp-tabs { display: flex; border-bottom: .5px solid var(--b); flex-shrink: 0; }
 .rp-tab {
-  flex: 1; font-size: 7.5px; letter-spacing: .18em;
+  flex: 1; font-size: 11.5px; letter-spacing: .18em;
   text-transform: uppercase; color: var(--mute);
   padding: 11px 0; text-align: center;
   background: transparent; border: none;
@@ -28,3 +28,16 @@
   transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease-out);
 }
 .pane-wrap.visible { opacity: 1; transform: translateY(0); }
+
+/* ROOM BANNER */
+.rp-room-banner {
+  padding: 8px 14px;
+  font-size: 11.5px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--dim);
+  display: flex; align-items: center; gap: 7px;
+  border-bottom: .5px solid var(--b);
+  flex-shrink: 0;
+}
+.rp-room-banner.window  { background: rgba(74,222,128,.04); }
+.rp-room-banner.meeting { background: rgba(30,138,138,.04); }
+.rrb-dot { width: 5px; height: 5px; border-radius: 50%; animation: pulse-dot 2s ease infinite; }
