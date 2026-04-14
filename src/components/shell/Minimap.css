@@ -3,16 +3,28 @@
   background: rgba(4,4,2,.99);
   border-top: .5px solid var(--b);
   display: flex; align-items: center;
-  padding: 0 36px; gap: 10px;
+  padding: 0 40px; gap: 14px;
 }
-.cm-l { font-size: 11px; letter-spacing: .2em; color: var(--mute); text-transform: uppercase; }
-.cm-track { flex: 1; height: 2px; background: rgba(255,255,255,.04); position: relative; border-radius: 1px; }
-.cm-zone  { position: absolute; top: -1px; height: 4px; border-radius: 1px; }
-.cm-node  { position: absolute; top: -2px; width: 2px; height: 6px; background: rgba(244,239,216,.12); border-radius: 1px; }
-.cm-pos   {
-  position: absolute; top: -5px;
-  width: 2px; height: 12px;
-  background: var(--orange); border-radius: 1px;
-  box-shadow: 0 0 6px rgba(245,146,12,.58);
-  transition: left .5s var(--ease);
+.cm-l {
+  font-size: 11px; letter-spacing: .16em; color: var(--ghost);
+  text-transform: uppercase; font-family: var(--font-mono);
+  white-space: nowrap; flex-shrink: 0;
+}
+.cm-track {
+  flex: 1; height: 2px;
+  background: rgba(255,255,255,.05);
+  position: relative; border-radius: 1px;
+}
+.cm-zone  { position: absolute; top: -2px; height: 6px; border-radius: 1px; }
+.cm-node  {
+  position: absolute; top: -3px;
+  width: 3px; height: 8px; border-radius: 1px;
+  transition: background .3s ease;
+}
+.cm-pos {
+  position: absolute; top: -6px;
+  width: 1.5px; height: 14px;
+  background: var(--project-accent, var(--orange)); border-radius: 1px;
+  box-shadow: 0 0 8px rgba(245,146,12,.5);
+  transition: left .4s var(--ease);
 }

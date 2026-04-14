@@ -354,23 +354,25 @@ export default function Timeline() {
           </div>
         )}
 
-        {/* SVG arc */}
+        {/* SVG arc — fills the zone */}
         <div className="timeline-svg-wrap"
           style={{ transform:`scaleX(${zoom})`, transformOrigin:'left center', transition:'transform .3s var(--ease)' }}>
-          <svg id="csvg" className="timeline-svg" viewBox="0 0 900 200" preserveAspectRatio="none">
+          <svg id="csvg" className="timeline-svg"
+            viewBox="0 0 900 220"
+            style={{ width:'100%', height:'100%', minHeight:'180px', maxHeight:'360px' }}>
             {displayActs.map((act, i) => (
               <g key={i}>
-                <rect x={act.x} y={30} width={act.width} height={100} rx={3}
+                <rect x={act.x} y={28} width={act.width} height={120} rx={3}
                   fill={act.fill} stroke={act.stroke} strokeWidth={0.5}/>
-                <text x={act.labelX + 4} y={22} fill={act.labelFill}
-                  fontSize={11} fontFamily="IBM Plex Mono" letterSpacing={2} fontWeight={400}>
+                <text x={act.labelX + 6} y={20} fill={act.labelFill}
+                  fontSize={11} fontFamily="IBM Plex Mono" letterSpacing={2.5} fontWeight={400}>
                   {act.label}
                 </text>
               </g>
             ))}
-            <line x1={0} y1={80} x2={900} y2={80} stroke="#181410" strokeWidth={1.5}/>
+            <line x1={0} y1={88} x2={900} y2={88} stroke="rgba(255,255,255,0.04)" strokeWidth={1}/>
             {displayNodes.map((node) => (
-              <Node key={node.id} node={{ ...node, cy: 80 }}
+              <Node key={node.id} node={{ ...node, cy: 88 }}
                 selected={selectedNode?.id === node.id}
                 onClick={() => handleNodeClick(node)} />
             ))}

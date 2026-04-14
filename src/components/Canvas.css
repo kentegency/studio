@@ -32,12 +32,29 @@
 .canvas-main {
   grid-area: main;
   display: flex; flex-direction: column;
-  padding: 0;
   position: relative;
   overflow: hidden;
+  min-height: 0;
 }
-.canvas-main::-webkit-scrollbar { height: 3px; }
-.canvas-main::-webkit-scrollbar-thumb { background: var(--s3); }
+
+/* Ambient depth — radial gradients */
+.canvas-main::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 35% 55%, rgba(245,146,12,.018) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 35% at 5%  85%, rgba(30,138,138,.014) 0%, transparent 55%),
+    radial-gradient(ellipse 25% 30% at 95% 15%, rgba(96,20,8,.012)    0%, transparent 55%);
+}
+
+/* Dot grid — very subtle */
+.canvas-main::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.022) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 16px 16px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, black 10%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, black 10%, transparent 80%);
+}
 
 /* Ambient depth */
 .canvas-main::before {
