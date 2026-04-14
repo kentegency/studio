@@ -215,3 +215,18 @@ body {
   .sm-body         { padding: 24px 28px; gap: 20px; }
   .sm-arc-scene-name { font-size: 8px; }
 }
+
+/* ── SKELETON LOADING ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: .4; }
+  50%       { opacity: .8; }
+}
+.skeleton {
+  background: var(--s3);
+  border-radius: 2px;
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+.skeleton-text   { height: 12px; border-radius: 2px; }
+.skeleton-title  { height: 20px; border-radius: 2px; }
+.skeleton-block  { height: 48px; border-radius: 2px; }
+.skeleton-avatar { width: 32px; height: 32px; border-radius: 50%; }

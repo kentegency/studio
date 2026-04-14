@@ -50,10 +50,15 @@ export default function NodePane({ onUpload }) {
   const [saveIndicator,  setSaveIndicator]  = useState(false)
   const [confirmLock,    setConfirmLock]    = useState(false)
 
+  const [assetsLoading, setAssetsLoading] = useState(false)
+  const [notesLoading,  setNotesLoading]  = useState(false)
+
   useEffect(() => {
     if (selectedNode?.id) {
-      fetchAssets(selectedNode.id)
-      fetchNotes(selectedNode.id)
+      setAssetsLoading(true)
+      setNotesLoading(true)
+      fetchAssets(selectedNode.id).finally(() => setAssetsLoading(false))
+      fetchNotes(selectedNode.id).finally(() => setNotesLoading(false))
     }
   }, [selectedNode?.id])
 
@@ -168,13 +173,19 @@ export default function NodePane({ onUpload }) {
       {/* Assets */}
       <div className="sec">
         <div className="sec-l">
-          Assets — {assets.length}
+          Assets — {assetsLoading ? '…' : assets.length}
           <span onClick={() => openOverlay('compare')} data-hover>Compare</span>
         </div>
         <button className="upload-trigger" onClick={onUpload} data-hover>
           <UpIcon /><span>Upload files to this node</span>
         </button>
-        {assets.length > 0 ? (
+        {assetsLoading ? (
+          <div className="asset-grid" style={{ marginTop:'8px' }}>
+            {[1,2,3].map(i => (
+              <div key={i} className="at skeleton" style={{ height:'52px' }} />
+            ))}
+          </div>
+        ) : assets.length > 0 ? (
           <div className="asset-grid" style={{ marginTop:'8px' }}>
             {assets.slice(0,7).map((a, i) => {
               const type = getType(a)
@@ -251,7 +262,7 @@ export default function NodePane({ onUpload }) {
       {/* Notes */}
       <div className="notes-wrap">
         <div className="notes-header">
-          <span className="nh-l">Notes — {notes.length}</span>
+          <span className="nh-l">Notes — {notesLoading ? '…' : notes.length}</span>
           <div style={{ display:'flex', gap:'8px' }}>
             <span className="nh-a" style={{ color:'#8B5CF6', borderColor:'rgba(139,92,246,.2)', display:'flex', alignItems:'center', gap:'4px' }}
               onClick={() => window.__openVoice?.()}
@@ -279,7 +290,13 @@ export default function NodePane({ onUpload }) {
             </div>
           </div>
         )}
-        {notes.length > 0 ? (
+        {notesLoading ? (
+          <div style={{ display:'flex', flexDirection:'column', gap:'6px', padding:'8px 0' }}>
+            {[1,2].map(i => (
+              <div key={i} className="skeleton skeleton-block" style={{ opacity:.5 }} />
+            ))}
+          </div>
+        ) : notes.length > 0 ? (
           notes.map((n,i) => (
             <div key={n.id??i} className={`note ${n.resolved?'resolved':''}`}
               style={{ borderLeftColor:n.color??'#F5920C' }} data-hover>

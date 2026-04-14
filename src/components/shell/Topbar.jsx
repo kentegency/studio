@@ -65,6 +65,9 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
         <button className="tbb pr" onClick={() => onWrap?.()} data-hover>
           Wrap it
         </button>
+        <button className="tbb-palette" onClick={() => window.__openPalette?.()} data-hover title="Command palette (⌘K)">
+          ⌘K
+        </button>
       </div>
     </header>
   )

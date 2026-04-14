@@ -42,7 +42,21 @@ export default function App() {
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') closeAll()
-      // Cmd+Z / Ctrl+Z — global undo
+      // ? — keyboard shortcuts reference
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
+        const active = document.activeElement
+        if (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') {
+          e.preventDefault()
+          window.__openShortcuts?.()
+          return
+        }
+      }
+      // Cmd+K — command palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        window.__openPalette?.()
+        return
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
         e.preventDefault()
         const action = undoStack.pop()

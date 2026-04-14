@@ -79,3 +79,13 @@
   padding: 2px 8px; margin-left: 6px;
   font-family: var(--font-mono);
 }
+
+/* ⌘K palette trigger */
+.tbb-palette {
+  font-size: 11px; letter-spacing: .1em;
+  color: var(--ghost); font-family: var(--font-mono);
+  background: var(--s2); border: .5px solid var(--b);
+  border-radius: 3px; padding: 4px 8px;
+  transition: color var(--dur-mid) var(--ease), border-color var(--dur-mid) var(--ease);
+}
+.tbb-palette:hover { color: var(--dim); border-color: var(--b2); }

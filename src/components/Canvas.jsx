@@ -23,6 +23,8 @@ import './wrap/Wrap.css'
 import './settings/Settings.css'
 import './settings/Acts.css'
 import './contributor/Contributor.css'
+import CommandPalette from './palette/CommandPalette'
+import ShortcutsPanel from './palette/ShortcutsPanel'
 import ErrorBoundary from './ErrorBoundary'
 import { useUIStore, useProjectStore } from '../stores'
 import { supabase } from '../lib/supabase'
@@ -50,6 +52,8 @@ export default function Canvas() {
   const [showSettings, setShowSettings] = useState(false)
   const [showActs,     setShowActs]     = useState(false)
   const [showVoice,    setShowVoice]    = useState(false)
+  const [showPalette,   setShowPalette]   = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [notifCount,   setNotifCount]   = useState(0)
   const [viewerAsset,  setViewerAsset]  = useState(null)
   const [viewerList,   setViewerList]   = useState([])
@@ -62,10 +66,14 @@ export default function Canvas() {
       setViewerList(list)
       setViewerIdx(idx)
     }
-    window.__openVoice = () => setShowVoice(true)
+    window.__openVoice    = () => setShowVoice(true)
+    window.__openPalette  = () => setShowPalette(true)
+    window.__openShortcuts= () => setShowShortcuts(true)
     return () => {
       delete window.__openViewer
       delete window.__openVoice
+      delete window.__openPalette
+      delete window.__openShortcuts
     }
   }, [])
 
@@ -134,6 +142,17 @@ export default function Canvas() {
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
       {showActs     && <ActsPanel     onClose={() => setShowActs(false)} />}
       {showVoice    && <VoiceRecorder onClose={() => setShowVoice(false)} />}
+      {showPalette  && (
+        <CommandPalette
+          onClose={() => setShowPalette(false)}
+          onUpload={() => setShowUpload(true)}
+          onInvite={() => setShowInvite(true)}
+          onSettings={() => setShowSettings(true)}
+          onWrap={() => setShowWrap(true)}
+          onActs={() => setShowActs(true)}
+          onVoice={() => setShowVoice(true)} />
+      )}
+      {showShortcuts && <ShortcutsPanel onClose={() => setShowShortcuts(false)} />}
       {showUpload   && <Upload       onClose={() => setShowUpload(false)} />}
       {showPublish  && <PublishPanel onClose={() => setShowPublish(false)} />}
       {showNotifs   && <Notifications onClose={() => setShowNotifs(false)} />}
