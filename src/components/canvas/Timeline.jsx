@@ -274,7 +274,26 @@ export default function Timeline() {
         </div>
       </div>
 
-      {/* Add scene form */}
+      {/* Act stats strip */}
+      {currentProject && acts.length > 0 && (
+        <div className="tl-act-strip">
+          {acts.map((act, i) => {
+            const actNodes = nodes.filter(n => n.act_id === act.id)
+            const done     = actNodes.filter(n => n.status === 'approved' || n.status === 'locked').length
+            const pct      = actNodes.length > 0 ? Math.round((done / actNodes.length) * 100) : 0
+            const COLORS   = ['#1E8A8A','#F5920C','#B43C1E']
+            return (
+              <div key={act.id} className="tl-act-stat">
+                <div className="tas-dot" style={{ background: COLORS[i] ?? '#6A6258' }} />
+                <span className="tas-name">{act.name}</span>
+                <span className="tas-pct" style={{ color: pct === 100 ? '#4ADE80' : 'var(--mute)' }}>
+                  {pct}%
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
       {showNewNode && currentProject && (
         <form className="new-node-form" onSubmit={handleCreate}>
           <div className="nn-row">
@@ -318,20 +337,21 @@ export default function Timeline() {
 
       {/* SVG with zoom */}
       <div className="timeline-svg-wrap" style={{ transform:`scaleX(${zoom})`, transformOrigin:'left center', transition:'transform .3s var(--ease)' }}>
-        <svg id="csvg" className="timeline-svg" viewBox="0 0 900 130" preserveAspectRatio="none">
+        <svg id="csvg" className="timeline-svg" viewBox="0 0 900 160" preserveAspectRatio="none">
           {displayActs.map((act, i) => (
             <g key={i}>
-              <rect x={act.x} y={26} width={act.width} height={54} rx={3}
+              <rect x={act.x} y={20} width={act.width} height={72} rx={3}
                 fill={act.fill} stroke={act.stroke} strokeWidth={0.5}/>
-              <text x={act.labelX} y={20} fill={act.labelFill}
-                fontSize={11} fontFamily="IBM Plex Mono" letterSpacing={2} fontWeight={400}>
+              {/* Act label */}
+              <text x={act.labelX + 4} y={15} fill={act.labelFill}
+                fontSize={10} fontFamily="IBM Plex Mono" letterSpacing={1.5} fontWeight={400}>
                 {act.label}
               </text>
             </g>
           ))}
-          <line x1={0} y1={53} x2={900} y2={53} stroke="#181410" strokeWidth={1.5}/>
+          <line x1={0} y1={56} x2={900} y2={56} stroke="#181410" strokeWidth={1.5}/>
           {displayNodes.map((node) => (
-            <Node key={node.id} node={node}
+            <Node key={node.id} node={{ ...node, cy: 56 }}
               selected={selectedNode?.id === node.id}
               onClick={() => handleNodeClick(node)} />
           ))}
