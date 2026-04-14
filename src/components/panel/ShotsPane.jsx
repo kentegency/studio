@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import { useNodeStore, useProjectStore, useUIStore } from '../../stores'
+import { useNodeStore, useProjectStore, useUIStore, useAuthStore } from '../../stores'
 import { undoStack } from '../../lib/undo'
 import EmptyState from '../EmptyState'
 import '../EmptyState.css'
@@ -195,32 +195,66 @@ export function ShotsPane() {
   )
 }
 
-// ── TEAM PANE ─────────────────────────────────
-const TEAM = [
-  { initials:'EN', name:'E. Nii Ayi Solomon', role:'Creative Director · Owner', room:'Studio',  color:'#F5920C', bg:'rgba(245,146,12,0.1)' },
-  { initials:'KA', name:'Kwame Asante',        role:'Director of Photography',  room:'Meeting', color:'#1E8A8A', bg:'rgba(30,138,138,0.1)'  },
-  { initials:'AB', name:'Ama Boateng',          role:'Score Provider',           room:'Meeting', color:'#F4EFD8', bg:'rgba(244,239,216,0.08)' },
-  { initials:'GN', name:'George Nkrumah',       role:'Producer',                room:'Window',  color:'#4ADE80', bg:'rgba(74,222,128,0.08)'  },
-]
-
+// ── TEAM PANE — live from database ────────────
 export function TeamPane({ onInvite }) {
+  const { currentProject } = useProjectStore()
+  const { profile }        = useAuthStore()
+  const [contributors, setContributors] = useState([])
+
+  useEffect(() => {
+    if (!currentProject) return
+    supabase.from('contributors')
+      .select('*')
+      .eq('project_id', currentProject.id)
+      .then(({ data }) => setContributors(data ?? []))
+  }, [currentProject?.id])
+
+  const ROOM_COLOR = { studio:'#F5920C', meeting:'#1E8A8A', window:'#4ADE80' }
+
   return (
     <div className="node-pane">
       <div className="rph">
-        <div className="rp-ey">EBAN — Project</div>
+        <div className="rp-ey">{currentProject?.name ?? 'No project open'}</div>
         <div className="rp-ti">The Team</div>
       </div>
       <div className="team-list">
-        {TEAM.map((m, i) => (
-          <div key={i} className="team-member">
-            <div className="tm-av" style={{ background: m.color, color: '#040402' }}>{m.initials}</div>
-            <div className="tm-info">
-              <div className="tm-name">{m.name}</div>
-              <div className="tm-role">{m.role}</div>
+        {/* Always show yourself — the CD */}
+        {profile && (
+          <div className="team-member">
+            <div className="tm-av" style={{ background:'#F5920C', color:'#040402' }}>
+              {(profile.name ?? 'CD').slice(0,2).toUpperCase()}
             </div>
-            <span className="tm-badge" style={{ color: m.color, background: m.bg }}>{m.room}</span>
+            <div className="tm-info">
+              <div className="tm-name">{profile.name ?? 'Creative Director'}</div>
+              <div className="tm-role">Creative Director · Owner</div>
+            </div>
+            <span className="tm-badge" style={{ color:'#F5920C', background:'rgba(245,146,12,0.1)' }}>Studio</span>
+          </div>
+        )}
+
+        {/* Live contributors from database */}
+        {contributors.map(c => (
+          <div key={c.id} className="team-member">
+            <div className="tm-av" style={{ background: c.color ?? '#1E8A8A', color:'#040402' }}>
+              {c.name.slice(0,2).toUpperCase()}
+            </div>
+            <div className="tm-info">
+              <div className="tm-name">{c.name}</div>
+              <div className="tm-role">{c.role}</div>
+            </div>
+            <span className="tm-badge"
+              style={{ color: ROOM_COLOR[c.room] ?? '#1E8A8A', background:`${ROOM_COLOR[c.room] ?? '#1E8A8A'}18` }}>
+              {c.room.charAt(0).toUpperCase() + c.room.slice(1)}
+            </span>
           </div>
         ))}
+
+        {contributors.length === 0 && (
+          <div style={{ padding:'12px 0 8px', fontSize:'12px', color:'var(--ghost)', letterSpacing:'.08em' }}>
+            No contributors yet. Invite your team below.
+          </div>
+        )}
+
         <div className="team-member invite" data-hover onClick={() => onInvite?.()}>
           <div className="tm-av invite-av">+</div>
           <div className="tm-info">

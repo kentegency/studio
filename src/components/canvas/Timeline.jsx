@@ -67,16 +67,16 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
       {/* Ambient glow */}
       <div className="sm-glow" style={{ background:`radial-gradient(ellipse, ${accent}14 0%, transparent 65%)` }} />
 
-      {/* Back button */}
+      {/* Back button — absolute top left */}
       <button className="sm-back" onClick={onClose}>
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
         Arc view
       </button>
 
-      {/* Keyboard hint */}
-      <div className="sm-kb">← → navigate · Esc back to arc</div>
+      {/* Top spacer — clears the back button */}
+      <div style={{ height: 44, flexShrink: 0 }} />
 
-      {/* Main layout */}
+      {/* Main layout — flex: 1 so it fills remaining space */}
       <div className="sm-layout">
 
         {/* Prev node */}
@@ -147,11 +147,12 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
           </>}
         </button>
       </div>
+
+      {/* Keyboard hint — in flow at bottom */}
+      <div className="sm-kb">← → navigate · Esc back to arc</div>
     </div>
   )
-}
-
-// ── MAIN TIMELINE ─────────────────────────────────────────────
+} 
 export default function Timeline() {
   const { selectedNode, selectNode, nodes, createNode } = useNodeStore()
   const { currentProject, acts } = useProjectStore()

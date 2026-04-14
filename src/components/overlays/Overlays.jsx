@@ -109,6 +109,20 @@ const getActColor = (idx) => {
 
 export function StageOverlay() {
   const { closeOverlay } = useUIStore()
+  const { nodes }        = useNodeStore()
+  const { currentProject } = useProjectStore()
+
+  // Use real nodes if available, else fall back to demo EBAN nodes
+  const stageNodes = (currentProject && nodes.length > 0)
+    ? [...nodes]
+        .sort((a,b) => (a.position??0)-(b.position??0))
+        .map(n => ({
+          id:    n.id,
+          title: n.name.toUpperCase(),
+          act:   n.act ?? `${n.type ?? 'Scene'} · ${Math.round((n.position??0)*100)}%`,
+          desc:  n.description ?? '',
+        }))
+    : STAGE_NODES
   const [idx,       setIdx]      = useState(0)
   const [animKey,   setAnimKey]  = useState(0)
   const [showLine,  setShowLine] = useState(false)
@@ -116,13 +130,13 @@ export function StageOverlay() {
   const hideTimer   = useRef(null)
   const touchStartX = useRef(null)
 
-  const current   = STAGE_NODES[idx]
+  const current   = stageNodes[idx]
   const accent    = getActColor(idx)
   const lines     = current.title.split('\n')
   const isMulti   = lines.length > 1
 
   const advance = useCallback(() => {
-    if (idx < STAGE_NODES.length - 1) { setIdx(i => i+1); setAnimKey(k => k+1) }
+    if (idx < stageNodes.length - 1) { setIdx(i => i+1); setAnimKey(k => k+1) }
   }, [idx])
 
   const back = useCallback(() => {
@@ -172,7 +186,7 @@ export function StageOverlay() {
   const onMouseMove = () => flashUI()
 
   // Progress bar color
-  const progress = (idx / (STAGE_NODES.length - 1)) * 100
+  const progress = (idx / (stageNodes.length - 1)) * 100
 
   return (
     <div className="stage-full"
@@ -208,8 +222,8 @@ export function StageOverlay() {
           <rect x="308" y="10" width="284" height="28" rx="2" fill="rgba(245,146,12,.06)"  stroke="rgba(245,146,12,.16)"  strokeWidth="0.5"/>
           <rect x="600" y="10" width="300" height="28" rx="2" fill="rgba(180,60,30,.07)"   stroke="rgba(180,60,30,.18)"   strokeWidth="0.5"/>
           <line x1="0" y1="24" x2="900" y2="24" stroke="#181410" strokeWidth="1.5"/>
-          {STAGE_NODES.map((n, i) => {
-            const cx = (i / (STAGE_NODES.length-1)) * 860 + 20
+          {stageNodes.map((n, i) => {
+            const cx = (i / (stageNodes.length-1)) * 860 + 20
             const isActive = i === idx
             const ac = getActColor(i)
             return (
@@ -228,11 +242,11 @@ export function StageOverlay() {
       {/* BOTTOM BAR — fades in/out */}
       <div className={`sf-bar ${showUI ? 'visible' : ''}`}>
         <div className="sfb-left">
-          <span className="sfb-count">{idx+1} / {STAGE_NODES.length}</span>
+          <span className="sfb-count">{idx+1} / {stageNodes.length}</span>
           <span className="sfb-name">{current.title.replace('\n',' ')}</span>
         </div>
         <div className="sfb-dots">
-          {STAGE_NODES.map((_,i) => (
+          {stageNodes.map((_,i) => (
             <div key={i}
               className={`sfb-dot ${i===idx?'on':''} ${i<idx?'done':''}`}
               style={i===idx ? { background: accent } : {}}
@@ -247,7 +261,7 @@ export function StageOverlay() {
           </button>
           <button className="sfb-btn advance" onClick={(e) => { e.stopPropagation(); advance() }}
             style={{ borderColor:accent, color:accent }} data-hover>
-            {idx < STAGE_NODES.length-1 ? 'Advance →' : 'End →'}
+            {idx < stageNodes.length-1 ? 'Advance →' : 'End →'}
           </button>
         </div>
       </div>
