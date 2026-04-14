@@ -10,28 +10,29 @@
 
 /* Header */
 .rph {
-  padding: 17px 17px 13px;
+  padding: 20px 17px 16px;
   border-bottom: .5px solid var(--b);
   position: relative; flex-shrink: 0;
 }
 .rph::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, var(--orange), transparent 52%);
-  opacity: .18;
+  background: linear-gradient(90deg, var(--project-accent, var(--orange)), transparent 52%);
+  opacity: .22;
 }
-.rp-ey  { font-size: 11.5px; letter-spacing: .3em; color: var(--dim); text-transform: uppercase; margin-bottom: 7px; }
-.rp-ti  { font-family: var(--font-display); font-size: 23px; color: var(--cream); letter-spacing: .04em; line-height: 1; }
-.rp-st  { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; }
+.rp-ey  { font-size: 11px; letter-spacing: .3em; color: var(--mute); text-transform: uppercase; margin-bottom: 6px; font-family: var(--font-mono); }
+.rp-ti  { font-family: var(--font-display); font-size: 22px; color: var(--cream); letter-spacing: .04em; line-height: 1; }
+.rp-st  { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; font-family: var(--font-ui); }
 .rp-dot { width: 5px; height: 5px; border-radius: 50%; animation: pulse-dot 2.2s ease infinite; }
 
 /* ── NODE PANE ── */
-.sec { padding: 12px 17px; border-bottom: .5px solid var(--b); flex-shrink: 0; }
+.sec { padding: 16px 17px; border-bottom: .5px solid var(--b); flex-shrink: 0; }
 .sec-l {
-  font-size: 11.5px; letter-spacing: .24em; color: var(--dim);
-  text-transform: uppercase; margin-bottom: 9px;
+  font-size: 11px; letter-spacing: .22em; color: var(--dim);
+  text-transform: uppercase; margin-bottom: 10px;
   display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-ui); font-weight: 500;
 }
-.sec-l span { color: var(--orange); font-size: 11px; transition: opacity var(--dur-fast); }
+.sec-l span { color: var(--orange); font-size: 11px; transition: opacity var(--dur-fast); letter-spacing: .14em; }
 .sec-l span:hover { opacity: .65; }
 
 .asset-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; }

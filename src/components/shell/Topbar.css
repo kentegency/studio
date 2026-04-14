@@ -45,3 +45,35 @@
 .tbb.act   { color: var(--teal);   border-color: rgba(30,138,138,.22); }
 .tbb.pr    { color: var(--orange); border-color: rgba(245,146,12,.22); }
 .tbb.pr:hover { background: rgba(245,146,12,.06); }
+
+/* VIEW DROPDOWN */
+.tb-view-wrap { position: relative; }
+.tb-view-menu {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--s1); border: .5px solid var(--b2);
+  border-radius: 3px; overflow: hidden;
+  min-width: 160px; z-index: 1000;
+  animation: modalIn var(--dur-mid) var(--ease-out) forwards;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.tb-vm-item {
+  display: flex; flex-direction: column; gap: 2px;
+  width: 100%; padding: 10px 14px; text-align: left;
+  background: none; border: none;
+  border-bottom: .5px solid var(--b);
+  transition: background var(--dur-fast) var(--ease);
+  font-family: var(--font-ui);
+}
+.tb-vm-item:last-child { border-bottom: none; }
+.tb-vm-item:hover { background: var(--s2); }
+.tb-vm-item { font-size: 13px; color: var(--dim); font-weight: 400; }
+.tb-vm-item span { font-size: 11px; color: var(--ghost); letter-spacing: .06em; font-weight: 400; }
+
+/* Room badge */
+.tb-room-badge {
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--mute); background: var(--s2);
+  border: .5px solid var(--b); border-radius: 2px;
+  padding: 2px 7px; margin-left: 8px;
+  font-family: var(--font-mono);
+}

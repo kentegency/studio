@@ -251,50 +251,66 @@ export default function Timeline() {
           onSelectNode={handleSceneSelect} />
       )}
 
-      {/* Toolbar */}
-      <div className="timeline-toolbar">
-        <div className="tl-project-name">
-          {currentProject
-            ? <><span className="tl-arrow">▸</span>{currentProject.name}</>
-            : <span className="tl-demo">Demo — open a project to see your timeline</span>}
-        </div>
-        <div className="tl-controls">
-          <div className="tl-zoom-group">
-            <button className="tl-zoom-btn" onClick={() => setZoom(z => Math.max(z - 0.3, 0.5))} title="Zoom out (X)">−</button>
-            <span className="tl-zoom-val">{Math.round(zoom * 100)}%</span>
-            <button className="tl-zoom-btn" onClick={() => setZoom(z => Math.min(z + 0.3, 2.5))} title="Zoom in (Z)">+</button>
-            <button className="tl-zoom-btn tl-fit-btn" onClick={() => setZoom(1)} title="Fit to arc (F)">
-              <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            </button>
-          </div>
-          {currentProject && (
-            <button className="add-node-btn" onClick={() => setShowNewNode(s => !s)}>
-              + Add Scene
-            </button>
+      {/* ── TOP ZONE — project status header ── */}
+      <div className="tl-header">
+        <div className="tl-header-left">
+          {currentProject ? (
+            <>
+              <div className="tl-proj-name">
+                <span className="tl-arrow">▸</span>
+                {currentProject.name}
+              </div>
+              {currentProject.logline && (
+                <div className="tl-proj-logline">{currentProject.logline}</div>
+              )}
+            </>
+          ) : (
+            <span className="tl-demo">Demo — open a project to see your timeline</span>
           )}
+        </div>
+
+        <div className="tl-header-right">
+          {/* Act completion stats */}
+          {currentProject && acts.length > 0 && (
+            <div className="tl-act-strip">
+              {acts.map((act, i) => {
+                const actNodes = nodes.filter(n => n.act_id === act.id)
+                const done = actNodes.filter(n => n.status === 'approved' || n.status === 'locked').length
+                const pct  = actNodes.length > 0 ? Math.round((done / actNodes.length) * 100) : 0
+                const COLORS = ['#1E8A8A','#F5920C','#B43C1E']
+                return (
+                  <div key={act.id} className="tl-act-stat">
+                    <div className="tas-dot" style={{ background: COLORS[i] ?? '#6A6258' }} />
+                    <span className="tas-name">{act.name}</span>
+                    <span className="tas-pct" style={{ color: pct === 100 ? '#4ADE80' : 'var(--mute)' }}>
+                      {pct}%
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Zoom + add controls */}
+          <div className="tl-controls">
+            <div className="tl-zoom-group">
+              <button className="tl-zoom-btn" onClick={() => setZoom(z => Math.max(z - 0.3, 0.5))} title="Zoom out (X)">−</button>
+              <span className="tl-zoom-val">{Math.round(zoom * 100)}%</span>
+              <button className="tl-zoom-btn" onClick={() => setZoom(z => Math.min(z + 0.3, 2.5))} title="Zoom in (Z)">+</button>
+              <button className="tl-zoom-btn tl-fit-btn" onClick={() => setZoom(1)} title="Fit to arc (F)">
+                <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+            </div>
+            {currentProject && (
+              <button className="add-node-btn" onClick={() => setShowNewNode(s => !s)}>
+                + Add Scene
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Act stats strip */}
-      {currentProject && acts.length > 0 && (
-        <div className="tl-act-strip">
-          {acts.map((act, i) => {
-            const actNodes = nodes.filter(n => n.act_id === act.id)
-            const done     = actNodes.filter(n => n.status === 'approved' || n.status === 'locked').length
-            const pct      = actNodes.length > 0 ? Math.round((done / actNodes.length) * 100) : 0
-            const COLORS   = ['#1E8A8A','#F5920C','#B43C1E']
-            return (
-              <div key={act.id} className="tl-act-stat">
-                <div className="tas-dot" style={{ background: COLORS[i] ?? '#6A6258' }} />
-                <span className="tas-name">{act.name}</span>
-                <span className="tas-pct" style={{ color: pct === 100 ? '#4ADE80' : 'var(--mute)' }}>
-                  {pct}%
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      {/* Add scene form */}
       {showNewNode && currentProject && (
         <form className="new-node-form" onSubmit={handleCreate}>
           <div className="nn-row">
@@ -324,51 +340,51 @@ export default function Timeline() {
         </form>
       )}
 
-      {/* Empty state */}
-      {currentProject && !hasRealNodes && !showNewNode && (
-        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', zIndex:2, pointerEvents:'all' }}>
-          <EmptyState
-            icon={<svg viewBox="0 0 24 24" style={{width:'16px',height:'16px',stroke:'currentColor',fill:'none',strokeWidth:'1.5'}}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
-            title="No scenes yet"
-            body="Add your first scene to begin building your timeline."
-            action="Add first scene →"
-            onAction={() => setShowNewNode(true)} />
-        </div>
-      )}
+      {/* ── MIDDLE ZONE — arc fills the space ── */}
+      <div className="tl-arc-zone">
+        {/* Empty state */}
+        {currentProject && !hasRealNodes && !showNewNode && (
+          <div className="tl-empty-state">
+            <EmptyState
+              icon={<svg viewBox="0 0 24 24" style={{width:'16px',height:'16px',stroke:'currentColor',fill:'none',strokeWidth:'1.5'}}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
+              title="No scenes yet"
+              body="Add your first scene to begin building your timeline."
+              action="Add first scene →"
+              onAction={() => setShowNewNode(true)} />
+          </div>
+        )}
 
-      {/* SVG with zoom */}
-      <div className="timeline-svg-wrap" style={{ transform:`scaleX(${zoom})`, transformOrigin:'left center', transition:'transform .3s var(--ease)' }}>
-        <svg id="csvg" className="timeline-svg" viewBox="0 0 900 160" preserveAspectRatio="none">
-          {displayActs.map((act, i) => (
-            <g key={i}>
-              <rect x={act.x} y={20} width={act.width} height={72} rx={3}
-                fill={act.fill} stroke={act.stroke} strokeWidth={0.5}/>
-              {/* Act label */}
-              <text x={act.labelX + 4} y={15} fill={act.labelFill}
-                fontSize={10} fontFamily="IBM Plex Mono" letterSpacing={1.5} fontWeight={400}>
-                {act.label}
-              </text>
-            </g>
-          ))}
-          <line x1={0} y1={56} x2={900} y2={56} stroke="#181410" strokeWidth={1.5}/>
-          {displayNodes.map((node) => (
-            <Node key={node.id} node={{ ...node, cy: 56 }}
-              selected={selectedNode?.id === node.id}
-              onClick={() => handleNodeClick(node)} />
-          ))}
-        </svg>
+        {/* SVG arc */}
+        <div className="timeline-svg-wrap"
+          style={{ transform:`scaleX(${zoom})`, transformOrigin:'left center', transition:'transform .3s var(--ease)' }}>
+          <svg id="csvg" className="timeline-svg" viewBox="0 0 900 200" preserveAspectRatio="none">
+            {displayActs.map((act, i) => (
+              <g key={i}>
+                <rect x={act.x} y={30} width={act.width} height={100} rx={3}
+                  fill={act.fill} stroke={act.stroke} strokeWidth={0.5}/>
+                <text x={act.labelX + 4} y={22} fill={act.labelFill}
+                  fontSize={11} fontFamily="IBM Plex Mono" letterSpacing={2} fontWeight={400}>
+                  {act.label}
+                </text>
+              </g>
+            ))}
+            <line x1={0} y1={80} x2={900} y2={80} stroke="#181410" strokeWidth={1.5}/>
+            {displayNodes.map((node) => (
+              <Node key={node.id} node={{ ...node, cy: 80 }}
+                selected={selectedNode?.id === node.id}
+                onClick={() => handleNodeClick(node)} />
+            ))}
+          </svg>
+        </div>
       </div>
 
-      {/* Keyboard shortcut strip — first visit only */}
+      {/* Keyboard hint — first visit only */}
       {!localStorage.getItem('kb_hint_seen') && (
         <div className="tl-kb-strip"
           onAnimationEnd={() => localStorage.setItem('kb_hint_seen', '1')}>
-          <span>Z zoom in</span>
-          <span>·</span>
-          <span>X zoom out</span>
-          <span>·</span>
-          <span>F fit arc</span>
-          <span>·</span>
+          <span>Z zoom in</span><span>·</span>
+          <span>X zoom out</span><span>·</span>
+          <span>F fit arc</span><span>·</span>
           <span>click node to open scene</span>
         </div>
       )}

@@ -1,85 +1,16 @@
+/* QUICK CAPTURE WRAP */
 .qc-wrap {
   position: fixed;
-  bottom: 46px;
-  /* Always 12px from the right panel edge, which is var(--rp-w) from right */
-  right: calc(var(--rp-w) + 14px);
+  bottom: 24px;
+  right: calc(var(--rp-w) + 16px);
   z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
-.qc-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--orange); border: none;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 22px rgba(245,146,12,.32);
-  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease);
-}
-.qc-btn:hover { transform: scale(1.1); box-shadow: 0 0 32px rgba(245,146,12,.48); }
-.qc-btn svg   { width: 14px; height: 14px; stroke: #040402; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-.qc-panel {
-  position: absolute; bottom: 48px; right: 0; width: 272px;
-  background: var(--s2); border: .5px solid var(--b2); border-radius: 3px;
-  overflow: hidden;
-  opacity: 0; transform: translateY(10px) scale(.96); pointer-events: none;
-  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease-out);
-}
-.qc-panel.on { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
-
-.qcp-head {
-  padding: 10px 14px; border-bottom: .5px solid var(--b);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.qcp-title { font-size: 11.5px; letter-spacing: .28em; color: var(--orange); text-transform: uppercase; }
-.qcp-close { background: none; border: none; font-size: 13px; color: var(--mute); transition: color var(--dur-fast); }
-.qcp-close:hover { color: var(--cream); }
-
-.qcp-modes { display: flex; gap: 2px; padding: 8px 12px; border-bottom: .5px solid var(--b); }
-.qcp-mode {
-  flex: 1; font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
-  padding: 5px 0; text-align: center; border-radius: 2px;
-  background: transparent; color: var(--mute); border: .5px solid transparent;
-  font-family: var(--font-ui);
-  transition: all var(--dur-mid) var(--ease);
-}
-.qcp-mode:hover { color: var(--dim); }
-.qcp-mode.on    { color: var(--cream); background: rgba(255,255,255,.04); border-color: var(--b2); }
-
-.qcp-body { padding: 10px 12px; }
-.qcp-input {
-  width: 100%; background: transparent; border: none; outline: none;
-  font-family: var(--font-ui); font-size: 10px;
-  color: var(--cream); line-height: 1.65; resize: none; min-height: 72px;
-  caret-color: var(--orange);
-}
-.qcp-input::placeholder { color: var(--ghost); }
-
-.qcp-colors { display: flex; gap: 5px; margin-top: 8px; }
-.qcp-cs {
-  width: 14px; height: 14px; border-radius: 2px;
-  border: .5px solid rgba(255,255,255,.06);
-  transition: transform var(--dur-fast) var(--ease);
-}
-.qcp-cs:hover, .qcp-cs.on { transform: scale(1.3); border-color: rgba(255,255,255,.25); }
-
-.qcp-foot {
-  padding: 8px 12px; border-top: .5px solid var(--b);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.qcp-tag  { font-size: 11.5px; letter-spacing: .1em; color: var(--mute); }
-.qcp-send {
-  font-size: 11.5px; letter-spacing: .18em; padding: 5px 12px;
-  border-radius: 2px; text-transform: uppercase;
-  color: var(--orange); border: .5px solid rgba(245,146,12,.22);
-  background: transparent; font-family: var(--font-ui);
-  transition: background var(--dur-mid) var(--ease);
-}
-.qcp-send:hover { background: rgba(245,146,12,.06); }
-
-/* FAB GROUP */
-.qc-fab-group {
-  position: fixed; bottom: 24px; right: 24px;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  z-index: 200;
-}
+/* FAB BUTTONS */
 .qc-fab-secondary {
   width: 34px; height: 34px; border-radius: 50%;
   background: var(--s2); border: .5px solid var(--b2);
@@ -90,17 +21,92 @@
 .qc-fab-secondary:hover { background: var(--s3); border-color: rgba(139,92,246,.3); }
 .qc-fab-secondary:hover svg { stroke: #8B5CF6; }
 
-/* VOICE BUTTON IN FOOTER */
+.qc-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--orange); border: none;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 24px rgba(245,146,12,.28);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease);
+}
+.qc-btn:hover { transform: scale(1.08); box-shadow: 0 0 36px rgba(245,146,12,.44); }
+.qc-btn svg   { width: 16px; height: 16px; stroke: #040402; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* PANEL — wider, better spaced */
+.qc-panel {
+  position: absolute; bottom: 56px; right: 0;
+  width: 320px;                        /* was 272px — now 320px */
+  background: var(--s2); border: .5px solid var(--b2); border-radius: 3px;
+  overflow: hidden;
+  opacity: 0; transform: translateY(10px) scale(.96); pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease-out);
+}
+.qc-panel.on { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+
+/* HEADER */
+.qcp-head {
+  padding: 11px 16px; border-bottom: .5px solid var(--b);
+  display: flex; align-items: center; gap: 8px;
+  position: relative;
+}
+.qcp-head::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, var(--orange), transparent 50%); opacity:.2;
+}
+.qcp-title {
+  font-size: 11px; letter-spacing: .28em; color: var(--orange);
+  text-transform: uppercase; font-family: var(--font-mono); flex-shrink: 0;
+}
+.qcp-scene {
+  font-size: 11px; color: var(--ghost); letter-spacing: .06em;
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.qcp-close {
+  background: none; border: none; font-size: 14px; color: var(--mute);
+  transition: color var(--dur-fast); flex-shrink: 0;
+}
+.qcp-close:hover { color: var(--cream); }
+
+/* BODY */
+.qcp-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.qcp-input {
+  width: 100%; background: transparent; border: none; outline: none;
+  font-family: var(--font-ui); font-size: 13px;
+  color: var(--cream); line-height: 1.65; resize: none; min-height: 80px;
+  caret-color: var(--orange);
+}
+.qcp-input::placeholder { color: var(--ghost); font-size: 13px; }
+
+/* FOOTER — stacked: colours on top, actions below */
+.qcp-footer {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 16px 12px; border-top: .5px solid var(--b);
+}
+.qcp-colors { display: flex; gap: 6px; align-items: center; }
+.qcp-cs {
+  width: 16px; height: 16px; border-radius: 3px;
+  border: 1.5px solid transparent;
+  transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast);
+}
+.qcp-cs:hover { transform: scale(1.2); }
+.qcp-cs.on    { transform: scale(1.25); border-color: rgba(255,255,255,.5); }
+
+.qcp-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
 .qcp-voice-btn {
   display: flex; align-items: center; gap: 5px;
-  font-size: 11.5px; letter-spacing: .12em; padding: 5px 10px;
+  font-size: 11.5px; letter-spacing: .12em; padding: 6px 12px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   transition: all var(--dur-mid) var(--ease);
 }
-.qcp-voice-btn:hover { color: #8B5CF6; border-color: rgba(139,92,246,.25); }
+.qcp-voice-btn:hover { color: #8B5CF6; border-color: rgba(139,92,246,.3); }
 
-.qcp-footer { display: flex; justify-content: space-between; align-items: center; }
-.qcp-actions { display: flex; gap: 6px; align-items: center; }
-.qcp-scene { font-size: 11px; color: var(--ghost); letter-spacing: .08em; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qcp-send {
+  font-size: 11.5px; letter-spacing: .18em; padding: 6px 16px;
+  border-radius: 2px; text-transform: uppercase;
+  color: var(--orange); border: .5px solid rgba(245,146,12,.28);
+  background: transparent; font-family: var(--font-mono);
+  transition: background var(--dur-mid) var(--ease);
+}
+.qcp-send:hover:not(:disabled) { background: rgba(245,146,12,.07); }
+.qcp-send:disabled { opacity: .35; }

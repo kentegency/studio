@@ -32,7 +32,7 @@ const PdfIcon  = () => <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v1
 const VidIcon  = () => <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
 const AudIcon  = () => <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
 const DocIcon  = () => <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-const AddIcon  = () => <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+const MicIcon  = () => <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:'1.5',strokeLinecap:'round',flexShrink:0}}><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
 
 export default function NodePane({ onUpload }) {
   const { selectedNode, selectNode, updateNode } = useNodeStore()
@@ -45,10 +45,7 @@ export default function NodePane({ onUpload }) {
   const [newNote,      setNewNote]      = useState('')
   const [noteColor,    setNoteColor]    = useState('#F5920C')
   const [addingNote,   setAddingNote]   = useState(false)
-  const [showWindow,   setShowWindow]   = useState(false)
-  const [shots,        setShots]        = useState([])
-  const [addingShot,   setAddingShot]   = useState(false)
-  const [newShot,      setNewShot]      = useState({ name:'', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05' })
+  const [showWindow,     setShowWindow]     = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [saveIndicator,  setSaveIndicator]  = useState(false)
   const [confirmLock,    setConfirmLock]    = useState(false)
@@ -57,14 +54,8 @@ export default function NodePane({ onUpload }) {
     if (selectedNode?.id) {
       fetchAssets(selectedNode.id)
       fetchNotes(selectedNode.id)
-      fetchShots(selectedNode.id)
     }
   }, [selectedNode?.id])
-
-  const fetchShots = async (nodeId) => {
-    const { data } = await supabase.from('shots').select('*').eq('node_id', nodeId).order('number')
-    setShots(data ?? [])
-  }
 
   const showSaved = () => { setSaveIndicator(true); setTimeout(() => setSaveIndicator(false), 2000) }
 
@@ -137,30 +128,6 @@ export default function NodePane({ onUpload }) {
       })
     }
     showToast('Note saved.', 'var(--orange)', 5000)
-  }
-
-  const saveShot = async (e) => {
-    e.preventDefault()
-    if (!selectedNode?.id || !currentProject?.id) return
-    const num = shots.length + 1
-    const { data, error } = await supabase.from('shots').insert({
-      node_id:selectedNode.id, project_id:currentProject.id,
-      number:num, name:newShot.name, shot_type:newShot.shot_type,
-      shot_kind:newShot.shot_kind, duration:newShot.duration,
-      status:'pending', order_index:num,
-    }).select().single()
-    if (!error && data) {
-      setShots(s => [...s, data])
-      setNewShot({ name:'', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05' })
-      setAddingShot(false); showSaved(); showToast(`Shot ${num} added.`)
-    }
-  }
-
-  const toggleShotStatus = async (shot) => {
-    const next = shot.status==='done'?'pending':shot.status==='pending'?'progress':'done'
-    await supabase.from('shots').update({ status:next }).eq('id', shot.id)
-    setShots(s => s.map(sh => sh.id===shot.id ? {...sh,status:next} : sh))
-    showSaved()
   }
 
   const windowUrl = currentProject?.window_token
@@ -259,68 +226,6 @@ export default function NodePane({ onUpload }) {
         )}
       </div>
 
-      {/* Shot List */}
-      <div className="sec">
-        <div className="sec-l">
-          Shot List — {shots.length}
-          <span onClick={() => setAddingShot(s => !s)} data-hover>+ Add shot</span>
-        </div>
-        {addingShot && (
-          <form className="add-shot-form" onSubmit={saveShot}>
-            <input className="nn-input" placeholder="Shot description" required
-              value={newShot.name} onChange={e => setNewShot(s => ({ ...s, name:e.target.value }))} autoFocus />
-            <div className="shot-form-row">
-              <select className="nn-select" value={newShot.shot_type}
-                onChange={e => setNewShot(s => ({ ...s, shot_type:e.target.value }))}>
-                {['ECU','CU','MCU','MS','MWS','WS','EWS'].map(t => <option key={t}>{t}</option>)}
-              </select>
-              <select className="nn-select" value={newShot.shot_kind}
-                onChange={e => setNewShot(s => ({ ...s, shot_kind:e.target.value }))}>
-                {['Drama enactment','Archival','Candid','Staged','Animation','Interview'].map(k => <option key={k}>{k}</option>)}
-              </select>
-              <input className="nn-input" style={{ width:'70px',flexShrink:0 }}
-                placeholder="00:05" value={newShot.duration}
-                onChange={e => setNewShot(s => ({ ...s, duration:e.target.value }))} />
-            </div>
-            <div className="nn-foot">
-              <button type="button" className="nn-cancel" onClick={() => setAddingShot(false)}>Cancel</button>
-              <button type="submit" className="nn-save">Add shot →</button>
-            </div>
-          </form>
-        )}
-        {shots.length > 0 ? (
-          <div className="shot-list-mini">
-            {shots.map(sh => {
-              const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2720' }
-              const dotColor = SH_COLOR[sh.status] ?? '#2A2720'
-              return (
-                <div key={sh.id} className="shm"
-                  style={{ borderLeftColor: dotColor }}
-                  data-hover onClick={() => toggleShotStatus(sh)}
-                  title={`${sh.name} — ${sh.shot_type} · ${sh.shot_kind} · ${sh.duration} — click to advance status`}>
-                  <span className="shm-n">{String(sh.number).padStart(2,'0')}</span>
-                  <div className="shm-info">
-                    <div className="shm-name">{sh.name}</div>
-                    <div className="shm-meta">
-                      <span className="shm-type">{sh.shot_type}</span>
-                      <span className="shm-kind">{sh.shot_kind}</span>
-                      <span className="shm-dur">{sh.duration}</span>
-                    </div>
-                  </div>
-                  <div className="shm-dot" style={{ background: dotColor }} />
-                </div>
-              )
-            })}
-          </div>
-        ) : !addingShot && (
-          <EmptyState compact icon={<ShotIcon />}
-            title="No shots yet"
-            body="Build your shot list for this scene."
-            action="Add first shot →"
-            onAction={() => setAddingShot(true)} />
-        )}
-      </div>
-
       {/* Window Link */}
       {currentProject && (
         <div className="sec" style={{ flexShrink:0 }}>
@@ -348,10 +253,10 @@ export default function NodePane({ onUpload }) {
         <div className="notes-header">
           <span className="nh-l">Notes — {notes.length}</span>
           <div style={{ display:'flex', gap:'8px' }}>
-            <span className="nh-a" style={{ color:'#8B5CF6', borderColor:'rgba(139,92,246,.2)' }}
+            <span className="nh-a" style={{ color:'#8B5CF6', borderColor:'rgba(139,92,246,.2)', display:'flex', alignItems:'center', gap:'4px' }}
               onClick={() => window.__openVoice?.()}
               data-hover title="Voice note">
-              🎙
+              <MicIcon />
             </span>
             <span className="nh-a" onClick={() => setAddingNote(s => !s)} data-hover>
               {addingNote ? 'Cancel' : '+ Add'}
