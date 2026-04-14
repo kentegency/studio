@@ -84,15 +84,15 @@ export function CompareOverlay() {
 
 // ── STAGE — full viewport, all devices ────────
 const STAGE_NODES = [
-  { id:0, title:'OPENING\nSEQUENCE',   act:'Act I — Scene 01', desc:'The invisible war begins before anyone understands what war is. Every tap. Every click. Every transfer — an act of trust.' },
-  { id:1, title:'PIONEERS',             act:'Act I — Scene 02', desc:'Before cybersecurity had a name, a small group of people in Ghana saw the risk coming. They built protection with nothing but intuition and belief.' },
-  { id:2, title:'FIRST\nCRACKS',        act:'Act I — Scene 03', desc:'The earliest digital crimes were small. A forged email. A manipulated record. A misplaced trust. They did not always look like crime.' },
-  { id:3, title:'BATTLES &\nBREACHES',  act:'Act II — Scene 01', desc:'Today Ghana is more connected than ever before. Money moves in seconds. But convenience has a cost.' },
-  { id:4, title:'FRAUD\nVECTORS',       act:'Act II — Scene 02', desc:'Today\'s fraud rarely looks like crime. It sounds polite. Professional. Convincing. Social engineering has become the most effective weapon.' },
-  { id:5, title:'THE HUMAN\nCOST',      act:'Act II — Scene 03', desc:'Cybercrime does not only steal money. It steals peace of mind. It makes the heart bleed and can shatter confidence and dignity.' },
-  { id:6, title:'RESILIENCE',           act:'Act III — Scene 01', desc:'Every moment of crisis carries a choice — to retreat, or to respond. For Ghana, the choice is clear.' },
-  { id:7, title:'YOUTH\nDEFENDERS',     act:'Act III — Scene 02', desc:'Ghana\'s greatest cybersecurity asset is not software. It is its people. The next generation can turn risk into resilience.' },
-  { id:8, title:'THE FUTURE\nARC',      act:'Act III — Scene 03', desc:'The future will bring new threats, new technologies. But also new choices — to learn, to adapt, and to protect.' },
+  { id:0, title:'OPENING\nSEQUENCE',   act:'Act I — Past · Scene 01',    desc:'The invisible war begins before anyone understands what war is. Every tap. Every click. Every transfer — an act of trust in a system most people cannot see.' },
+  { id:1, title:'PIONEERS',            act:'Act I — Past · Scene 02',    desc:'Before cybersecurity had a name in Ghana, a small group of people saw the risk coming. They built protection with nothing but intuition and belief.' },
+  { id:2, title:'FIRST\nCRACKS',       act:'Act I — Past · Scene 03',    desc:'The earliest digital crimes were small. A forged email. A manipulated record. A misplaced trust. They did not always look like crime.' },
+  { id:3, title:'BATTLES &\nBREACHES', act:'Act II — Present · Scene 01', desc:'Ghana is more connected than ever. Money moves in seconds. But connectivity has a cost — and the scale of attacks has grown with it.' },
+  { id:4, title:'FRAUD\nVECTORS',      act:'Act II — Present · Scene 02', desc:'Today\'s fraud rarely looks like crime. It sounds polite. Professional. Convincing. Social engineering has become the most effective weapon.' },
+  { id:5, title:'THE HUMAN\nCOST',     act:'Act II — Present · Scene 03', desc:'Cybercrime does not only steal money. It steals peace of mind. It makes the heart bleed and can shatter confidence and dignity.' },
+  { id:6, title:'RESILIENCE',          act:'Act III — Future · Scene 01', desc:'Every moment of crisis carries a choice — to retreat, or to respond. For Ghana, the choice is clear. The digital future is something to prepare for.' },
+  { id:7, title:'YOUTH\nDEFENDERS',    act:'Act III — Future · Scene 02', desc:'Ghana\'s greatest cybersecurity asset is not software. It is its people. The next generation can turn risk into resilience.' },
+  { id:8, title:'THE FUTURE\nARC',     act:'Act III — Future · Scene 03', desc:'The future will bring new threats, new technologies. But also new choices — to learn, to adapt, and to protect what has been built.' },
 ]
 
 const ACT_COLORS = [

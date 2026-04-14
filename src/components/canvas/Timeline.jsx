@@ -12,15 +12,15 @@ const ACTS_DEMO = [
 ]
 
 const DEMO_NODES = [
-  { id:'cn0', cx:58,  cy:53, r:9,  fill:'#1E8A8A', label:'OPENING',    labelFill:'#3A7070', glow:true,  glowFill:'rgba(30,138,138,0.15)',  status:'progress', act:'Scene 01 — Act I — Past',    name:'Opening Sequence' },
-  { id:'cn1', cx:148, cy:53, r:5,  fill:'#1A3A3A', label:'PIONEERS',   labelFill:'#2A5050', glow:false, status:'concept',  act:'Scene 02 — Act I — Past',    name:'Pioneers' },
-  { id:'cn2', cx:234, cy:53, r:5,  fill:'#1A3A3A', label:'CRACKS',     labelFill:'#2A5050', glow:false, status:'concept',  act:'Scene 03 — Act I — Past',    name:'First Cracks' },
-  { id:'cn3', cx:356, cy:53, r:12, fill:'#C07010', label:'BATTLES',    labelFill:'#A06020', glow:true,  glowFill:'rgba(245,146,12,0.1)', glowDelay:'.5s', status:'review', act:'Scene 01 — Act II — Present', name:'Battles & Breaches' },
-  { id:'cn4', cx:444, cy:53, r:5,  fill:'#6A4808', label:'FRAUD',      labelFill:'#7A5030', glow:false, status:'progress', act:'Scene 02 — Act II — Present', name:'Fraud Vectors' },
-  { id:'cn5', cx:538, cy:53, r:7,  fill:'#7A5010', label:'COST',       labelFill:'#8A6030', glow:false, status:'approved', act:'Scene 03 — Act II — Present', name:'The Human Cost' },
-  { id:'cn6', cx:648, cy:53, r:5,  fill:'#581818', label:'RESILIENCE', labelFill:'#683030', glow:false, status:'concept',  act:'Scene 01 — Act III — Future', name:'Resilience' },
-  { id:'cn7', cx:752, cy:53, r:9,  fill:'#721818', label:'YOUTH',      labelFill:'#823030', glow:true,  glowFill:'rgba(96,20,8,0.14)', glowDelay:'1.2s', status:'concept', act:'Scene 02 — Act III — Future', name:'Youth Defenders' },
-  { id:'cn8', cx:862, cy:53, r:5,  fill:'#481010', label:'FUTURE',     labelFill:'#582828', glow:false, status:'concept',  act:'Scene 03 — Act III — Future', name:'The Future Arc' },
+  { id:'cn0', cx:58,  cy:53, r:10, fill:'#1E8A8A', label:'OPENING',   labelFill:'#3A7070', glow:true,  glowFill:'rgba(30,138,138,0.15)',  status:'progress', act:'Act I — Past · Scene 01',     name:'Opening Sequence' },
+  { id:'cn1', cx:148, cy:53, r:5,  fill:'#1A3A3A', label:'PIONEERS',  labelFill:'#2A5050', glow:false, status:'concept',  act:'Act I — Past · Scene 02',     name:'Pioneers' },
+  { id:'cn2', cx:238, cy:53, r:5,  fill:'#1A3A3A', label:'CRACKS',    labelFill:'#2A5050', glow:false, status:'concept',  act:'Act I — Past · Scene 03',     name:'First Cracks' },
+  { id:'cn3', cx:356, cy:53, r:12, fill:'#C07010', label:'BATTLES',   labelFill:'#A06020', glow:true,  glowFill:'rgba(245,146,12,0.1)', glowDelay:'.5s', status:'review', act:'Act II — Present · Scene 01', name:'Battles & Breaches' },
+  { id:'cn4', cx:454, cy:53, r:5,  fill:'#6A4808', label:'FRAUD',     labelFill:'#7A5030', glow:false, status:'concept',  act:'Act II — Present · Scene 02', name:'Fraud Vectors' },
+  { id:'cn5', cx:548, cy:53, r:7,  fill:'#7A5010', label:'COST',      labelFill:'#8A6030', glow:false, status:'concept',  act:'Act II — Present · Scene 03', name:'The Human Cost' },
+  { id:'cn6', cx:648, cy:53, r:5,  fill:'#581818', label:'RESILIENCE',labelFill:'#683030', glow:false, status:'concept',  act:'Act III — Future · Scene 01', name:'Resilience' },
+  { id:'cn7', cx:758, cy:53, r:9,  fill:'#721818', label:'YOUTH',     labelFill:'#823030', glow:true,  glowFill:'rgba(96,20,8,0.14)', glowDelay:'1.2s', status:'concept', act:'Act III — Future · Scene 02', name:'Youth Defenders' },
+  { id:'cn8', cx:862, cy:53, r:5,  fill:'#481010', label:'FUTURE',    labelFill:'#582828', glow:false, status:'concept',  act:'Act III — Future · Scene 03', name:'The Future Arc' },
 ]
 
 const MINIMAP_PCTS = [6,16,26,39,49,59,72,83,95]
