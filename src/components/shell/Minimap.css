@@ -1,0 +1,18 @@
+.minimap {
+  grid-area: mini;
+  background: rgba(4,4,2,.99);
+  border-top: .5px solid var(--b);
+  display: flex; align-items: center;
+  padding: 0 36px; gap: 10px;
+}
+.cm-l { font-size: 7px; letter-spacing: .2em; color: var(--mute); text-transform: uppercase; }
+.cm-track { flex: 1; height: 2px; background: rgba(255,255,255,.04); position: relative; border-radius: 1px; }
+.cm-zone  { position: absolute; top: -1px; height: 4px; border-radius: 1px; }
+.cm-node  { position: absolute; top: -2px; width: 2px; height: 6px; background: rgba(244,239,216,.12); border-radius: 1px; }
+.cm-pos   {
+  position: absolute; top: -5px;
+  width: 2px; height: 12px;
+  background: var(--orange); border-radius: 1px;
+  box-shadow: 0 0 6px rgba(245,146,12,.58);
+  transition: left .5s var(--ease);
+}

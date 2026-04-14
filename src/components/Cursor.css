@@ -1,0 +1,27 @@
+#cur {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--orange);
+  position: fixed; top: 0; left: 0;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+  transition:
+    width     var(--dur-mid) var(--ease),
+    height    var(--dur-mid) var(--ease),
+    background var(--dur-mid),
+    border    var(--dur-mid),
+    border-radius var(--dur-mid);
+}
+#cur.h {
+  width: 30px; height: 30px;
+  background: transparent;
+  border: 1px solid rgba(245,146,12,.42);
+  border-radius: 50%;
+}
+#cur.ck {
+  width: 44px; height: 44px;
+  background: rgba(245,146,12,.065);
+  border: 1px solid rgba(245,146,12,.52);
+}

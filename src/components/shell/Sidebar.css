@@ -1,0 +1,36 @@
+.sidebar {
+  grid-area: sb;
+  background: rgba(5,5,3,.99);
+  border-right: .5px solid var(--b);
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 14px 0; gap: 3px;
+  z-index: 60;
+}
+.sb-logo {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 2.5px; margin-bottom: 16px;
+}
+.sb-px { width: 7.5px; height: 7.5px; }
+
+.sbi {
+  width: 32px; height: 32px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ghost); background: transparent; border: none;
+  transition: background var(--dur-mid) var(--ease),
+              color var(--dur-mid) var(--ease),
+              transform var(--dur-fast) var(--ease);
+  position: relative;
+}
+.sbi:hover { background: var(--orange2); color: #3A3025; transform: scale(1.08); }
+.sbi.on    { background: rgba(245,146,12,.12); color: var(--orange); }
+.sbi svg   { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.sbi-dot {
+  position: absolute; top: 5px; right: 5px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--orange);
+  animation: pulse-dot 2s ease infinite;
+}
+.sb-spacer { flex: 1; }

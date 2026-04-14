@@ -1,0 +1,30 @@
+.right-panel {
+  grid-area: rp;
+  background: rgba(5,5,3,.99);
+  border-left: .5px solid var(--b);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  /* Right panel sticks to the right edge of the grid */
+  min-width: 0;
+}
+
+.rp-tabs { display: flex; border-bottom: .5px solid var(--b); flex-shrink: 0; }
+.rp-tab {
+  flex: 1; font-size: 7.5px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--mute);
+  padding: 11px 0; text-align: center;
+  background: transparent; border: none;
+  border-bottom: 1.5px solid transparent;
+  font-family: var(--font-mono); white-space: nowrap;
+  transition: color var(--dur-mid) var(--ease), border-color var(--dur-mid) var(--ease);
+}
+.rp-tab:hover { color: var(--dim); }
+.rp-tab.on    { color: var(--cream); border-bottom-color: var(--orange); }
+
+.pane-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease-out);
+}
+.pane-wrap.visible { opacity: 1; transform: translateY(0); }

@@ -1,0 +1,63 @@
+.timeline-svg {
+  width: 100%;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+.node-group { cursor: pointer; }
+
+.timeline-wrap { width: 100%; display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 1; }
+
+.timeline-toolbar {
+  display: flex; justify-content: flex-end;
+  padding: 0 4px;
+}
+.add-node-btn {
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--orange); border: .5px solid rgba(245,146,12,.25);
+  background: transparent; border-radius: 2px;
+  padding: 5px 12px; font-family: var(--font-mono);
+  transition: background var(--dur-mid) var(--ease);
+}
+.add-node-btn:hover { background: rgba(245,146,12,.06); }
+
+.new-node-form {
+  background: var(--s1); border: .5px solid var(--b2);
+  border-radius: 2px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  animation: modalIn var(--dur-slow) var(--ease-out) forwards;
+}
+.nn-input {
+  width: 100%; background: var(--s2);
+  border: .5px solid var(--b); border-radius: 2px;
+  padding: 8px 12px; font-family: var(--font-mono);
+  font-size: 10px; color: var(--cream); outline: none;
+  caret-color: var(--orange);
+  transition: border-color var(--dur-mid) var(--ease);
+}
+.nn-input:focus { border-color: rgba(245,146,12,.35); }
+.nn-input::placeholder { color: var(--ghost); }
+
+.nn-pos-wrap { display: flex; align-items: center; gap: 10px; }
+.nn-label    { font-size: 7.5px; letter-spacing: .2em; color: var(--mute); text-transform: uppercase; white-space: nowrap; }
+.nn-slider   { flex: 1; accent-color: var(--orange); }
+.nn-pos-val  { font-size: 8px; color: var(--orange); min-width: 28px; text-align: right; }
+
+.nn-foot { display: flex; justify-content: flex-end; gap: 8px; }
+.nn-cancel {
+  font-size: 8px; letter-spacing: .15em; padding: 6px 12px;
+  text-transform: uppercase; color: var(--mute);
+  border: .5px solid var(--b); border-radius: 2px;
+  background: transparent; font-family: var(--font-mono);
+  transition: color var(--dur-mid) var(--ease);
+}
+.nn-cancel:hover { color: var(--dim); }
+.nn-save {
+  font-size: 8px; letter-spacing: .15em; padding: 6px 14px;
+  text-transform: uppercase; color: var(--orange);
+  border: .5px solid rgba(245,146,12,.25); border-radius: 2px;
+  background: transparent; font-family: var(--font-mono);
+  transition: background var(--dur-mid) var(--ease);
+}
+.nn-save:hover    { background: rgba(245,146,12,.06); }
+.nn-save:disabled { opacity: .5; }

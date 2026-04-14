@@ -1,0 +1,75 @@
+.qc-wrap {
+  position: fixed;
+  bottom: 46px;
+  /* Always 12px from the right panel edge, which is var(--rp-w) from right */
+  right: calc(var(--rp-w) + 14px);
+  z-index: 500;
+}
+.qc-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--orange); border: none;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 22px rgba(245,146,12,.32);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease);
+}
+.qc-btn:hover { transform: scale(1.1); box-shadow: 0 0 32px rgba(245,146,12,.48); }
+.qc-btn svg   { width: 14px; height: 14px; stroke: #040402; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.qc-panel {
+  position: absolute; bottom: 48px; right: 0; width: 272px;
+  background: var(--s2); border: .5px solid var(--b2); border-radius: 3px;
+  overflow: hidden;
+  opacity: 0; transform: translateY(10px) scale(.96); pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease-out);
+}
+.qc-panel.on { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+
+.qcp-head {
+  padding: 10px 14px; border-bottom: .5px solid var(--b);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.qcp-title { font-size: 7.5px; letter-spacing: .28em; color: var(--orange); text-transform: uppercase; }
+.qcp-close { background: none; border: none; font-size: 9px; color: var(--mute); transition: color var(--dur-fast); }
+.qcp-close:hover { color: var(--cream); }
+
+.qcp-modes { display: flex; gap: 2px; padding: 8px 12px; border-bottom: .5px solid var(--b); }
+.qcp-mode {
+  flex: 1; font-size: 7px; letter-spacing: .15em; text-transform: uppercase;
+  padding: 5px 0; text-align: center; border-radius: 2px;
+  background: transparent; color: var(--mute); border: .5px solid transparent;
+  font-family: var(--font-mono);
+  transition: all var(--dur-mid) var(--ease);
+}
+.qcp-mode:hover { color: var(--dim); }
+.qcp-mode.on    { color: var(--cream); background: rgba(255,255,255,.04); border-color: var(--b2); }
+
+.qcp-body { padding: 10px 12px; }
+.qcp-input {
+  width: 100%; background: transparent; border: none; outline: none;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--cream); line-height: 1.65; resize: none; min-height: 72px;
+  caret-color: var(--orange);
+}
+.qcp-input::placeholder { color: var(--ghost); }
+
+.qcp-colors { display: flex; gap: 5px; margin-top: 8px; }
+.qcp-cs {
+  width: 14px; height: 14px; border-radius: 2px;
+  border: .5px solid rgba(255,255,255,.06);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.qcp-cs:hover, .qcp-cs.on { transform: scale(1.3); border-color: rgba(255,255,255,.25); }
+
+.qcp-foot {
+  padding: 8px 12px; border-top: .5px solid var(--b);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.qcp-tag  { font-size: 7.5px; letter-spacing: .1em; color: var(--mute); }
+.qcp-send {
+  font-size: 7.5px; letter-spacing: .18em; padding: 5px 12px;
+  border-radius: 2px; text-transform: uppercase;
+  color: var(--orange); border: .5px solid rgba(245,146,12,.22);
+  background: transparent; font-family: var(--font-mono);
+  transition: background var(--dur-mid) var(--ease);
+}
+.qcp-send:hover { background: rgba(245,146,12,.06); }

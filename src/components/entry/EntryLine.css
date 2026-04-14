@@ -1,0 +1,9 @@
+.entry-line-wrap { opacity: 0; transition: opacity .5s var(--ease); }
+.entry-line-wrap.on { opacity: 1; }
+.entry-svg { width: 100%; height: 100px; overflow: visible; }
+.e-az { opacity: 0; transition: opacity .8s var(--ease); }
+.e-az.on { opacity: 1; }
+.entry-line-track { stroke-dasharray: 1200; stroke-dashoffset: 1200; transition: stroke-dashoffset 2.4s cubic-bezier(.4,0,.1,1); }
+.entry-line-track.draw { stroke-dashoffset: 0; }
+.entry-node-dot { animation: nodeFade .3s var(--ease) forwards; }
+@keyframes nodeFade { from { opacity:0; } to { opacity:1; } }
