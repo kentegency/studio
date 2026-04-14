@@ -47,6 +47,12 @@ export default function VoiceRecorder({ onClose, nodeId: propNodeId }) {
   }
 
   const startRecording = async () => {
+    // Check browser support
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setState(STATES.error)
+      showToast('Voice notes require a modern browser. Use Chrome or Firefox.', '#E05050')
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
@@ -254,8 +260,8 @@ export default function VoiceRecorder({ onClose, nodeId: propNodeId }) {
 
           {state === STATES.error && (
             <div className="voice-idle">
-              <div className="vi-label" style={{ color:'var(--red)' }}>Microphone access denied</div>
-              <div className="vi-sub">Allow microphone access in your browser settings</div>
+              <div className="vi-label" style={{ color:'var(--red)' }}>Microphone unavailable</div>
+              <div className="vi-sub">Allow microphone access in your browser, or use Chrome/Firefox for full support.</div>
             </div>
           )}
         </div>

@@ -69,7 +69,7 @@
 .tb-vm-item:last-child { border-bottom: none; }
 .tb-vm-item:hover { background: var(--s2); }
 .tb-vm-item { font-size: 13px; color: var(--dim); }
-.tb-vm-item span { font-size: 11px; color: var(--ghost); letter-spacing: .04em; margin-top: 1px; }
+.tb-vm-item span { font-size: 11px; color: var(--mute); letter-spacing: .04em; margin-top: 1px; }
 
 /* Room badge */
 .tb-room-badge {

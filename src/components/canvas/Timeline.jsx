@@ -31,21 +31,36 @@ const ACT_COLORS   = {
   red:    { fill:'rgba(90,18,10,0.052)',    stroke:'rgba(120,38,22,0.1)',    labelFill:'rgba(180,60,30,0.65)'   },
 }
 
-// ── SCENE MODE ───────────────────────────────────────────────
+// ── SCENE MODE — status-led working inspector ─────────────────
 function SceneMode({ node, allNodes, onClose, onSelectNode }) {
   const { updateNode, selectNode: storeSelect } = useNodeStore()
   const { showToast } = useUIStore()
+  const { currentProject } = useProjectStore()
+
   const accent = STATUS_FILL[node.status] ?? '#3A3020'
   const sorted = [...allNodes].sort((a,b) => (a.position??0)-(b.position??0))
   const idx    = sorted.findIndex(n => n.id === node.id)
   const prev   = sorted[idx - 1]
   const next   = sorted[idx + 1]
 
+  // Shot count for this node
+  const [shotCount, setShotCount] = useState({ total: 0, done: 0 })
+  useEffect(() => {
+    if (node.id && !node.id.startsWith('cn')) {
+      import('../../lib/supabase').then(({ supabase }) => {
+        supabase.from('shots').select('status').eq('node_id', node.id)
+          .then(({ data }) => {
+            if (data) setShotCount({ total: data.length, done: data.filter(s => s.status === 'done').length })
+          })
+      })
+    }
+  }, [node.id])
+
   useEffect(() => {
     const h = (e) => {
-      if (e.key === 'Escape')                        onClose()
-      if (e.key === 'ArrowRight' && next) onSelectNode(next)
-      if (e.key === 'ArrowLeft'  && prev) onSelectNode(prev)
+      if (e.key === 'Escape')              onClose()
+      if (e.key === 'ArrowRight' && next)  onSelectNode(next)
+      if (e.key === 'ArrowLeft'  && prev)  onSelectNode(prev)
     }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
@@ -59,100 +74,118 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
     }
     storeSelect({ ...node, status: nextStatus })
     onSelectNode({ ...node, status: nextStatus })
-    showToast(`Status → ${STATUS_LABEL[nextStatus]}`)
+    showToast(`${node.name} → ${STATUS_LABEL[nextStatus]}`)
   }
+
+  // Parse act path from node.act or node.type
+  const actPath = node.act ?? `Scene ${idx + 1}`
 
   return (
     <div className="scene-mode" onClick={e => { if (e.target.classList.contains('scene-mode')) onClose() }}>
-      {/* Ambient glow */}
-      <div className="sm-glow" style={{ background:`radial-gradient(ellipse, ${accent}14 0%, transparent 65%)` }} />
+      <div className="sm-glow" style={{ background:`radial-gradient(ellipse, ${accent}12 0%, transparent 65%)` }} />
 
-      {/* Back button — absolute top left */}
-      <button className="sm-back" onClick={onClose}>
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-        Arc view
-      </button>
-
-      {/* Top spacer — clears the back button */}
-      <div style={{ height: 44, flexShrink: 0 }} />
-
-      {/* Main layout — flex: 1 so it fills remaining space */}
-      <div className="sm-layout">
-
-        {/* Prev node */}
-        <button className={`sm-flank ${!prev ? 'hidden' : ''}`}
-          onClick={() => prev && onSelectNode(prev)} disabled={!prev}>
-          {prev && <>
-            <div className="smf-dot" style={{ background: STATUS_FILL[prev.status] ?? '#3A3020' }} />
-            <div className="smf-label">Previous</div>
-            <div className="smf-name">{prev.name}</div>
-          </>}
+      {/* ── TOP BAR: back + arc navigation indicator ── */}
+      <div className="sm-topbar">
+        <button className="sm-back" onClick={onClose}>
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          Arc view
         </button>
 
-        {/* Current */}
-        <div className="sm-center">
-          <div className="sm-act-label">{node.act ?? node.type ?? 'Scene'}</div>
-
-          <div className="sm-node-name">{node.name}</div>
-
-          <div className="sm-divider" style={{ background:`linear-gradient(90deg, ${accent}, transparent)` }} />
-
-          {/* Status */}
-          <button className="sm-status" onClick={cycleStatus}>
-            <div className="sm-status-dot" style={{ background: accent }} />
-            <span style={{ color: accent }}>{STATUS_LABEL[node.status ?? 'concept']}</span>
-            <span className="sm-status-hint">↻ advance</span>
-          </button>
-
-          {/* Arc position dots */}
-          <div className="sm-arc-dots">
-            {sorted.map((n, i) => (
-              <button key={n.id}
-                className={`sm-arc-pip ${n.id === node.id ? 'active' : ''}`}
-                style={{ background: n.id === node.id ? accent : STATUS_FILL[n.status] ?? '#2A2520' }}
-                onClick={() => onSelectNode(n)}
-                title={n.name} />
-            ))}
-          </div>
-          <div className="sm-arc-label">{idx + 1} of {sorted.length} scenes</div>
-
-          {/* Meta */}
-          <div className="sm-meta">
-            <div className="sm-meta-row">
-              <span className="sm-meta-k">Type</span>
-              <span className="sm-meta-v">{node.type ?? 'scene'}</span>
-            </div>
-            <div className="sm-meta-row">
-              <span className="sm-meta-k">Position</span>
-              <span className="sm-meta-v">{Math.round((node.position ?? 0) * 100)}%</span>
-            </div>
-            <div className="sm-meta-row">
-              <span className="sm-meta-k">Weight</span>
-              <span className="sm-meta-v">{node.emphasis ?? 1}×</span>
-            </div>
-          </div>
-
-          <div className="sm-panel-hint">
-            Use the right panel to view shots, notes, and assets for this scene.
-          </div>
+        {/* Arc pip strip — position indicator in topbar */}
+        <div className="sm-pip-strip">
+          {sorted.map((n, i) => (
+            <button key={n.id}
+              className={`sm-arc-pip ${n.id === node.id ? 'active' : ''}`}
+              style={{
+                background: n.id === node.id
+                  ? accent
+                  : (n.status === 'approved' || n.status === 'locked')
+                  ? '#4ADE8066'
+                  : STATUS_FILL[n.status] ?? '#2A2520'
+              }}
+              onClick={() => onSelectNode(n)}
+              title={n.name} />
+          ))}
         </div>
 
-        {/* Next node */}
-        <button className={`sm-flank right ${!next ? 'hidden' : ''}`}
-          onClick={() => next && onSelectNode(next)} disabled={!next}>
-          {next && <>
-            <div className="smf-dot" style={{ background: STATUS_FILL[next.status] ?? '#3A3020' }} />
-            <div className="smf-label">Next</div>
-            <div className="smf-name">{next.name}</div>
-          </>}
-        </button>
+        <div className="sm-scene-counter">
+          {idx + 1} of {sorted.length}
+        </div>
       </div>
 
-      {/* Keyboard hint — in flow at bottom */}
-      <div className="sm-kb">← → navigate · Esc back to arc</div>
+      {/* ── BODY ── */}
+      <div className="sm-body">
+
+        {/* ── STATUS ZONE — leads, largest actionable element ── */}
+        <div className="sm-status-zone">
+          <div className="sm-status-left">
+            <div className="sm-status-badge" style={{
+              background: `${accent}14`,
+              borderColor: `${accent}35`,
+            }}>
+              <div className="sm-status-dot" style={{ background: accent }} />
+              <span className="sm-status-label" style={{ color: accent }}>
+                {STATUS_LABEL[node.status ?? 'concept']}
+              </span>
+            </div>
+            <button className="sm-advance" onClick={cycleStatus} title="Advance to next status">
+              ↻ advance
+            </button>
+          </div>
+
+          {/* Shot progress — right side of status zone */}
+          {shotCount.total > 0 && (
+            <div className="sm-shot-progress">
+              <span className="sm-shot-label">{shotCount.done}/{shotCount.total} shots</span>
+              <div className="sm-shot-bar">
+                <div className="sm-shot-fill"
+                  style={{ width:`${Math.round((shotCount.done/shotCount.total)*100)}%`, background: accent }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── SCENE IDENTITY — present but not dominant ── */}
+        <div className="sm-identity">
+          <div className="sm-scene-name">{node.name}</div>
+          <div className="sm-act-path">{actPath}</div>
+        </div>
+
+        {/* ── ARC MINI-VIZ — spatial context ── */}
+        <div className="sm-arc-viz">
+          {sorted.map((n, i) => (
+            <button key={n.id}
+              className={`sm-arc-scene ${n.id === node.id ? 'active' : ''}`}
+              onClick={() => onSelectNode(n)}
+              title={n.name}>
+              <div className="sm-arc-scene-dot"
+                style={{ background: n.id === node.id ? accent : STATUS_FILL[n.status] ?? '#1E1C14' }} />
+              <div className="sm-arc-scene-name"
+                style={{ color: n.id === node.id ? accent : '#3A3530' }}>
+                {(n.name ?? '').slice(0, 7)}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── BOTTOM NAV — prev / keyboard hint / next ── */}
+      <div className="sm-bottombar">
+        <button className={`sm-nav-btn ${!prev ? 'hidden' : ''}`}
+          onClick={() => prev && onSelectNode(prev)} disabled={!prev}>
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          {prev?.name}
+        </button>
+        <div className="sm-kb">← → navigate · Esc back</div>
+        <button className={`sm-nav-btn right ${!next ? 'hidden' : ''}`}
+          onClick={() => next && onSelectNode(next)} disabled={!next}>
+          {next?.name}
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
     </div>
   )
-} 
+}
 export default function Timeline() {
   const { selectedNode, selectNode, nodes, createNode } = useNodeStore()
   const { currentProject, acts } = useProjectStore()

@@ -317,9 +317,14 @@ export function BriefOverlay() {
     <div className="overlay modal-overlay" onClick={e => e.target===e.currentTarget && closeOverlay('brief')}>
       <div className="modal-panel">
         <div className="modal-head">
-          <span className="modal-title">CLIENT BRIEF</span>
-          {currentProject && <span className="modal-project">— {currentProject.name}</span>}
-          <button className="modal-close" onClick={() => closeOverlay('brief')} data-hover>Close ×</button>
+          <div>
+            <span className="modal-title">Creative Brief</span>
+            {currentProject && <span className="modal-project"> — {currentProject.name}</span>}
+            <div style={{ fontSize:'12px', color:'var(--mute)', marginTop:'4px', fontFamily:'var(--font-ui)', letterSpacing:'.03em' }}>
+              Document the concept, references, and directorial vision for this project.
+            </div>
+          </div>
+          <button className="modal-close" onClick={() => closeOverlay('brief')} data-hover>×</button>
         </div>
         <div className="brief-types">
           {Object.keys(BRIEF_QS).map(t => (
@@ -345,42 +350,85 @@ export function BriefOverlay() {
   )
 }
 
-// ── DIGEST ────────────────────────────────────
-const DIGEST_ITEMS = [
-  { group:'Approvals', items:[
-    { color:'#4ADE80', text:'Producer approved Grade B on Opening Sequence', meta:'producer · 09:14' },
-    { color:'#4ADE80', text:'Shot list approved for Act II', meta:'producer · 11:02' },
-  ]},
-  { group:'Notes', items:[
-    { color:'#1E8A8A', text:'DP left a note on Scene 04 — lens choice for MoMo fraud re-enactment', meta:'dp · 08:45' },
-    { color:'#F4EFD8', text:'Score provider attached two new audio references to Opening Sequence', meta:'score · 14:30' },
-  ]},
-  { group:'Reactions', items:[
-    { color:'#F5920C', text:'Producer reacted ❤️ to the EBAN fence animation reference', meta:'producer · 16:22' },
-  ]},
-]
 export function DigestOverlay() {
-  const { closeOverlay } = useUIStore()
+  const { closeOverlay }   = useUIStore()
+  const { currentProject } = useProjectStore()
+  const { notes }          = useNotesStore()
+  const { nodes }          = useNodeStore()
+
+  // Group real notes by type
+  const recentNotes = [...notes]
+    .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 8)
+
+  const approvedNodes = nodes.filter(n => n.status === 'approved' || n.status === 'locked')
+  const inProgress    = nodes.filter(n => n.status === 'progress' || n.status === 'review')
+  const totalShots    = 0 // would need a separate fetch
+
+  const isEmpty = recentNotes.length === 0 && nodes.length === 0
+
   return (
     <div className="overlay modal-overlay" onClick={e => e.target===e.currentTarget && closeOverlay('digest')}>
       <div className="digest-panel">
         <div className="modal-head">
-          <span className="modal-title">TODAY'S DIGEST</span>
+          <div>
+            <span className="modal-title">Project Digest</span>
+            {currentProject && <span className="modal-project"> — {currentProject.name}</span>}
+            <div style={{ fontSize:'12px', color:'var(--mute)', marginTop:'4px', fontFamily:'var(--font-ui)', letterSpacing:'.03em' }}>
+              A summary of recent activity, approvals, and notes across all scenes.
+            </div>
+          </div>
           <button className="modal-close" onClick={() => closeOverlay('digest')} data-hover>×</button>
         </div>
-        <div className="digest-body">
-          {DIGEST_ITEMS.map((g,i) => (
-            <div key={i} className="dg">
-              <div className="dg-l">{g.group}</div>
-              {g.items.map((item,j) => (
-                <div key={j} className="di" data-hover>
-                  <div className="di-dot" style={{ background:item.color }} />
-                  <div><div className="di-text">{item.text}</div><div className="di-meta">{item.meta}</div></div>
-                </div>
-              ))}
+
+        {isEmpty ? (
+          <div style={{ padding:'40px 24px', display:'flex', flexDirection:'column', alignItems:'center', gap:'12px', textAlign:'center' }}>
+            <div style={{ fontSize:'28px', fontFamily:'var(--font-display)', color:'var(--mute)', letterSpacing:'.04em' }}>Nothing yet</div>
+            <div style={{ fontSize:'13px', color:'var(--mute)', lineHeight:1.65, maxWidth:'280px', fontFamily:'var(--font-ui)' }}>
+              Add scenes, notes, and shots to your project. Activity will appear here as your team works.
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="digest-body">
+            {/* Project stats */}
+            <div className="dg">
+              <div className="dg-l">Project status</div>
+              <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
+                {[
+                  { label:'Scenes', val: nodes.length },
+                  { label:'Approved', val: approvedNodes.length },
+                  { label:'In progress', val: inProgress.length },
+                  { label:'Concept', val: nodes.filter(n => n.status === 'concept').length },
+                ].map((s,i) => (
+                  <div key={i} style={{ background:'var(--s2)', border:'.5px solid var(--b)', borderRadius:'3px', padding:'8px 14px', minWidth:'80px', textAlign:'center' }}>
+                    <div style={{ fontSize:'18px', color:'var(--cream)', fontFamily:'var(--font-mono)', fontWeight:500 }}>{s.val}</div>
+                    <div style={{ fontSize:'11px', color:'var(--mute)', letterSpacing:'.12em', textTransform:'uppercase', marginTop:'3px', fontFamily:'var(--font-ui)' }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent notes */}
+            {recentNotes.length > 0 && (
+              <div className="dg">
+                <div className="dg-l">Recent notes</div>
+                {recentNotes.map((note, i) => {
+                  const scene = nodes.find(n => n.id === note.node_id)
+                  const time  = note.created_at ? new Date(note.created_at).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) : ''
+                  return (
+                    <div key={i} className="di" data-hover>
+                      <div className="di-dot" style={{ background: note.color ?? 'var(--orange)' }} />
+                      <div>
+                        <div className="di-text">{note.body?.slice(0, 80)}{note.body?.length > 80 ? '…' : ''}</div>
+                        <div className="di-meta">{scene?.name ?? 'No scene'} · {time}</div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

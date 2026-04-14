@@ -63,7 +63,7 @@
   width: 100%;
 }
 .sf-input:focus, .sf-select:focus, .sf-textarea:focus { border-color: rgba(245,146,12,.35); }
-.sf-input::placeholder, .sf-textarea::placeholder { color: var(--ghost); }
+.sf-input::placeholder, .sf-textarea::placeholder { color: var(--mute); }
 .sf-textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
 
 /* ACCENT SWATCHES */

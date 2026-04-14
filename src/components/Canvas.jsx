@@ -23,6 +23,7 @@ import './wrap/Wrap.css'
 import './settings/Settings.css'
 import './settings/Acts.css'
 import './contributor/Contributor.css'
+import ErrorBoundary from './ErrorBoundary'
 import { useUIStore, useProjectStore } from '../stores'
 import { supabase } from '../lib/supabase'
 import './Canvas.css'
@@ -112,7 +113,7 @@ export default function Canvas() {
         onSettings={() => setShowSettings(true)}
         onActs={() => setShowActs(true)} />
       <Topbar onWrap={() => setShowWrap(true)} onSettings={() => setShowSettings(true)} onActs={() => setShowActs(true)} />
-      <main className="canvas-main"><Timeline /></main>
+      <main className="canvas-main"><ErrorBoundary><Timeline /></ErrorBoundary></main>
       <Minimap />
       <RightPanel
         onUpload={() => setShowUpload(true)}
