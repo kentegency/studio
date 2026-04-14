@@ -42,7 +42,7 @@ const TEAM = [
   { initials:'GN', name:'George Nkrumah',       role:'Producer',                room:'Window',  color:'#4ADE80', bg:'rgba(74,222,128,0.08)'  },
 ]
 
-export function TeamPane() {
+export function TeamPane({ onInvite }) {
   return (
     <div className="node-pane">
       <div className="rph">
@@ -60,11 +60,11 @@ export function TeamPane() {
             <span className="tm-badge" style={{ color: m.color, background: m.bg }}>{m.room}</span>
           </div>
         ))}
-        <div className="team-member invite" data-hover>
+        <div className="team-member invite" data-hover onClick={() => onInvite?.()}>
           <div className="tm-av invite-av">+</div>
           <div className="tm-info">
             <div className="tm-name muted">Invite contributor</div>
-            <div className="tm-role">Scoped access link</div>
+            <div className="tm-role">Generate a scoped access link →</div>
           </div>
         </div>
       </div>

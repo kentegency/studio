@@ -1,7 +1,7 @@
 import { useUIStore, useProjectStore } from '../../stores'
 import './Topbar.css'
 
-export default function Topbar({ onPublish }) {
+export default function Topbar({ onWrap }) {
   const { activeRoom, setRoom, openOverlay, showToast } = useUIStore()
   const { currentProject } = useProjectStore()
 
@@ -43,7 +43,7 @@ export default function Topbar({ onPublish }) {
           Stage ↗
         </button>
         <button className="tbb pr"
-          onClick={() => showToast('Wrap it coming in Sprint 3D.')} data-hover>
+          onClick={() => onWrap?.()} data-hover>
           Wrap it
         </button>
       </div>

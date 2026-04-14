@@ -14,7 +14,7 @@ const TABS = [
   { key: 'style',  label: 'Style'  },
 ]
 
-export default function RightPanel({ onUpload, onPublish }) {
+export default function RightPanel({ onUpload, onPublish, onInvite }) {
   const { activeTab, setTab, activeRoom } = useUIStore()
   const [visible, setVisible] = useState(false)
 
@@ -44,7 +44,7 @@ export default function RightPanel({ onUpload, onPublish }) {
   const panes = {
     node:  () => <NodePane onUpload={onUpload} onPublish={onPublish} />,
     shots: () => <ShotsPane />,
-    team:  () => <TeamPane />,
+    team:  () => <TeamPane onInvite={onInvite} />,
     style: () => <StylePane />,
   }
   const ActivePane = panes[activeTab] ?? panes.node

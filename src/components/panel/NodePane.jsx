@@ -2,36 +2,37 @@ import { useEffect, useState } from 'react'
 import { useNodeStore, useUIStore, useAssetsStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
 import { supabase } from '../../lib/supabase'
 import EmptyState from '../EmptyState'
-import AssetViewer from '../viewer/Viewer'
 import './Panes.css'
 import '../EmptyState.css'
-import '../viewer/Viewer.css'
 
-const STATUSES    = ['concept','progress','review','approved','locked']
+const STATUSES      = ['concept','progress','review','approved','locked']
 const STATUS_COLORS = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
 const STATUS_LABELS = { concept:'Concept', progress:'In Progress', review:'In Review', approved:'Approved ✓', locked:'Locked ✓' }
 const NOTE_COLORS   = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
 const WAVEFORM      = [.3,.5,.8,.6,.9,.4,.7,.55,.8,.6,.4,.9,.7,.5,.3,.65,.8,.4,.7,.5,.9,.6,.4,.8,.5,.7,.35,.6,.9,.4,.8,.6,.5,.7,.3,.9,.6,.4,.75,.5]
+const TYPE_COLORS   = { pdf:'#E05050', image:'#1E8A8A', gif:'#8B5CF6', video:'#F5920C', audio:'#4ADE80', document:'#D4CAAA', reference:'#D4CAAA' }
 
-// Asset type detection
 const getType = (asset) => {
-  const ext = asset.file_url?.split('.').pop()?.toLowerCase() ?? ''
+  const ext = (asset.file_url?.split('.').pop() ?? '').toLowerCase()
   if (ext === 'pdf') return 'pdf'
-  if (['jpg','jpeg','png','webp','gif','svg','heic'].includes(ext)) return asset.type ?? 'image'
+  if (['jpg','jpeg','png','webp','gif','svg','heic'].includes(ext)) return 'image'
   if (['mp4','mov','avi','webm','mkv'].includes(ext)) return 'video'
   if (['mp3','wav','m4a','aac','opus','flac'].includes(ext)) return 'audio'
   return asset.type ?? 'document'
 }
 
-const TYPE_COLORS = { pdf:'#E05050', image:'#1E8A8A', gif:'#8B5CF6', video:'#F5920C', audio:'#4ADE80', document:'#D4CAAA', reference:'#D4CAAA' }
-
-const UpIcon   = () => <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:'1.5',strokeLinecap:'round',strokeLinejoin:'round',flexShrink:0}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+const UpIcon   = () => <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:'1.5',strokeLinecap:'round',flexShrink:0}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
 const LinkIcon = () => <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:'1.5',flexShrink:0}}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
 const NoteIcon = () => <svg viewBox="0 0 24 24" style={{width:'16px',height:'16px',stroke:'currentColor',fill:'none',strokeWidth:'1.5'}}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
 const ImgIcon  = () => <svg viewBox="0 0 24 24" style={{width:'16px',height:'16px',stroke:'currentColor',fill:'none',strokeWidth:'1.5'}}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
 const ShotIcon = () => <svg viewBox="0 0 24 24" style={{width:'16px',height:'16px',stroke:'currentColor',fill:'none',strokeWidth:'1.5'}}><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+const PdfIcon  = () => <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+const VidIcon  = () => <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+const AudIcon  = () => <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+const DocIcon  = () => <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+const AddIcon  = () => <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 
-export default function NodePane({ onUpload, onPublish }) {
+export default function NodePane({ onUpload }) {
   const { selectedNode, selectNode, updateNode } = useNodeStore()
   const { assets, fetchAssets }                  = useAssetsStore()
   const { notes, fetchNotes, addNote }           = useNotesStore()
@@ -39,17 +40,15 @@ export default function NodePane({ onUpload, onPublish }) {
   const { user }                                 = useAuthStore()
   const { currentProject }                       = useProjectStore()
 
-  const [newNote, setNewNote]           = useState('')
-  const [noteColor, setNoteColor]       = useState('#F5920C')
-  const [addingNote, setAddingNote]     = useState(false)
-  const [showWindow, setShowWindow]     = useState(false)
-  const [shots, setShots]               = useState([])
-  const [addingShot, setAddingShot]     = useState(false)
-  const [newShot, setNewShot]           = useState({ name:'', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05' })
+  const [newNote,      setNewNote]      = useState('')
+  const [noteColor,    setNoteColor]    = useState('#F5920C')
+  const [addingNote,   setAddingNote]   = useState(false)
+  const [showWindow,   setShowWindow]   = useState(false)
+  const [shots,        setShots]        = useState([])
+  const [addingShot,   setAddingShot]   = useState(false)
+  const [newShot,      setNewShot]      = useState({ name:'', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05' })
   const [updatingStatus, setUpdatingStatus] = useState(false)
-  const [saveIndicator, setSaveIndicator]   = useState(false)
-  const [viewerAsset, setViewerAsset]       = useState(null)
-  const [viewerIdx,   setViewerIdx]         = useState(0)
+  const [saveIndicator,  setSaveIndicator]  = useState(false)
 
   useEffect(() => {
     if (selectedNode?.id) {
@@ -66,10 +65,9 @@ export default function NodePane({ onUpload, onPublish }) {
 
   const showSaved = () => { setSaveIndicator(true); setTimeout(() => setSaveIndicator(false), 2000) }
 
-  const openViewer = (asset, idx) => { setViewerAsset(asset); setViewerIdx(idx) }
-  const closeViewer = () => setViewerAsset(null)
-  const nextAsset = () => { const i = viewerIdx + 1; if (i < assets.length) { setViewerAsset(assets[i]); setViewerIdx(i) } }
-  const prevAsset = () => { const i = viewerIdx - 1; if (i >= 0) { setViewerAsset(assets[i]); setViewerIdx(i) } }
+  const openViewer = (asset, idx) => {
+    window.__openViewer?.(asset, assets, idx)
+  }
 
   if (!selectedNode) return (
     <div className="node-pane">
@@ -101,7 +99,7 @@ export default function NodePane({ onUpload, onPublish }) {
     if (!selectedNode?.id) return
     await updateNode(selectedNode.id, { locked:true, status:'locked', locked_by:user?.id, locked_at:new Date().toISOString() })
     selectNode({ ...selectedNode, status:'locked', locked:true })
-    showSaved(); showToast('Node locked. Producer notified.', '#4ADE80')
+    showSaved(); showToast('Node locked.', '#4ADE80')
   }
 
   const saveNote = async () => {
@@ -132,7 +130,7 @@ export default function NodePane({ onUpload, onPublish }) {
   const toggleShotStatus = async (shot) => {
     const next = shot.status==='done'?'pending':shot.status==='pending'?'progress':'done'
     await supabase.from('shots').update({ status:next }).eq('id', shot.id)
-    setShots(s => s.map(sh => sh.id===shot.id ? {...sh, status:next} : sh))
+    setShots(s => s.map(sh => sh.id===shot.id ? {...sh,status:next} : sh))
     showSaved()
   }
 
@@ -141,44 +139,8 @@ export default function NodePane({ onUpload, onPublish }) {
 
   const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2720' }
 
-  const AssetThumb = ({ asset, idx }) => {
-    const type = getType(asset)
-    const tc   = TYPE_COLORS[type] ?? '#D4CAAA'
-    const isImg = type === 'image' || type === 'gif'
-
-    return (
-      <div className="at" data-hover onClick={() => openViewer(asset, idx)} title={asset.name}>
-        {isImg ? (
-          <img src={asset.file_url} alt={asset.name}
-            style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'2px' }}
-            onError={e => { e.target.style.display='none' }} />
-        ) : (
-          <div className="at-type-icon" style={{ color: tc }}>
-            {type === 'pdf'   && <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
-            {type === 'video' && <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
-            {type === 'audio' && <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>}
-            {(type === 'document' || type === 'reference') && <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
-          </div>
-        )}
-        <span className="at-b" style={{ background:`${tc}22`, color:tc }}>{type.slice(0,3)}</span>
-      </div>
-    )
-  }
-
   return (
     <div className="node-pane">
-      {/* ASSET VIEWER */}
-      {viewerAsset && (
-        <AssetViewer
-          asset={viewerAsset}
-          onClose={closeViewer}
-          onNext={nextAsset}
-          onPrev={prevAsset}
-          hasNext={viewerIdx < assets.length - 1}
-          hasPrev={viewerIdx > 0}
-        />
-      )}
-
       {/* Header */}
       <div className="rph">
         <div className="rp-ey">{act}</div>
@@ -192,9 +154,7 @@ export default function NodePane({ onUpload, onPublish }) {
           </div>
           {saveIndicator && (
             <div className="save-indicator">
-              <svg viewBox="0 0 24 24" style={{width:'11px',height:'11px',stroke:'var(--green)',fill:'none',strokeWidth:'2.5',strokeLinecap:'round'}}>
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
+              <svg viewBox="0 0 24 24" style={{width:'11px',height:'11px',stroke:'var(--green)',fill:'none',strokeWidth:'2.5',strokeLinecap:'round'}}><polyline points="20 6 9 17 4 12"/></svg>
               Saved
             </div>
           )}
@@ -212,10 +172,32 @@ export default function NodePane({ onUpload, onPublish }) {
         </button>
         {assets.length > 0 ? (
           <div className="asset-grid" style={{ marginTop:'8px' }}>
-            {assets.slice(0,7).map((a,i) => <AssetThumb key={a.id} asset={a} idx={i} />)}
-            <div className="at at-add" onClick={onUpload} data-hover>
-              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
+            {assets.slice(0,7).map((a, i) => {
+              const type = getType(a)
+              const tc   = TYPE_COLORS[type] ?? '#D4CAAA'
+              const isImg = type === 'image' || type === 'gif'
+              return (
+                <div key={a.id} className="at" data-hover
+                  onClick={() => openViewer(a, i)} title={a.name}>
+                  {isImg ? (
+                    <img src={a.file_url} alt={a.name}
+                      style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'2px' }}
+                      onError={e => { e.target.style.display='none' }} />
+                  ) : (
+                    <div className="at-type-icon" style={{ color:tc }}>
+                      {type === 'pdf'   && <PdfIcon />}
+                      {type === 'video' && <VidIcon />}
+                      {type === 'audio' && <AudIcon />}
+                      {(type === 'document' || type === 'reference') && <DocIcon />}
+                    </div>
+                  )}
+                  <span className="at-b" style={{ background:`${tc}22`, color:tc }}>
+                    {type.slice(0,3)}
+                  </span>
+                </div>
+              )
+            })}
+            <div className="at at-add" onClick={onUpload} data-hover><AddIcon /></div>
           </div>
         ) : (
           <div style={{ marginTop:'6px' }}>
@@ -266,13 +248,14 @@ export default function NodePane({ onUpload, onPublish }) {
         {shots.length > 0 ? (
           <div className="shot-list-mini">
             {shots.map(sh => (
-              <div key={sh.id} className="shm" data-hover onClick={() => toggleShotStatus(sh)} title="Click to advance status">
+              <div key={sh.id} className="shm" data-hover
+                onClick={() => toggleShotStatus(sh)} title="Click to advance status">
                 <span className="shm-n">{String(sh.number).padStart(2,'0')}</span>
                 <div className="shm-info">
                   <div className="shm-name">{sh.name}</div>
                   <div className="shm-meta">{sh.shot_type} · {sh.shot_kind} · {sh.duration}</div>
                 </div>
-                <div className="shm-dot" style={{ background:SH_COLOR[sh.status]??'#2A2720' }} title={sh.status} />
+                <div className="shm-dot" style={{ background:SH_COLOR[sh.status]??'#2A2720' }} />
               </div>
             ))}
           </div>
@@ -298,7 +281,7 @@ export default function NodePane({ onUpload, onPublish }) {
               {windowUrl && (
                 <button className="wl-copy" onClick={() => {
                   navigator.clipboard.writeText(windowUrl)
-                  showToast('Window link copied. Send to your client.', '#4ADE80')
+                  showToast('Window link copied.', '#4ADE80')
                   setShowWindow(false)
                 }} data-hover>Copy</button>
               )}

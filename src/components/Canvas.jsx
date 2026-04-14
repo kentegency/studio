@@ -8,62 +8,75 @@ import QuickCapture from './capture/QuickCapture'
 import Upload from './upload/Upload'
 import PublishPanel from './publish/PublishPanel'
 import Notifications from './shell/Notifications'
+import AssetViewer from './viewer/Viewer'
 import SketchOverlay from './overlays/SketchOverlay'
 import CompareOverlay from './overlays/CompareOverlay'
 import StageOverlay from './overlays/StageOverlay'
 import BriefOverlay from './overlays/BriefOverlay'
 import DigestOverlay from './overlays/DigestOverlay'
+import InvitePanel from './contributor/InvitePanel'
+import WrapPanel from './wrap/WrapPanel'
+import './wrap/Wrap.css'
+import './contributor/Contributor.css'
 import { useUIStore, useProjectStore } from '../stores'
 import { supabase } from '../lib/supabase'
 import './Canvas.css'
 import './upload/Upload.css'
 import './publish/Publish.css'
 import './shell/Notifications.css'
+import './viewer/Viewer.css'
 
 export default function Canvas() {
   const { overlays } = useUIStore()
   const { currentProject } = useProjectStore()
-  const [showUpload,  setShowUpload]  = useState(false)
-  const [showPublish, setShowPublish] = useState(false)
-  const [showNotifs,  setShowNotifs]  = useState(false)
-  const [notifCount,  setNotifCount]  = useState(0)
+  const [showUpload,   setShowUpload]   = useState(false)
+  const [showPublish,  setShowPublish]  = useState(false)
+  const [showNotifs,   setShowNotifs]   = useState(false)
+  const [showInvite,   setShowInvite]   = useState(false)
+  const [showWrap,     setShowWrap]     = useState(false)
+  const [notifCount,   setNotifCount]   = useState(0)
+  const [viewerAsset,  setViewerAsset]  = useState(null)
+  const [viewerList,   setViewerList]   = useState([])
+  const [viewerIdx,    setViewerIdx]    = useState(0)
+
+  // Expose viewer opener globally so NodePane can trigger it
+  useEffect(() => {
+    window.__openViewer = (asset, list, idx) => {
+      setViewerAsset(asset)
+      setViewerList(list)
+      setViewerIdx(idx)
+    }
+    return () => { delete window.__openViewer }
+  }, [])
 
   // Real-time notification count
   useEffect(() => {
     if (!currentProject) return
     fetchUnread()
-
     const sub = supabase
       .channel(`notif-count-${currentProject.id}`)
       .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notes',
+        event: 'INSERT', schema: 'public', table: 'notes',
         filter: `project_id=eq.${currentProject.id}`,
       }, (payload) => {
-        if (payload.new.room !== 'studio') {
-          setNotifCount(n => n + 1)
-        }
+        if (payload.new.room !== 'studio') setNotifCount(n => n + 1)
       })
       .subscribe()
-
     return () => supabase.removeChannel(sub)
   }, [currentProject?.id])
 
   const fetchUnread = async () => {
-    const { count } = await supabase
-      .from('notes')
-      .select('*', { count: 'exact', head: true })
+    const { count } = await supabase.from('notes')
+      .select('*', { count:'exact', head:true })
       .eq('project_id', currentProject.id)
       .neq('room', 'studio')
       .gte('created_at', new Date(Date.now() - 86400000).toISOString())
     setNotifCount(count ?? 0)
   }
 
-  const openNotifs = () => {
-    setShowNotifs(true)
-    setNotifCount(0)
-  }
+  const closeViewer = () => setViewerAsset(null)
+  const nextAsset   = () => { const i = viewerIdx + 1; if (i < viewerList.length) { setViewerAsset(viewerList[i]); setViewerIdx(i) } }
+  const prevAsset   = () => { const i = viewerIdx - 1; if (i >= 0) { setViewerAsset(viewerList[i]); setViewerIdx(i) } }
 
   return (
     <div className="canvas-shell">
@@ -73,9 +86,11 @@ export default function Canvas() {
       <Sidebar
         onUpload={() => setShowUpload(true)}
         onPublish={() => setShowPublish(true)}
-        onNotifs={openNotifs}
+        onInvite={() => setShowInvite(true)}
+        onWrap={() => setShowWrap(true)}
+        onNotifs={() => { setShowNotifs(true); setNotifCount(0) }}
         notifCount={notifCount} />
-      <Topbar />
+      <Topbar onWrap={() => setShowWrap(true)} />
       <main className="canvas-main"><Timeline /></main>
       <Minimap />
       <RightPanel
@@ -84,6 +99,14 @@ export default function Canvas() {
 
       <QuickCapture />
 
+      {/* Full-screen overlays — render at top level */}
+      {viewerAsset  && <AssetViewer asset={viewerAsset} onClose={closeViewer}
+        onNext={nextAsset} onPrev={prevAsset}
+        hasNext={viewerIdx < viewerList.length - 1}
+        hasPrev={viewerIdx > 0} />}
+
+      {showWrap     && <WrapPanel onClose={() => setShowWrap(false)} />}
+      {showInvite   && <InvitePanel onClose={() => setShowInvite(false)} />}
       {showUpload   && <Upload       onClose={() => setShowUpload(false)} />}
       {showPublish  && <PublishPanel onClose={() => setShowPublish(false)} />}
       {showNotifs   && <Notifications onClose={() => setShowNotifs(false)} />}
