@@ -45,6 +45,15 @@ export default function App() {
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') closeAll()
+      // M — moodboard
+      if (e.key === 'm' && !e.metaKey && !e.ctrlKey) {
+        const active = document.activeElement
+        if (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') {
+          e.preventDefault()
+          useUIStore.getState().openOverlay('moodboard')
+          return
+        }
+      }
       // ? — keyboard shortcuts reference
       if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
         const active = document.activeElement

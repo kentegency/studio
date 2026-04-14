@@ -273,7 +273,7 @@ export const useUIStore = create((set) => ({
   activeTab:  'node',
   overlays: {
     sketch: false, compare: false, stage: false,
-    brief: false, digest: false, quickCapture: false,
+    brief: false, digest: false, quickCapture: false, moodboard: false,
   },
   toast:      { message: '', color: 'var(--orange)', visible: false },
   offline:    false,

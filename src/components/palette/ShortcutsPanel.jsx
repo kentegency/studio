@@ -19,7 +19,10 @@ const SHORTCUTS = [
   { key: '→',         label: 'Next scene' },
   { key: 'Esc',       label: 'Back to arc view' },
 
-  { section: 'Sidebar' },
+  { section: 'Views' },
+  { key: 'M',         label: 'Open Moodboard — all visual references' },
+  { key: '⌥ S',       label: 'Open Stage mode — present scenes' },
+  { key: 'S',         label: 'Advance status on selected scene' },
   { key: 'G D',       label: 'Go to dashboard' },
   { key: 'G N',       label: 'Go to notifications' },
   { key: 'U',         label: 'Upload assets' },

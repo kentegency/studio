@@ -45,6 +45,10 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
           </button>
           {showView && (
             <div className="tb-view-menu" onMouseLeave={() => setShowView(false)}>
+              <button className="tb-vm-item" onClick={() => { openOverlay('moodboard'); setShowView(false) }}>
+                Moodboard
+                <span>All visual references</span>
+              </button>
               <button className="tb-vm-item" onClick={() => { openOverlay('digest'); setShowView(false) }}>
                 Digest
                 <span>Project overview</span>

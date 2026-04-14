@@ -26,6 +26,7 @@ import './contributor/Contributor.css'
 import CommandPalette from './palette/CommandPalette'
 import ShortcutsPanel from './palette/ShortcutsPanel'
 import SessionTile    from './session/SessionTile'
+import Moodboard      from './moodboard/Moodboard'
 import ErrorBoundary from './ErrorBoundary'
 import { useUIStore, useProjectStore } from '../stores'
 import { supabase } from '../lib/supabase'
@@ -36,7 +37,7 @@ import './shell/Notifications.css'
 import './viewer/Viewer.css'
 
 export default function Canvas() {
-  const { overlays, activeRoom } = useUIStore()
+  const { overlays, activeRoom, closeOverlay } = useUIStore()
   const { currentProject } = useProjectStore()
 
   // Inject project accent colour as CSS variable
@@ -156,6 +157,7 @@ export default function Canvas() {
           onActs={() => setShowActs(true)}
           onVoice={() => setShowVoice(true)} />
       )}
+      {overlays.moodboard && <Moodboard onClose={() => closeOverlay('moodboard')} />}
       {showShortcuts && <ShortcutsPanel onClose={() => setShowShortcuts(false)} />}
       {sessionToken  && (
         <SessionTile

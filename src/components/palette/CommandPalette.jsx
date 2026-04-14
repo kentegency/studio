@@ -23,6 +23,8 @@ function useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, 
     // ── VIEWS
     { id:'stage',       group:'View',      label:'Open Stage mode',           shortcut:'⌥ S', icon:'▶',
       action: () => { openOverlay('stage'); onClose() } },
+    { id:'moodboard',   group:'View',      label:'Open Moodboard — all references', shortcut:'M', icon:'⊡',
+      action: () => { openOverlay('moodboard'); onClose() } },
     { id:'brief',       group:'View',      label:'Open Creative Brief',       shortcut:'',    icon:'☰',
       action: () => { openOverlay('brief'); onClose() } },
     { id:'digest',      group:'View',      label:'Open Project Digest',       shortcut:'',    icon:'◎',
