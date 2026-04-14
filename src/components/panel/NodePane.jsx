@@ -54,12 +54,17 @@ export default function NodePane({ onUpload }) {
   const [notesLoading,  setNotesLoading]  = useState(false)
 
   useEffect(() => {
-    if (selectedNode?.id) {
-      setAssetsLoading(true)
-      setNotesLoading(true)
-      fetchAssets(selectedNode.id).finally(() => setAssetsLoading(false))
-      fetchNotes(selectedNode.id).finally(() => setNotesLoading(false))
-    }
+    if (!selectedNode?.id) return
+    setAssetsLoading(true)
+    setNotesLoading(true)
+    ;(async () => {
+      await fetchAssets(selectedNode.id)
+      setAssetsLoading(false)
+    })()
+    ;(async () => {
+      await fetchNotes(selectedNode.id)
+      setNotesLoading(false)
+    })()
   }, [selectedNode?.id])
 
   const showSaved = () => { setSaveIndicator(true); setTimeout(() => setSaveIndicator(false), 2000) }
@@ -145,7 +150,7 @@ export default function NodePane({ onUpload }) {
         {confirmLock && (
           <ConfirmModal
             title={`Lock "${name}"?`}
-            body={<>Locking this scene marks it as final. <strong>No further edits</strong> can be made. George will be notified.</>}
+            body={<>Locking this scene marks it as final. <strong>No further edits</strong> can be made without unlocking. Contributors will be notified.</>}
             confirmLabel="Lock scene →"
             danger
             onConfirm={lockNode}

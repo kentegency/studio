@@ -93,7 +93,7 @@ export default function InvitePanel({ onClose }) {
             <div className="cf-field">
               <label className="cf-label">Name</label>
               <input className="cf-input" type="text"
-                placeholder="Kwame Asante"
+                placeholder="Contributor name"
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 required autoFocus />

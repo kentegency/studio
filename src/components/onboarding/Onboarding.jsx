@@ -14,7 +14,7 @@ const STEPS = [
   {
     id:       'project',
     title:    'Open or create a project',
-    body:     'Everything lives inside a project. Your EBAN project is already there — click it from the dashboard to open the canvas.',
+    body:     'Everything lives inside a project. Create your first project from the dashboard, or open an existing one to enter the canvas.',
     target:   '.db-card, .dash-card',
     position: 'bottom',
     action:   'Got it →',
@@ -38,7 +38,7 @@ const STEPS = [
   {
     id:       'window',
     title:    'Share your Window with the client',
-    body:     'Publish content to the Window room, generate a link, and send it to George. He opens it on any browser — no login needed. He can react and approve.',
+    body:     'Publish content to the Window room, generate a link, and send it to your client. They open it on any browser — no login needed. They can react and approve.',
     target:   '.window-link-btn',
     position: 'left',
     action:   'Start producing →',
