@@ -9,6 +9,7 @@ import Canvas from './components/Canvas'
 import Window from './components/window/Window'
 import ContributorView from './components/contributor/ContributorView'
 import Onboarding from './components/onboarding/Onboarding'
+import { undoStack } from './lib/undo'
 import { Toast, OfflineBanner } from './components/Toast'
 import './styles/tokens.css'
 import './components/overlays/Overlays.css'
@@ -41,6 +42,17 @@ export default function App() {
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') closeAll()
+      // Cmd+Z / Ctrl+Z — global undo
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault()
+        const action = undoStack.pop()
+        if (action?.undo) {
+          action.undo()
+          showToast(`Undone: ${action.label}`, '#4ADE80', 2500)
+        } else {
+          showToast('Nothing to undo.', 'var(--mute)', 1500)
+        }
+      }
       if ((e.key === 'o' || e.key === 'O') && !e.metaKey && !e.ctrlKey) {
         const next = !useUIStore.getState().offline
         useUIStore.getState().setOffline(next)

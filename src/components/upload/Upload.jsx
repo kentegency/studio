@@ -123,7 +123,15 @@ export default function Upload({ onClose }) {
                   </div>
                 </div>
                 <div className="ui-right">
-                  {item.error && <span className="ui-error">Failed</span>}
+                  {item.error && (
+                    <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                      <span className="ui-error">Failed</span>
+                      <button className="ui-retry" onClick={() => uploadFile(item)}
+                        data-hover title="Retry upload">
+                        ↩ Retry
+                      </button>
+                    </div>
+                  )}
                   {item.done  && <span className="ui-done">✓</span>}
                   {!item.done && !item.error && (
                     <div className="ui-bar">

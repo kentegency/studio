@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useNodeStore, useProjectStore, useUIStore } from '../../stores'
+import { undoStack } from '../../lib/undo'
 import EmptyState from '../EmptyState'
 import '../EmptyState.css'
 import './Panes.css'
@@ -40,10 +41,18 @@ export function ShotsPane() {
 
   const cycleStatus = async (shot) => {
     const order = ['pending','progress','done']
-    const next  = order[(order.indexOf(shot.status) + 1) % order.length]
+    const prev  = shot.status ?? 'pending'
+    const next  = order[(order.indexOf(prev) + 1) % order.length]
     await supabase.from('shots').update({ status: next }).eq('id', shot.id)
     setShots(s => s.map(sh => sh.id === shot.id ? { ...sh, status: next } : sh))
-    showToast(`Shot ${shot.number} → ${SH_LABEL[next]}`)
+    undoStack.push({
+      label: `Shot ${shot.number} → ${SH_LABEL[next]}`,
+      undo: async () => {
+        await supabase.from('shots').update({ status: prev }).eq('id', shot.id)
+        setShots(s => s.map(sh => sh.id === shot.id ? { ...sh, status: prev } : sh))
+      }
+    })
+    showToast(`Shot ${shot.number} → ${SH_LABEL[next]}`, 'var(--orange)', 5000)
   }
 
   const saveShot = async (e) => {

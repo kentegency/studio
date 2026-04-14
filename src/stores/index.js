@@ -289,8 +289,12 @@ export const useUIStore = create((set) => ({
     overlays: Object.fromEntries(Object.keys(s.overlays).map(k => [k, false]))
   })),
 
-  showToast: (message, color = 'var(--orange)') => {
+  showToast: (message, color = 'var(--orange)', duration = 3000) => {
     set({ toast: { message, color, visible: true } })
-    setTimeout(() => set(s => ({ toast: { ...s.toast, visible: false } })), 2800)
+    clearTimeout(window.__toastTimer)
+    window.__toastTimer = setTimeout(
+      () => set(s => ({ toast: { ...s.toast, visible: false } })),
+      duration
+    )
   },
 }))

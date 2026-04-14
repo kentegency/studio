@@ -125,3 +125,13 @@
   transition: background var(--dur-mid) var(--ease);
 }
 .upload-done-btn:hover { background: rgba(245,146,12,.06); }
+
+.ui-retry {
+  font-size: 11px; letter-spacing: .14em;
+  color: var(--orange); text-transform: uppercase;
+  background: none; border: .5px solid rgba(245,146,12,.25);
+  border-radius: 2px; padding: 3px 8px;
+  font-family: var(--font-mono);
+  transition: background var(--dur-mid) var(--ease);
+}
+.ui-retry:hover { background: rgba(245,146,12,.08); }

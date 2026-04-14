@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNodeStore, useUIStore, useAssetsStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
 import { supabase } from '../../lib/supabase'
+import { undoStack } from '../../lib/undo'
 import EmptyState from '../EmptyState'
+import ConfirmModal from '../ConfirmModal'
 import './Panes.css'
 import '../EmptyState.css'
 
@@ -49,6 +51,7 @@ export default function NodePane({ onUpload }) {
   const [newShot,      setNewShot]      = useState({ name:'', shot_type:'CU', shot_kind:'Drama enactment', duration:'00:05' })
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [saveIndicator,  setSaveIndicator]  = useState(false)
+  const [confirmLock,    setConfirmLock]    = useState(false)
 
   useEffect(() => {
     if (selectedNode?.id) {
@@ -87,11 +90,24 @@ export default function NodePane({ onUpload }) {
 
   const cycleStatus = async () => {
     if (!selectedNode?.id || updatingStatus) return
-    const idx  = STATUSES.indexOf(status)
+    const prev = selectedNode.status ?? 'concept'
+    const idx  = STATUSES.indexOf(prev)
     const next = STATUSES[(idx + 1) % STATUSES.length]
     setUpdatingStatus(true)
     const { data } = await updateNode(selectedNode.id, { status: next })
-    if (data) { selectNode({ ...selectedNode, status: next }); showSaved(); showToast(`Status → ${STATUS_LABELS[next]}`) }
+    if (data) {
+      selectNode({ ...selectedNode, status: next })
+      showSaved()
+      // Push undo action
+      undoStack.push({
+        label: `Status → ${STATUS_LABELS[next]}`,
+        undo: async () => {
+          await updateNode(selectedNode.id, { status: prev })
+          selectNode({ ...selectedNode, status: prev })
+        }
+      })
+      showToast(`Status → ${STATUS_LABELS[next]}`, 'var(--orange)', 5000)
+    }
     setUpdatingStatus(false)
   }
 
@@ -99,15 +115,28 @@ export default function NodePane({ onUpload }) {
     if (!selectedNode?.id) return
     await updateNode(selectedNode.id, { locked:true, status:'locked', locked_by:user?.id, locked_at:new Date().toISOString() })
     selectNode({ ...selectedNode, status:'locked', locked:true })
-    showSaved(); showToast('Node locked.', '#4ADE80')
+    setConfirmLock(false)
+    showSaved()
+    showToast('Node locked. No further edits.', '#4ADE80', 3000)
   }
 
   const saveNote = async () => {
     if (!newNote.trim() || !selectedNode) return
     const pid = currentProject?.id
     if (!pid) { showToast('Open a project first.', '#E05050'); return }
-    await addNote({ project_id:pid, node_id:selectedNode.id, author_id:user?.id, body:newNote, color:noteColor, room:'studio' })
-    setNewNote(''); setAddingNote(false); showSaved(); showToast('Note saved.')
+    const { data } = await addNote({ project_id:pid, node_id:selectedNode.id, author_id:user?.id, body:newNote, color:noteColor, room:'studio' })
+    setNewNote(''); setAddingNote(false); showSaved()
+    // Push undo — delete the note we just added
+    if (data?.id) {
+      undoStack.push({
+        label: 'Note saved',
+        undo: async () => {
+          await supabase.from('notes').delete().eq('id', data.id)
+          await fetchNotes(selectedNode.id)
+        }
+      })
+    }
+    showToast('Note saved.', 'var(--orange)', 5000)
   }
 
   const saveShot = async (e) => {
@@ -141,6 +170,16 @@ export default function NodePane({ onUpload }) {
     <div className="node-pane">
       {/* Header */}
       <div className="rph">
+        {confirmLock && (
+          <ConfirmModal
+            title={`Lock "${name}"?`}
+            body={<>Locking this scene marks it as final. <strong>No further edits</strong> can be made. George will be notified.</>}
+            confirmLabel="Lock scene →"
+            danger
+            onConfirm={lockNode}
+            onCancel={() => setConfirmLock(false)}
+          />
+        )}
         <div className="rp-ey">{act || `${selectedNode.type ?? 'scene'} · ${Math.round((selectedNode.position ?? 0) * 100)}%`}</div>
         <div className="rp-ti">{name}</div>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -345,7 +384,9 @@ export default function NodePane({ onUpload }) {
         )}
         {selectedNode && !selectedNode.locked && notes.length > 0 && (
           <div className="lock-row">
-            <button className="lock-btn" onClick={lockNode} data-hover>⊠ Lock this node</button>
+            <button className="lock-btn" onClick={() => setConfirmLock(true)} data-hover>
+              ⊠ Lock this scene
+            </button>
           </div>
         )}
         {selectedNode?.locked && (

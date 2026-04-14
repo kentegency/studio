@@ -66,10 +66,11 @@ export default function InvitePanel({ onClose }) {
     showToast('Invite link copied.', '#4ADE80')
   }
 
-  const revokeContributor = async (id) => {
-    await supabase.from('contributors').delete().eq('id', id)
-    setContributors(prev => prev.filter(c => c.id !== id))
-    showToast('Contributor removed.')
+  const revokeContributor = async (contributor) => {
+    if (!window.confirm(`Remove ${contributor.name} from this project? Their link will stop working immediately.`)) return
+    await supabase.from('contributors').delete().eq('id', contributor.id)
+    setContributors(prev => prev.filter(c => c.id !== contributor.id))
+    showToast(`${contributor.name} removed.`)
   }
 
   const COLORS = ['#1E8A8A','#F5920C','#4ADE80','#8B5CF6','#EC4899','#F4EFD8']
@@ -193,7 +194,7 @@ export default function InvitePanel({ onClose }) {
                   <button className="ce-copy" onClick={() => copyLink(link)} data-hover>
                     Copy link
                   </button>
-                  <button className="ce-revoke" onClick={() => revokeContributor(c.id)} data-hover>
+                  <button className="ce-revoke" onClick={() => revokeContributor(c)} data-hover>
                     Revoke
                   </button>
                 </div>
