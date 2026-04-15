@@ -274,7 +274,7 @@ export default function Window({ token }) {
             <div className="win-approve-confirm">
               <div className="wac-title">Send approval to your Creative Director?</div>
               <div className="wac-body">
-                This will mark <strong>{selected.name}</strong> as approved and notify Leonard immediately.
+                This will mark <strong>{selected.name}</strong> as approved and notify the Creative Director immediately.
               </div>
               <div className="wac-actions">
                 <button className="wac-cancel" onClick={cancelApproval}>Cancel</button>

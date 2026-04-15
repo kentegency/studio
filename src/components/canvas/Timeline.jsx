@@ -11,16 +11,17 @@ const ACTS_DEMO = [
   { x:594, width:300, fill:'rgba(90,18,10,0.052)',   stroke:'rgba(120,38,22,0.1)',    label:'III — FUTURE', labelFill:'rgba(180,60,30,0.65)',   labelX:598 },
 ]
 
+// Demo nodes — generic placeholder shown only when no real project is loaded
 const DEMO_NODES = [
-  { id:'cn0', cx:58,  cy:53, r:10, fill:'#1E8A8A', label:'OPENING',    labelFill:'#3A7070', glow:true,  glowFill:'rgba(30,138,138,0.15)',  status:'progress', act:'Act I — Past · Scene 01',     name:'Opening Sequence',  position:.06, emphasis:1.8, type:'scene' },
-  { id:'cn1', cx:148, cy:53, r:5,  fill:'#1A3A3A', label:'PIONEERS',   labelFill:'#2A5050', glow:false, status:'concept',  act:'Act I — Past · Scene 02',     name:'Pioneers',          position:.16, emphasis:1.0, type:'scene' },
-  { id:'cn2', cx:238, cy:53, r:5,  fill:'#1A3A3A', label:'CRACKS',     labelFill:'#2A5050', glow:false, status:'concept',  act:'Act I — Past · Scene 03',     name:'First Cracks',      position:.265,emphasis:1.0, type:'scene' },
-  { id:'cn3', cx:356, cy:53, r:12, fill:'#C07010', label:'BATTLES',    labelFill:'#A06020', glow:true,  glowFill:'rgba(245,146,12,0.1)', glowDelay:'.5s', status:'review', act:'Act II — Present · Scene 01', name:'Battles & Breaches',position:.375,emphasis:1.6, type:'scene' },
-  { id:'cn4', cx:454, cy:53, r:5,  fill:'#6A4808', label:'FRAUD',      labelFill:'#7A5030', glow:false, status:'concept',  act:'Act II — Present · Scene 02', name:'Fraud Vectors',     position:.485,emphasis:1.0, type:'scene' },
-  { id:'cn5', cx:548, cy:53, r:7,  fill:'#7A5010', label:'COST',       labelFill:'#8A6030', glow:false, status:'concept',  act:'Act II — Present · Scene 03', name:'The Human Cost',    position:.595,emphasis:1.2, type:'scene' },
-  { id:'cn6', cx:648, cy:53, r:5,  fill:'#581818', label:'RESILIENCE', labelFill:'#683030', glow:false, status:'concept',  act:'Act III — Future · Scene 01', name:'Resilience',        position:.695,emphasis:1.0, type:'scene' },
-  { id:'cn7', cx:758, cy:53, r:9,  fill:'#721818', label:'YOUTH',      labelFill:'#823030', glow:true,  glowFill:'rgba(96,20,8,0.14)', glowDelay:'1.2s', status:'concept', act:'Act III — Future · Scene 02', name:'Youth Defenders',   position:.815,emphasis:1.4, type:'scene' },
-  { id:'cn8', cx:862, cy:53, r:5,  fill:'#481010', label:'FUTURE',     labelFill:'#582828', glow:false, status:'concept',  act:'Act III — Future · Scene 03', name:'The Future Arc',    position:.945,emphasis:1.0, type:'scene' },
+  { id:'cn0', cx:80,  cy:53, r:8,  fill:'#1A3028', label:'Scene 01', labelFill:'#3A7070', glow:false, status:'concept', act:'Zone I · 01',  name:'Scene 01', position:.08, emphasis:1.4, type:'scene' },
+  { id:'cn1', cx:175, cy:53, r:5,  fill:'#1A3028', label:'Scene 02', labelFill:'#2A5050', glow:false, status:'concept', act:'Zone I · 02',  name:'Scene 02', position:.19, emphasis:1.0, type:'scene' },
+  { id:'cn2', cx:270, cy:53, r:5,  fill:'#1A3028', label:'Scene 03', labelFill:'#2A5050', glow:false, status:'concept', act:'Zone I · 03',  name:'Scene 03', position:.30, emphasis:1.0, type:'scene' },
+  { id:'cn3', cx:390, cy:53, r:10, fill:'#382808', label:'Scene 04', labelFill:'#A06020', glow:false, status:'concept', act:'Zone II · 01', name:'Scene 04', position:.43, emphasis:1.6, type:'scene' },
+  { id:'cn4', cx:480, cy:53, r:5,  fill:'#382808', label:'Scene 05', labelFill:'#7A5030', glow:false, status:'concept', act:'Zone II · 02', name:'Scene 05', position:.53, emphasis:1.0, type:'scene' },
+  { id:'cn5', cx:570, cy:53, r:6,  fill:'#382808', label:'Scene 06', labelFill:'#8A6030', glow:false, status:'concept', act:'Zone II · 03', name:'Scene 06', position:.63, emphasis:1.2, type:'scene' },
+  { id:'cn6', cx:680, cy:53, r:5,  fill:'#281010', label:'Scene 07', labelFill:'#583030', glow:false, status:'concept', act:'Zone III · 01',name:'Scene 07', position:.75, emphasis:1.0, type:'scene' },
+  { id:'cn7', cx:775, cy:53, r:8,  fill:'#281010', label:'Scene 08', labelFill:'#683030', glow:false, status:'concept', act:'Zone III · 02',name:'Scene 08', position:.86, emphasis:1.4, type:'scene' },
+  { id:'cn8', cx:870, cy:53, r:5,  fill:'#281010', label:'Scene 09', labelFill:'#482828', glow:false, status:'concept', act:'Zone III · 03',name:'Scene 09', position:.97, emphasis:1.0, type:'scene' },
 ]
 
 const STATUS_FILL  = { concept:'#3A3020', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
@@ -29,6 +30,9 @@ const ACT_COLORS   = {
   teal:   { fill:'rgba(30,138,138,0.055)',  stroke:'rgba(30,138,138,0.13)',  labelFill:'rgba(30,138,138,0.65)'  },
   orange: { fill:'rgba(245,146,12,0.042)',  stroke:'rgba(245,146,12,0.1)',   labelFill:'rgba(245,146,12,0.6)'   },
   red:    { fill:'rgba(90,18,10,0.052)',    stroke:'rgba(120,38,22,0.1)',    labelFill:'rgba(180,60,30,0.65)'   },
+  purple: { fill:'rgba(139,92,246,0.042)', stroke:'rgba(139,92,246,0.12)',  labelFill:'rgba(139,92,246,0.65)'  },
+  green:  { fill:'rgba(74,222,128,0.038)', stroke:'rgba(74,222,128,0.1)',   labelFill:'rgba(74,222,128,0.6)'   },
+  blue:   { fill:'rgba(59,130,246,0.042)', stroke:'rgba(59,130,246,0.12)',  labelFill:'rgba(59,130,246,0.6)'   },
 }
 
 // ── SCENE MODE — status-led working inspector ─────────────────

@@ -168,7 +168,7 @@ export default function SettingsPanel({ onClose }) {
                 <label className="sf-label">Project name</label>
                 <input className="sf-input" value={projName}
                   onChange={e => setProjName(e.target.value)}
-                  placeholder="EBAN — Ghana's Cybersecurity Journey" />
+                  placeholder="Project name" />
               </div>
 
               <div className="sf-field">

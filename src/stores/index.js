@@ -102,7 +102,6 @@ export const useProjectStore = create((set, get) => ({
   setActs: (acts) => set({ acts }),
 
   createProject: async (payload) => {
-    // Use auth.users id directly — no profiles dependency
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { data: null, error: { message: 'Not logged in' } }
 
@@ -114,12 +113,58 @@ export const useProjectStore = create((set, get) => ({
 
     if (!error && data) {
       set(s => ({ projects: [data, ...s.projects] }))
-      // Create default acts
-      const defaultActs = [
-        { project_id: data.id, name: 'Act I',   position: 0,    end_pos: 0.33, color: 'teal',   order_index: 0 },
-        { project_id: data.id, name: 'Act II',  position: 0.33, end_pos: 0.66, color: 'orange', order_index: 1 },
-        { project_id: data.id, name: 'Act III', position: 0.66, end_pos: 1,    color: 'red',    order_index: 2 },
-      ]
+
+      // Default acts — vary by project type so each project type
+      // opens with structure that makes sense for its discipline
+      const type = payload.type ?? 'film'
+      const ACT_TEMPLATES = {
+        film:     [
+          { name: 'Act I',    color: 'teal',   position: 0,    end_pos: 0.33 },
+          { name: 'Act II',   color: 'orange', position: 0.33, end_pos: 0.66 },
+          { name: 'Act III',  color: 'red',    position: 0.66, end_pos: 1    },
+        ],
+        music:    [
+          { name: 'Intro',    color: 'teal',   position: 0,    end_pos: 0.20 },
+          { name: 'Verse',    color: 'orange', position: 0.20, end_pos: 0.55 },
+          { name: 'Chorus',   color: 'purple', position: 0.55, end_pos: 0.80 },
+          { name: 'Outro',    color: 'red',    position: 0.80, end_pos: 1    },
+        ],
+        brand:    [
+          { name: 'Problem',  color: 'teal',   position: 0,    end_pos: 0.33 },
+          { name: 'Solution', color: 'orange', position: 0.33, end_pos: 0.66 },
+          { name: 'Promise',  color: 'green',  position: 0.66, end_pos: 1    },
+        ],
+        website:  [
+          { name: 'Hero',     color: 'teal',   position: 0,    end_pos: 0.25 },
+          { name: 'Content',  color: 'orange', position: 0.25, end_pos: 0.75 },
+          { name: 'CTA',      color: 'green',  position: 0.75, end_pos: 1    },
+        ],
+        campaign: [
+          { name: 'Awareness',color: 'teal',   position: 0,    end_pos: 0.33 },
+          { name: 'Engage',   color: 'orange', position: 0.33, end_pos: 0.66 },
+          { name: 'Convert',  color: 'green',  position: 0.66, end_pos: 1    },
+        ],
+        photo:    [
+          { name: 'Opening',  color: 'teal',   position: 0,    end_pos: 0.33 },
+          { name: 'Feature',  color: 'orange', position: 0.33, end_pos: 0.66 },
+          { name: 'Close',    color: 'red',    position: 0.66, end_pos: 1    },
+        ],
+        other:    [
+          { name: 'Part I',   color: 'teal',   position: 0,    end_pos: 0.33 },
+          { name: 'Part II',  color: 'orange', position: 0.33, end_pos: 0.66 },
+          { name: 'Part III', color: 'red',    position: 0.66, end_pos: 1    },
+        ],
+      }
+
+      const template = ACT_TEMPLATES[type] ?? ACT_TEMPLATES.other
+      const defaultActs = template.map((a, i) => ({
+        project_id:  data.id,
+        name:        a.name,
+        position:    a.position,
+        end_pos:     a.end_pos,
+        color:       a.color,
+        order_index: i,
+      }))
       await supabase.from('acts').insert(defaultActs)
     }
     return { data, error }

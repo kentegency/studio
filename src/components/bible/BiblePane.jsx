@@ -20,8 +20,8 @@ const CONTACT_STATUS = {
 }
 
 const SUBJECT_CATEGORIES = [
-  'Academic', 'Politician', 'Cybersecurity', 'Cultural', 'Institutional',
-  'Industry', 'Civil Society', 'Journalist', 'Youth', 'Other',
+  'Artist', 'Director', 'Producer', 'Academic', 'Executive',
+  'Politician', 'Cultural', 'Institutional', 'Talent', 'Other',
 ]
 
 // ── AVATAR ────────────────────────────────────────────────────

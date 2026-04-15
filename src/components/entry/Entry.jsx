@@ -9,12 +9,12 @@ export default function Entry() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setStep(1), 180),   // eyebrow
-      setTimeout(() => setStep(2), 400),   // title
-      setTimeout(() => setStep(3), 680),   // rule
-      setTimeout(() => setStep(4), 820),   // logline
-      setTimeout(() => setStep(5), 950),   // line
-      setTimeout(() => setStep(6), 2200),  // invite + minimap
+      setTimeout(() => setStep(1), 180),
+      setTimeout(() => setStep(2), 400),
+      setTimeout(() => setStep(3), 680),
+      setTimeout(() => setStep(4), 820),
+      setTimeout(() => setStep(5), 950),
+      setTimeout(() => setStep(6), 2200),
     ]
     return () => timers.forEach(clearTimeout)
   }, [])
@@ -38,17 +38,17 @@ export default function Entry() {
 
       <div className={`entry-title ${step >= 2 ? 'on' : ''}`}>
         <div className="entry-t1">
-          <span>EBAN</span>
+          <span>The Kentegency</span>
           <span className="entry-slash">&nbsp;/</span>
         </div>
-        <span className="entry-t2">Ghana's Cybersecurity Journey</span>
+        <span className="entry-t2">Where the work is made.</span>
       </div>
 
       <div className={`entry-rule ${step >= 3 ? 'on' : ''}`} />
 
       <div className={`entry-log ${step >= 4 ? 'on' : ''}`}>
-        From the first connection to the next frontier —<br />
-        a nation learning to protect what it values most.
+        Film · Brand · Music · Campaign —<br />
+        one arc, every discipline.
       </div>
 
       <EntryLine visible={step >= 5} />
@@ -60,12 +60,12 @@ export default function Entry() {
       <div className={`entry-mini ${step >= 6 ? 'on' : ''}`}>
         <span className="em-l">arc</span>
         <div className="em-track">
-          <div className="em-zone" style={{ left:'2%', width:'26%', background:'rgba(30,138,138,0.4)' }} />
+          <div className="em-zone" style={{ left:'2%',  width:'26%', background:'rgba(30,138,138,0.4)'  }} />
           <div className="em-zone" style={{ left:'30%', width:'31%', background:'rgba(245,146,12,0.32)' }} />
-          <div className="em-zone" style={{ left:'63%', width:'34%', background:'rgba(180,60,30,0.36)' }} />
+          <div className="em-zone" style={{ left:'63%', width:'34%', background:'rgba(180,60,30,0.36)'  }} />
           <div className="em-indicator" />
         </div>
-        <span className="em-l">9 nodes · 40 min</span>
+        <span className="em-l">your projects · your arc</span>
       </div>
     </div>
   )

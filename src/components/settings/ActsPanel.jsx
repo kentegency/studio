@@ -139,7 +139,7 @@ export default function ActsPanel({ onClose }) {
         {adding ? (
           <form className="act-add-form" onSubmit={addAct}>
             <div className="aaf-row">
-              <input className="sf-input" placeholder="Act name — e.g. Act I — Past"
+              <input className="sf-input" placeholder="e.g. Act I, Intro, Problem, Hero…"
                 value={newAct.name}
                 onChange={e => setNewAct(a => ({ ...a, name: e.target.value }))}
                 required autoFocus />

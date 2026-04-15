@@ -122,7 +122,7 @@ export default function Dashboard() {
               <div className="dcf-field">
                 <label className="dcf-label">Project Name</label>
                 <input className="dcf-input" type="text"
-                  placeholder="EBAN — Ghana's Cybersecurity Journey"
+                  placeholder="e.g. Adansi · Brand film for a Ghanaian coffee brand"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   required autoFocus />
