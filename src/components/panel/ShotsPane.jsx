@@ -13,7 +13,7 @@ const SH_LABEL = { done:'Done', progress:'In progress', pending:'Pending' }
 export function ShotsPane() {
   const { selectedNode }   = useNodeStore()
   const { currentProject } = useProjectStore()
-  const { showToast }      = useUIStore()
+  const { showToast, openOverlay } = useUIStore()
 
   const [shots,      setShots]      = useState([])
   const [loading,    setLoading]    = useState(false)
@@ -98,7 +98,16 @@ export function ShotsPane() {
       {/* Header */}
       <div className="rph">
         <div className="rp-ey">{selectedNode.act ?? selectedNode.name}</div>
-        <div className="rp-ti">Shot List</div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div className="rp-ti">Shot List</div>
+          <button
+            style={{ fontSize:'11px', color:'var(--mute)', background:'none', border:'.5px solid var(--b)', borderRadius:'2px', padding:'3px 9px', fontFamily:'var(--font-mono)', letterSpacing:'.1em', transition:'color var(--dur-fast), border-color var(--dur-fast)' }}
+            onClick={() => openOverlay('storyboard')}
+            data-hover
+            title="Open Storyboard (B)">
+            Storyboard
+          </button>
+        </div>
         {shots.length > 0 && (
           <div style={{ display:'flex', alignItems:'center', gap:'10px', marginTop:'10px' }}>
             <div style={{ flex:1, height:'3px', background:'var(--s3)', borderRadius:'2px', overflow:'hidden' }}>

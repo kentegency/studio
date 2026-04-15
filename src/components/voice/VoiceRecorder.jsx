@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useFocusTrap } from '../../lib/useFocusTrap'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore, useProjectStore, useNodeStore, useNotesStore, useUIStore } from '../../stores'
 import './Voice.css'
@@ -195,7 +196,7 @@ export default function VoiceRecorder({ onClose, nodeId: propNodeId }) {
 
   return (
     <div className="voice-overlay" onClick={e => e.target === e.currentTarget && discard()}>
-      <div className="voice-panel">
+      <div className="voice-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="Voice recorder">
 
         {/* Header */}
         <div className="voice-head">

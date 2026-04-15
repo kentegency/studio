@@ -2,9 +2,26 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 
+// ICE servers — STUN always + TURN if env var configured
+// Free TURN: sign up at metered.ca, set VITE_TURN_USERNAME + VITE_TURN_CREDENTIAL
+const TURN_USER = import.meta.env.VITE_TURN_USERNAME
+const TURN_CRED = import.meta.env.VITE_TURN_CREDENTIAL
+
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
+  // TURN — required for corporate networks with symmetric NAT
+  ...(TURN_USER && TURN_CRED ? [
+    {
+      urls: [
+        'turn:relay.metered.ca:80',
+        'turn:relay.metered.ca:443',
+        'turns:relay.metered.ca:443',
+      ],
+      username:   TURN_USER,
+      credential: TURN_CRED,
+    }
+  ] : []),
 ]
 
 export function useSession(sessionToken, role = 'host') {

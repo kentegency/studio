@@ -9,9 +9,9 @@ const STATUS_RING = {
   locked:   { color:'#4ADE80', glow: false },
 }
 
-export default function Node({ node, selected, onClick }) {
+export default function Node({ node, selected, onClick, isDragging }) {
   const [hovered,    setHovered]    = useState(false)
-  const [shotData,   setShotData]   = useState(null) // { total, done }
+  const [shotData,   setShotData]   = useState(null)
   const [showTooltip,setShowTooltip]= useState(false)
 
   const isRealNode = node.id && !node.id.startsWith('cn')
@@ -37,7 +37,7 @@ export default function Node({ node, selected, onClick }) {
   const ring     = STATUS_RING[status] ?? STATUS_RING.concept
   const ringR    = node.r + 4
   const glowR    = node.r + 10
-  const scale    = selected ? 1.35 : hovered ? 1.2 : 1
+  const scale    = isDragging ? 1.4 : selected ? 1.35 : hovered ? 1.2 : 1
   const cx       = node.cx
   const cy       = node.cy
 
@@ -98,11 +98,12 @@ export default function Node({ node, selected, onClick }) {
       {/* Main circle */}
       <circle
         cx={cx} cy={cy} r={node.r}
-        fill={node.fill}
+        fill={isDragging ? 'rgba(245,146,12,0.8)' : node.fill}
         style={{
           transform: `scale(${scale})`,
           transformOrigin: `${cx}px ${cy}px`,
-          transition: 'transform 0.2s cubic-bezier(.16,1,.3,1)',
+          transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(.16,1,.3,1)',
+          filter: isDragging ? 'drop-shadow(0 0 8px rgba(245,146,12,0.6))' : 'none',
         }} />
 
       {/* Shot count badge — shows inside node if shots exist */}
@@ -132,8 +133,8 @@ export default function Node({ node, selected, onClick }) {
           : (node.label ?? '')}
       </text>
 
-      {/* Hover tooltip */}
-      {showTooltip && (
+      {/* Hover tooltip — hidden while dragging */}
+      {showTooltip && !isDragging && (
         <Tooltip
           cx={cx} cy={cy}
           name={node.name ?? node.label}

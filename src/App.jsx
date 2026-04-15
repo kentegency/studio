@@ -45,6 +45,15 @@ export default function App() {
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') closeAll()
+      // B — storyboard
+      if (e.key === 'b' && !e.metaKey && !e.ctrlKey) {
+        const active = document.activeElement
+        if (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') {
+          e.preventDefault()
+          useUIStore.getState().openOverlay('storyboard')
+          return
+        }
+      }
       // M — moodboard
       if (e.key === 'm' && !e.metaKey && !e.ctrlKey) {
         const active = document.activeElement

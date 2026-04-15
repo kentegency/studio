@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useFocusTrap } from '../../lib/useFocusTrap'
 import { supabase } from '../../lib/supabase'
 import { useProjectStore, useNodeStore, useAuthStore, useUIStore } from '../../stores'
 import './Wrap.css'
@@ -58,6 +59,7 @@ export default function WrapPanel({ onClose }) {
   const { nodes }          = useNodeStore()
   const { profile }        = useAuthStore()
   const { showToast }      = useUIStore()
+  const panelRef = useFocusTrap(true)
   const [generating, setGenerating] = useState(false)
   const [progress,   setProgress]   = useState('')
 
@@ -368,7 +370,7 @@ export default function WrapPanel({ onClose }) {
 
   return (
     <div className="wrap-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="wrap-panel">
+      <div className="wrap-panel" ref={panelRef} role="dialog" aria-modal="true">
         <div className="wrap-head">
           <div>
             <div className="wrap-title">Wrap it</div>

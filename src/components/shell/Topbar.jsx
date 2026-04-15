@@ -49,6 +49,10 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
                 Moodboard
                 <span>All visual references</span>
               </button>
+              <button className="tb-vm-item" onClick={() => { openOverlay('storyboard'); setShowView(false) }}>
+                Storyboard
+                <span>Panel sketches per scene</span>
+              </button>
               <button className="tb-vm-item" onClick={() => { openOverlay('digest'); setShowView(false) }}>
                 Digest
                 <span>Project overview</span>

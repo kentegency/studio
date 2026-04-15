@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useUIStore, useNodeStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
+import { useFocusTrap } from '../../lib/useFocusTrap'
 import './Overlays.css'
 
 // ── SKETCH ────────────────────────────────────
@@ -381,10 +382,11 @@ export function BriefOverlay() {
   const [type,    setType]    = useState('Film')
   const [answers, setAnswers] = useState({})
   const [saved,   setSaved]   = useState(false)
+  const panelRef = useFocusTrap(true)
   const save = () => { showToast('Brief saved.', '#4ADE80'); setSaved(true); setTimeout(() => closeOverlay('brief'), 600) }
   return (
     <div className="overlay modal-overlay" onClick={e => e.target===e.currentTarget && closeOverlay('brief')}>
-      <div className="modal-panel">
+      <div className="modal-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="Creative Brief">
         <div className="modal-head">
           <div>
             <span className="modal-title">Creative Brief</span>
@@ -424,6 +426,7 @@ export function DigestOverlay() {
   const { currentProject } = useProjectStore()
   const { notes }          = useNotesStore()
   const { nodes }          = useNodeStore()
+  const panelRef = useFocusTrap(true)
 
   // Group real notes by type
   const recentNotes = [...notes]
@@ -438,7 +441,7 @@ export function DigestOverlay() {
 
   return (
     <div className="overlay modal-overlay" onClick={e => e.target===e.currentTarget && closeOverlay('digest')}>
-      <div className="digest-panel">
+      <div className="digest-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="Project Digest">
         <div className="modal-head">
           <div>
             <span className="modal-title">Project Digest</span>

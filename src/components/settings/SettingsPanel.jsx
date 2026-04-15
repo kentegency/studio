@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useFocusTrap } from '../../lib/useFocusTrap'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore, useProjectStore, useUIStore } from '../../stores'
 import ConfirmModal from '../ConfirmModal'
@@ -20,6 +21,7 @@ const ACCENT_PRESETS = [
 const PROJECT_TYPES = ['film','brand','music','website','campaign','photo','other']
 
 export default function SettingsPanel({ onClose }) {
+  const panelRef = useFocusTrap(true)
   const { profile, user }    = useAuthStore()
   const { currentProject, setCurrentProject } = useProjectStore()
   const { showToast, setScreen } = useUIStore()
@@ -136,7 +138,7 @@ export default function SettingsPanel({ onClose }) {
           onCancel={() => setConfirmDanger(null)} />
       )}
 
-      <div className="settings-panel">
+      <div className="settings-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="Project settings">
         <div className="settings-head">
           <div className="settings-title">Settings</div>
           <button className="settings-close" onClick={onClose}>×</button>

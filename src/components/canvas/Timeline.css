@@ -346,3 +346,9 @@
   letter-spacing: .02em; max-width: 320px;
   text-align: center; margin-top: 2px;
 }
+
+/* ── DRAG STATE — cursor and selection suppression ── */
+.timeline-svg-wrap svg[style*="grabbing"] * {
+  user-select: none;
+}
+/* Node grab cursor handled inline via g element style */

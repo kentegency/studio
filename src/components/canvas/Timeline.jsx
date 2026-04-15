@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useNodeStore, useUIStore, useProjectStore } from '../../stores'
 import Node from './Node'
 import EmptyState from '../EmptyState'
@@ -190,7 +190,7 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
   )
 }
 export default function Timeline() {
-  const { selectedNode, selectNode, nodes, createNode } = useNodeStore()
+  const { selectedNode, selectNode, nodes, createNode, updateNode } = useNodeStore()
   const { currentProject, acts } = useProjectStore()
   const { setMinimapPos, showToast } = useUIStore()
 
@@ -201,6 +201,12 @@ export default function Timeline() {
   const [creating,    setCreating]    = useState(false)
   const [sceneMode,   setSceneMode]   = useState(false)
   const [zoom,        setZoom]        = useState(1)
+
+  // ── DRAG STATE ────────────────────────────────────────────
+  const [dragging,     setDragging]     = useState(null)  // { node, startPos }
+  const [dragPos,      setDragPos]      = useState(null)  // 0–1 live position
+  const [dragCx,       setDragCx]       = useState(null)  // live SVG x
+  const svgRef = useRef(null)
 
   const hasRealNodes = currentProject && nodes.length > 0
 
@@ -238,7 +244,76 @@ export default function Timeline() {
       })
     : ACTS_DEMO
 
+  // ── DRAG HANDLERS ─────────────────────────────────────────
+  // Convert clientX to SVG position (0–1), accounting for zoom transform
+  const clientXToSVGPos = useCallback((clientX) => {
+    const svg = svgRef.current
+    if (!svg) return null
+    const rect = svg.getBoundingClientRect()        // already zoom-adjusted
+    const svgX  = (clientX - rect.left) / rect.width * 900
+    return Math.max(0.01, Math.min(0.99, svgX / 900))
+  }, [])
+
+  const startDrag = useCallback((e, node) => {
+    if (!node.id || node.id.startsWith('cn')) return  // demo nodes not draggable
+    e.preventDefault()
+    e.stopPropagation()
+    setDragging(node)
+    setDragPos(node.position ?? 0)
+    setDragCx(node.cx)
+  }, [])
+
+  useEffect(() => {
+    if (!dragging) return
+
+    const onMove = (e) => {
+      const pos = clientXToSVGPos(e.clientX)
+      if (pos === null) return
+      setDragPos(pos)
+      setDragCx(Math.max(20, Math.min(880, pos * 900)))
+    }
+
+    const onUp = async (e) => {
+      const pos = clientXToSVGPos(e.clientX)
+      if (pos !== null && dragging.id) {
+        const prevPos = dragging.position ?? 0
+        const newPos  = parseFloat(pos.toFixed(4))
+
+        // Optimistic update in store
+        const updated = { ...dragging._raw ?? dragging, position: newPos }
+        selectNode(updated)
+
+        // Write to DB
+        await updateNode(dragging.id, { position: newPos })
+
+        // Undo
+        const { undoStack } = await import('../../lib/undo')
+        undoStack.push({
+          label: `Move "${dragging.name}"`,
+          undo: async () => {
+            await updateNode(dragging.id, { position: prevPos })
+            selectNode({ ...(dragging._raw ?? dragging), position: prevPos })
+            showToast(`"${dragging.name}" moved back`)
+          }
+        })
+
+        showToast(`"${dragging.name}" repositioned`)
+      }
+      setDragging(null)
+      setDragPos(null)
+      setDragCx(null)
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup',   onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup',   onUp)
+    }
+  }, [dragging, clientXToSVGPos, updateNode, selectNode, showToast])
+
   const handleNodeClick = (node) => {
+    if (dragging) return   // ignore click events that end a drag
     const raw = node._raw ?? node
     const merged = { ...raw, label:node.label, act:node.act, name:node.name, position:node.position, emphasis:node.emphasis, type:node.type }
     selectNode(merged)
@@ -264,8 +339,8 @@ export default function Timeline() {
       if (e.key === 'z') setZoom(z => Math.min(z + 0.3, 2.5))
       if (e.key === 'x') setZoom(z => Math.max(z - 0.3, 0.5))
       if (e.key === 'f') setZoom(1)
-      // S — advance status on selected node
-      if (e.key === 's' && selectedNode?.id && !selectedNode.id.startsWith('cn')) {
+      // S — advance status on selected node (not while dragging)
+      if (e.key === 's' && selectedNode?.id && !selectedNode.id.startsWith('cn') && !dragging) {
         const { updateNode, selectNode: storeSelect } = useNodeStore.getState()
         const statuses = ['concept','progress','review','approved','locked']
         const curr = selectedNode.status ?? 'concept'
@@ -413,8 +488,12 @@ export default function Timeline() {
         <div className="timeline-svg-wrap"
           style={{ transform:`scaleX(${zoom})`, transformOrigin:'left center', transition:'transform .3s var(--ease)' }}>
           <svg id="csvg" className="timeline-svg"
+            ref={svgRef}
             viewBox="0 0 900 220"
-            style={{ width:'100%', height:'100%', minHeight:'180px', maxHeight:'360px' }}>
+            style={{
+              width:'100%', height:'100%', minHeight:'180px', maxHeight:'360px',
+              cursor: dragging ? 'grabbing' : 'default',
+            }}>
             {displayActs.map((act, i) => (
               <g key={i}>
                 <rect x={act.x} y={28} width={act.width} height={120} rx={3}
@@ -426,11 +505,46 @@ export default function Timeline() {
               </g>
             ))}
             <line x1={0} y1={88} x2={900} y2={88} stroke="rgba(255,255,255,0.04)" strokeWidth={1}/>
-            {displayNodes.map((node) => (
-              <Node key={node.id} node={{ ...node, cy: 88 }}
-                selected={selectedNode?.id === node.id}
-                onClick={() => handleNodeClick(node)} />
-            ))}
+
+            {/* Drag guide — vertical snap line */}
+            {dragging && dragCx !== null && (
+              <>
+                <line
+                  x1={dragCx} y1={28} x2={dragCx} y2={148}
+                  stroke="rgba(245,146,12,0.35)" strokeWidth={1}
+                  strokeDasharray="3 3" />
+                <text
+                  x={dragCx} y={170}
+                  textAnchor="middle" fontSize={9}
+                  fontFamily="IBM Plex Mono" fill="rgba(245,146,12,0.6)">
+                  {Math.round((dragPos ?? 0) * 100)}%
+                </text>
+              </>
+            )}
+
+            {displayNodes.map((node) => {
+              const isDragged = dragging?.id === node.id
+              const displayNode = isDragged
+                ? { ...node, cx: dragCx ?? node.cx }
+                : node
+              return (
+                <g key={node.id}
+                  onMouseDown={(e) => {
+                    // Hold 150ms before starting drag to distinguish click from drag
+                    const t = setTimeout(() => startDrag(e, node), 150)
+                    const cancel = () => clearTimeout(t)
+                    window.addEventListener('mouseup', cancel, { once: true })
+                    window.addEventListener('mousemove', cancel, { once: true })
+                  }}
+                  style={{ cursor: node.id?.startsWith('cn') ? 'pointer' : 'grab' }}>
+                  <Node
+                    node={{ ...displayNode, cy: 88 }}
+                    selected={selectedNode?.id === node.id}
+                    onClick={() => !isDragged && handleNodeClick(node)}
+                    isDragging={isDragged} />
+                </g>
+              )
+            })}
           </svg>
         </div>
       </div>

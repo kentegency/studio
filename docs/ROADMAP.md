@@ -133,3 +133,12 @@ Service worker + Workbox, IndexedDB queue for mutations, sync on reconnect.
 ### E10 — SOC 2 Type II
 **Required for: Broadcaster and studio enterprise contracts**
 Audit logging (E3 prerequisite), access control documentation, incident response, vendor security review.
+
+### Sprint 10B — TURN server + Accessibility + Approval email (v38)
+**Completed**
+
+- TURN server configured via `VITE_TURN_USERNAME` / `VITE_TURN_CREDENTIAL` env vars (Metered.ca)
+- `useFocusTrap` hook applied to: ConfirmModal, BriefOverlay, DigestOverlay, SettingsPanel, VoiceRecorder, WrapPanel
+- `role="dialog"` and `aria-modal="true"` on all modal surfaces
+- `notify-approval` Edge Function: Resend email to CD on Window approval
+- Database Webhook wired to notes INSERT
