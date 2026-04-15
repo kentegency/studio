@@ -1,9 +1,174 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useFocusTrap } from '../../lib/useFocusTrap'
 import { supabase } from '../../lib/supabase'
-import { useAuthStore, useProjectStore, useUIStore } from '../../stores'
+import { useAuthStore, useProjectStore, useNodeStore, useUIStore } from '../../stores'
 import ConfirmModal from '../ConfirmModal'
 import './Settings.css'
+
+// ── TEMPLATES — stored in localStorage, personal to this browser ──
+const TEMPLATES_KEY = 'kentegency_project_templates_v1'
+
+export function loadTemplates() {
+  try { return JSON.parse(localStorage.getItem(TEMPLATES_KEY) ?? '[]') }
+  catch { return [] }
+}
+
+function saveTemplates(templates) {
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates))
+}
+
+function SaveTemplateBtn({ project }) {
+  const { nodes }  = useNodeStore()
+  const { acts }   = useProjectStore()
+  const { showToast } = useUIStore()
+  const [name, setName] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  const save = () => {
+    if (!name.trim()) return
+    const template = {
+      id:        Date.now().toString(),
+      name:      name.trim(),
+      type:      project.type ?? 'film',
+      savedAt:   new Date().toISOString(),
+      acts:      acts.map(a => ({
+        name: a.name, color: a.color,
+        position: a.position, end_pos: a.end_pos, order_index: a.order_index,
+      })),
+      nodes: nodes
+        .sort((a,b) => (a.position??0)-(b.position??0))
+        .map(n => ({
+          name:     n.name,
+          position: n.position,
+          emphasis: n.emphasis,
+          type:     n.type,
+          act:      n.act,
+        })),
+    }
+    const existing = loadTemplates()
+    saveTemplates([template, ...existing].slice(0, 20)) // keep 20 max
+    setSaved(true)
+    setName('')
+    showToast(`Template "${template.name}" saved.`, '#4ADE80')
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <div className="sf-template-save">
+      <input className="sf-input" style={{ flex:1 }}
+        placeholder="Template name — e.g. Documentary 3-act"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && save()} />
+      <button className="sf-btn-sm" onClick={save} disabled={!name.trim()}>
+        {saved ? 'Saved ✓' : 'Save template'}
+      </button>
+    </div>
+  )
+}
+function VersionsTab({ projectId }) {
+  const { nodes, fetchNodes } = useNodeStore()
+  const { showToast } = useUIStore()
+  const [versions,   setVersions]   = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [restoring,  setRestoring]  = useState(null)
+  const [confirmV,   setConfirmV]   = useState(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('versions').select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    setVersions(data ?? [])
+    setLoading(false)
+  }, [projectId])
+
+  useEffect(() => { load() }, [load])
+
+  const restore = async (version) => {
+    setRestoring(version.id)
+    try {
+      const snap = version.snapshot_data
+      if (!snap?.nodes) { showToast('Snapshot data incomplete.', '#E05050'); return }
+
+      // Restore nodes — update positions and statuses
+      for (const n of snap.nodes) {
+        await supabase.from('nodes')
+          .update({ position: n.position, emphasis: n.emphasis, status: n.status, name: n.name })
+          .eq('id', n.id)
+      }
+
+      // Refresh stores
+      await fetchNodes(projectId)
+
+      showToast(`Restored to: ${version.description}`, '#4ADE80')
+      setConfirmV(null)
+    } catch (err) {
+      console.error('Restore error:', err)
+      showToast('Could not restore this version.', '#E05050')
+    }
+    setRestoring(null)
+  }
+
+  if (loading) return (
+    <div className="sf-empty-msg">Loading versions…</div>
+  )
+
+  if (versions.length === 0) return (
+    <div className="settings-section">
+      <div className="sf-empty-msg">
+        No versions saved yet. Generate a Wrap document to create your first snapshot.
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="settings-section">
+      {confirmV && (
+        <ConfirmModal
+          title={`Restore to "${confirmV.description}"?`}
+          body="This will update all scene positions and statuses to match this snapshot. Your current arc structure will change. This can be undone by restoring another version."
+          confirmLabel="Restore this version →"
+          onConfirm={() => restore(confirmV)}
+          onCancel={() => setConfirmV(null)} />
+      )}
+      <div className="sf-label" style={{ marginBottom:'12px' }}>
+        Version history — last 20 snapshots
+      </div>
+      <div className="sf-versions-list">
+        {versions.map(v => {
+          const date = new Date(v.created_at).toLocaleDateString('en-GB', {
+            day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+          })
+          const snap = v.snapshot_data ?? {}
+          return (
+            <div key={v.id} className="sf-version-row">
+              <div className="sf-version-info">
+                <div className="sf-version-label">{v.description ?? 'Snapshot'}</div>
+                <div className="sf-version-meta">
+                  {date}
+                  {snap.nodeCount != null && ` · ${snap.nodeCount} scenes`}
+                  {snap.approvedCount != null && ` · ${snap.approvedCount} approved`}
+                </div>
+              </div>
+              <button
+                className="sf-version-restore"
+                disabled={restoring === v.id}
+                onClick={() => setConfirmV(v)}>
+                {restoring === v.id ? 'Restoring…' : 'Restore →'}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+      <div className="sf-version-hint">
+        Versions are created automatically each time you generate a Wrap document.
+      </div>
+    </div>
+  )
+}
 
 const ACCENT_PRESETS = [
   { name:'Teal',   hex:'#1E8A8A' },
@@ -147,9 +312,10 @@ export default function SettingsPanel({ onClose }) {
         {/* Tabs */}
         <div className="settings-tabs">
           {[
-            { key:'project', label:'Project' },
-            { key:'profile', label:'Profile' },
-            { key:'danger',  label:'Danger zone' },
+            { key:'project',  label:'Project' },
+            { key:'profile',  label:'Profile' },
+            { key:'versions', label:'Versions' },
+            { key:'danger',   label:'Danger zone' },
           ].map(t => (
             <button key={t.key}
               className={`st-tab ${tab === t.key ? 'on' : ''} ${t.key === 'danger' ? 'danger' : ''}`}
@@ -231,6 +397,14 @@ export default function SettingsPanel({ onClose }) {
                 style={{ borderColor: projAccent, color: projAccent }}>
                 {saving ? 'Saving…' : 'Save project settings →'}
               </button>
+
+              <div className="sf-template-section">
+                <div className="sf-label" style={{ marginBottom:'6px' }}>Templates</div>
+                <div className="sf-label-sub">
+                  Save this project's arc structure as a reusable template — act zones and scene positions, not content.
+                </div>
+                <SaveTemplateBtn project={currentProject} />
+              </div>
             </div>
           )}
 
@@ -281,6 +455,14 @@ export default function SettingsPanel({ onClose }) {
                 {saving ? 'Saving…' : 'Save profile →'}
               </button>
             </div>
+          )}
+
+          {/* VERSIONS TAB */}
+          {tab === 'versions' && currentProject && (
+            <VersionsTab projectId={currentProject.id} />
+          )}
+          {tab === 'versions' && !currentProject && (
+            <div className="sf-empty-msg">Open a project to view its version history.</div>
           )}
 
           {/* DANGER ZONE TAB */}

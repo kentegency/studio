@@ -341,6 +341,27 @@ export default function WrapPanel({ onClose }) {
 
       const filename = `${currentProject.name.replace(/[^a-z0-9]/gi,'_').toLowerCase()}_wrap_${new Date().toISOString().slice(0,10)}.pdf`
 
+      // Save a version snapshot before generating
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        const snapshot = {
+          project:  { ...currentProject },
+          nodes:    sortedNodes,
+          acts:     (await supabase.from('acts').select('*').eq('project_id', currentProject.id)).data ?? [],
+          savedAt:  new Date().toISOString(),
+          nodeCount: sortedNodes.length,
+          approvedCount: sortedNodes.filter(n => n.status === 'approved' || n.status === 'locked').length,
+        }
+        await supabase.from('versions').insert({
+          project_id:    currentProject.id,
+          snapshot_data: snapshot,
+          description:   `Wrap — ${new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })} · ${sortedNodes.length} scenes`,
+          created_by:    user?.id,
+        })
+      } catch (vErr) {
+        console.warn('Version snapshot failed (non-critical):', vErr)
+      }
+
       // Try Edge Function first
       try {
         const result = await generatePDF(html, filename)

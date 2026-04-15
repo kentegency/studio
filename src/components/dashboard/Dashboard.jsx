@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useProjectStore, useAuthStore, useUIStore, useNodeStore } from '../../stores'
+import { loadTemplates } from '../settings/SettingsPanel'
 import './Dashboard.css'
 
 const PROJECT_TYPES = ['film','brand','music','website','campaign','photo','other']
@@ -29,8 +30,13 @@ export default function Dashboard() {
   const [form, setForm] = useState({ name:'', logline:'', type:'film', accent_color:'#1E8A8A' })
   const [saving, setSaving] = useState(false)
   const [createError, setCreateError] = useState('')
+  const [selectedTemplate, setSelectedTemplate] = useState(null)
+  const [templates, setTemplates] = useState([])
 
   useEffect(() => { fetchProjects() }, [])
+  useEffect(() => {
+    if (creating) setTemplates(loadTemplates())
+  }, [creating])
 
   const openProject = async (project) => {
     await setCurrentProject(project)
@@ -45,7 +51,6 @@ export default function Dashboard() {
     setSaving(true)
     setCreateError('')
 
-    // Use user.id directly if profile isn't loaded yet
     const ownerId = profile?.id ?? user?.id
     if (!ownerId) {
       setCreateError('Not logged in. Please sign in again.')
@@ -56,6 +61,7 @@ export default function Dashboard() {
     const { data, error } = await createProject({
       ...form,
       owner_id: ownerId,
+      _template: selectedTemplate, // passed to store for act/node seeding
     })
 
     if (error) {
@@ -65,9 +71,27 @@ export default function Dashboard() {
       return
     }
 
+    // If a template was selected, apply its nodes after project creation
+    if (selectedTemplate && data?.id) {
+      const { supabase } = await import('../../lib/supabase')
+      const nodeInserts = selectedTemplate.nodes.map((n, i) => ({
+        project_id: data.id,
+        name:       n.name,
+        position:   n.position,
+        emphasis:   n.emphasis ?? 1,
+        type:       n.type ?? 'scene',
+        status:     'concept',
+        act:        n.act ?? '',
+      }))
+      if (nodeInserts.length > 0) {
+        await supabase.from('nodes').insert(nodeInserts)
+      }
+    }
+
     setSaving(false)
     setCreating(false)
     setCreateError('')
+    setSelectedTemplate(null)
     setForm({ name:'', logline:'', type:'film', accent_color:'#1E8A8A' })
     showToast(`${data.name} created.`)
   }
@@ -164,6 +188,37 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+
+              {/* TEMPLATE PICKER — shown when templates exist */}
+              {templates.length > 0 && (
+                <div className="dcf-field">
+                  <label className="dcf-label">Start from template</label>
+                  <div className="dcf-template-row">
+                    <button
+                      type="button"
+                      className={`dcf-template-opt ${!selectedTemplate ? 'on' : ''}`}
+                      onClick={() => setSelectedTemplate(null)}>
+                      Blank
+                    </button>
+                    {templates.map(t => (
+                      <button key={t.id}
+                        type="button"
+                        className={`dcf-template-opt ${selectedTemplate?.id === t.id ? 'on' : ''}`}
+                        onClick={() => {
+                          setSelectedTemplate(t)
+                          setForm(f => ({
+                            ...f,
+                            type: t.type,
+                            accent_color: TYPE_COLORS[t.type] ?? f.accent_color,
+                          }))
+                        }}>
+                        {t.name}
+                        <span>{t.nodes?.length ?? 0} scenes</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* ERROR MESSAGE */}
               {createError && (
