@@ -19,7 +19,9 @@ const SHORTCUTS = [
   { key: '→',         label: 'Next scene' },
   { key: 'Esc',       label: 'Back to arc view' },
 
-  { section: 'Views' },
+  { section: 'Generate' },
+  { key: '⌘K → call sheet', label: 'Generate call sheet for any scene' },
+  { key: 'Wrap it',          label: 'Generate full project Wrap document' },
   { key: 'M',   label: 'Open Moodboard — all visual references' },
   { key: 'B',   label: 'Open Storyboard — panel sketches for selected scene' },
   { key: '⌥ S', label: 'Open Stage mode — present scenes' },

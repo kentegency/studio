@@ -70,6 +70,10 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
           onClick={() => { openOverlay('stage'); showToast('Lights up.') }} data-hover>
           Stage ↗
         </button>
+        <button className="tbb"
+          onClick={() => openOverlay('callsheet')} data-hover title="Generate call sheet">
+          Call Sheet
+        </button>
         <button className="tbb pr" onClick={() => onWrap?.()} data-hover>
           Wrap it
         </button>

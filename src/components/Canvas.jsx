@@ -28,6 +28,7 @@ import ShortcutsPanel from './palette/ShortcutsPanel'
 import SessionTile    from './session/SessionTile'
 import Moodboard      from './moodboard/Moodboard'
 import Storyboard     from './storyboard/Storyboard'
+import CallSheet      from './callsheet/CallSheet'
 import ErrorBoundary from './ErrorBoundary'
 import { useUIStore, useProjectStore } from '../stores'
 import { supabase } from '../lib/supabase'
@@ -160,6 +161,7 @@ export default function Canvas() {
       )}
       {overlays.moodboard   && <Moodboard   onClose={() => closeOverlay('moodboard')} />}
       {overlays.storyboard  && <Storyboard  onClose={() => closeOverlay('storyboard')} />}
+      {overlays.callsheet   && <CallSheet   onClose={() => closeOverlay('callsheet')} />}
       {showShortcuts && <ShortcutsPanel onClose={() => setShowShortcuts(false)} />}
       {sessionToken  && (
         <SessionTile

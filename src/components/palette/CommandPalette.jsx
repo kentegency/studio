@@ -21,6 +21,8 @@ function useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, 
       action: () => { setRoom('window');  showToast('Window'); onClose() } },
 
     // ── VIEWS
+    { id:'callsheet',   group:'Generate',  label:'Generate call sheet — scene + date + PDF', icon:'☰',
+      action: () => { openOverlay('callsheet'); onClose() } },
     { id:'stage',       group:'View',      label:'Open Stage mode',           shortcut:'⌥ S', icon:'▶',
       action: () => { openOverlay('stage'); onClose() } },
     { id:'moodboard',   group:'View',      label:'Open Moodboard — all references', shortcut:'M', icon:'⊡',

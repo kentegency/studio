@@ -319,7 +319,7 @@ export const useUIStore = create((set) => ({
   overlays: {
     sketch: false, compare: false, stage: false,
     brief: false, digest: false, quickCapture: false,
-    moodboard: false, storyboard: false,
+    moodboard: false, storyboard: false, callsheet: false,
   },
   toast:      { message: '', color: 'var(--orange)', visible: false },
   offline:    false,
