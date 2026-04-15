@@ -69,7 +69,7 @@
 .mb-filter-btn.on {
   color: var(--project-accent, var(--orange));
   border-color: rgba(245,146,12,.3);
-  background: rgba(245,146,12,.07);
+  background: rgba(var(--project-accent-rgb, 212,170,106), .07);
 }
 .mb-filter-pill {
   font-size: 10px; padding: 3px 9px; border-radius: 20px;

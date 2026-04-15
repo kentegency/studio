@@ -90,9 +90,9 @@ export default function WrapPanel({ onClose }) {
       const doneShots   = (allShots??[]).filter(s => s.status==='done').length
       const filmedSubjects = (subjects??[]).filter(s => s.contact_status === 'filmed')
 
-      const STATUS_COLOR = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
-      const ACT_COLOR    = (i) => i <= 2 ? '#1E8A8A' : i <= 5 ? '#F5920C' : '#B43C1E'
-      const SH_COLOR     = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2520' }
+      const STATUS_COLOR = { concept:'#6A6258', progress:'var(--accent)', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+      const ACT_COLOR    = (i) => i <= 2 ? 'var(--teal)' : i <= 5 ? 'var(--accent)' : '#B43C1E'
+      const SH_COLOR     = { done:'#4ADE80', progress:'var(--accent)', pending:'#2A2520' }
 
       setProgress('Assembling document…')
 
@@ -122,7 +122,7 @@ export default function WrapPanel({ onClose }) {
   .print-btn {
     font-size:12px; letter-spacing:.2em; padding:9px 22px;
     text-transform:uppercase; color:#F5920C;
-    border:.5px solid rgba(245,146,12,.3); border-radius:2px;
+    border:.5px solid rgba(212,170,106,.3); border-radius:2px;
     background:transparent; font-family:'IBM Plex Mono',monospace;
     cursor:pointer;
   }
@@ -277,9 +277,9 @@ export default function WrapPanel({ onClose }) {
     ${(subjects??[]).map(s => {
       const sceneNames = sortedNodes.filter(n => (s.node_ids??[]).includes(n.id)).map(n=>n.name)
       const initials   = s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
-      const CONTACT_COLORS = { prospect:'#6A6258', contacted:'#F5920C', confirmed:'#1E8A8A', filmed:'#4ADE80', declined:'#E05050' }
+      const CONTACT_COLORS = { prospect:'#6A6258', contacted:'var(--accent)', confirmed:'var(--teal)', filmed:'#4ADE80', declined:'#E05050' }
       return `<div class="person">
-        <div class="person-init" style="background:${s.color??'#1E8A8A'}22;color:${s.color??'#1E8A8A'};border:.5px solid ${s.color??'#1E8A8A'}44">${initials}</div>
+        <div class="person-init" style="background:${s.color??'var(--teal)'}22;color:${s.color??'var(--teal)'};border:.5px solid ${s.color??'var(--teal)'}44">${initials}</div>
         <div>
           <div class="person-name">${s.name}</div>
           ${s.title ? `<div class="person-title">${s.title}</div>` : ''}
@@ -299,7 +299,7 @@ export default function WrapPanel({ onClose }) {
     <div class="sec-title">Key Decisions</div>
     <div class="sec-rule"></div>
     ${(allNotes??[]).slice(0,24).map(n => `
-      <div class="note-item" style="border-left-color:${n.color??'#1E8A8A'}">
+      <div class="note-item" style="border-left-color:${n.color??'var(--teal)'}">
         <div class="note-body">${n.body}</div>
         <div class="note-meta">${n.nodes?.name ? n.nodes.name + ' · ' : ''}${n.room} · ${new Date(n.created_at).toLocaleDateString('en-GB')}</div>
       </div>`).join('')}
@@ -311,7 +311,7 @@ export default function WrapPanel({ onClose }) {
     <div class="sec-title">The Team</div>
     <div class="sec-rule"></div>
     <div class="team-row">
-      <div class="team-init" style="background:${currentProject.accent_color??'#F5920C'}">${(profile?.name??'CD').slice(0,2).toUpperCase()}</div>
+      <div class="team-init" style="background:${currentProject.accent_color??'var(--accent)'}">${(profile?.name??'CD').slice(0,2).toUpperCase()}</div>
       <div>
         <div class="team-name">${profile?.name ?? 'Creative Director'}</div>
         <div class="team-role">Creative Director · The Kentegency</div>
@@ -319,7 +319,7 @@ export default function WrapPanel({ onClose }) {
     </div>
     ${(contributors??[]).map(c => `
       <div class="team-row">
-        <div class="team-init" style="background:${c.color??'#1E8A8A'}">${c.name.slice(0,2).toUpperCase()}</div>
+        <div class="team-init" style="background:${c.color??'var(--teal)'}">${c.name.slice(0,2).toUpperCase()}</div>
         <div>
           <div class="team-name">${c.name}</div>
           <div class="team-role">${c.role}</div>
@@ -368,7 +368,7 @@ export default function WrapPanel({ onClose }) {
         if (result.fallback) {
           // No Browserless token — open HTML in new tab with print button
           openHTMLFallback(html)
-          showToast('Opened in new tab. Click "Print / Save PDF" to download.', '#F5920C')
+          showToast('Opened in new tab. Click "Print / Save PDF" to download.', 'var(--accent)')
         } else {
           showToast(`${filename} downloaded.`, '#4ADE80')
           onClose()
@@ -377,7 +377,7 @@ export default function WrapPanel({ onClose }) {
         // Edge Function not deployed yet — fall back to HTML tab
         console.warn('PDF function unavailable, using HTML fallback:', fnErr)
         openHTMLFallback(html)
-        showToast('Opened in new tab. Click "Print / Save PDF" to download.', '#F5920C')
+        showToast('Opened in new tab. Click "Print / Save PDF" to download.', 'var(--accent)')
       }
 
     } catch (err) {

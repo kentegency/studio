@@ -62,7 +62,7 @@
 .cs-field-full { grid-column: 1 / -1; }
 
 .cs-label {
-  font-size: 10px; letter-spacing: .22em; color: var(--mute);
+  font-size: 10px; letter-spacing: .05em; color: var(--mute);
   text-transform: uppercase; font-family: var(--font-mono);
 }
 
@@ -74,7 +74,7 @@
   transition: border-color var(--dur-mid) var(--ease);
 }
 .cs-input:focus, .cs-select:focus {
-  border-color: rgba(245,146,12,.35);
+  border-color: rgba(var(--project-accent-rgb, 212,170,106), .35);
 }
 .cs-input::placeholder { color: var(--ghost); }
 .cs-select option { background: var(--s2); }
@@ -95,7 +95,7 @@
 
 /* What will be included */
 .cs-preview-label {
-  font-size: 10px; letter-spacing: .22em; color: var(--ghost);
+  font-size: 10px; letter-spacing: .05em; color: var(--ghost);
   text-transform: uppercase; font-family: var(--font-mono);
   margin-bottom: 6px;
 }
@@ -121,7 +121,7 @@
   flex-shrink: 0;
 }
 .cs-cancel {
-  font-size: 12px; letter-spacing: .14em; padding: 8px 16px;
+  font-size: 12px; letter-spacing: .05em; padding: 8px 16px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -130,11 +130,11 @@
 .cs-cancel:hover { color: var(--dim); border-color: var(--b2); }
 
 .cs-generate {
-  font-size: 12px; letter-spacing: .16em; padding: 9px 22px;
+  font-size: 12px; letter-spacing: .05em; padding: 9px 22px;
   text-transform: uppercase; color: var(--orange);
-  border: .5px solid rgba(245,146,12,.35); border-radius: 2px;
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .35); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   transition: background var(--dur-mid) var(--ease);
 }
-.cs-generate:hover:not(:disabled) { background: rgba(245,146,12,.07); }
+.cs-generate:hover:not(:disabled) { background: rgba(var(--project-accent-rgb, 212,170,106), .07); }
 .cs-generate:disabled { opacity: .4; }

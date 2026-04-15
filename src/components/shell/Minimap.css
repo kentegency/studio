@@ -6,8 +6,7 @@
   padding: 0 40px; gap: 14px;
 }
 .cm-l {
-  font-size: 11px; letter-spacing: .16em; color: var(--ghost);
-  text-transform: uppercase; font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: .05em; color: var(--ghost); font-family: var(--font-mono);
   white-space: nowrap; flex-shrink: 0;
 }
 .cm-track {
@@ -25,7 +24,7 @@
   position: absolute; top: -6px;
   width: 1.5px; height: 14px;
   background: var(--project-accent, var(--orange)); border-radius: 1px;
-  box-shadow: 0 0 8px rgba(245,146,12,.5);
+  box-shadow: 0 0 8px rgba(var(--project-accent-rgb, 212,170,106), .5);
   transition: left .4s var(--ease);
 }
 

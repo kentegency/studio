@@ -31,8 +31,7 @@
   display: flex; gap: 0; border-bottom: .5px solid var(--b); flex-shrink: 0;
 }
 .st-tab {
-  flex: 1; padding: 10px 0; font-size: 12px; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--mute);
+  flex: 1; padding: 10px 0; font-size: 12px; letter-spacing: .05em; color: var(--mute);
   background: transparent; border: none;
   border-bottom: 1.5px solid transparent;
   font-family: var(--font-ui); font-weight: 500;
@@ -51,8 +50,7 @@
 /* FORM FIELDS */
 .sf-field { display: flex; flex-direction: column; gap: 7px; }
 .sf-label {
-  font-size: 11.5px; letter-spacing: .2em; color: var(--dim);
-  text-transform: uppercase; font-family: var(--font-ui); font-weight: 500;
+  font-size: 11.5px; letter-spacing: .2em; color: var(--dim); font-family: var(--font-ui); font-weight: 500;
 }
 .sf-input, .sf-select, .sf-textarea {
   background: var(--s2); border: .5px solid var(--b);
@@ -62,7 +60,7 @@
   transition: border-color var(--dur-mid) var(--ease);
   width: 100%;
 }
-.sf-input:focus, .sf-select:focus, .sf-textarea:focus { border-color: rgba(245,146,12,.35); }
+.sf-input:focus, .sf-select:focus, .sf-textarea:focus { border-color: rgba(var(--project-accent-rgb, 212,170,106), .35); }
 .sf-input::placeholder, .sf-textarea::placeholder { color: var(--mute); }
 .sf-textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
 
@@ -103,8 +101,7 @@
   background: var(--s2); border: .5px solid var(--b); border-radius: 2px;
 }
 .sf-btn-sm {
-  font-size: 11.5px; letter-spacing: .14em; padding: 6px 12px;
-  text-transform: uppercase; color: var(--dim);
+  font-size: 11.5px; letter-spacing: .05em; padding: 6px 12px; color: var(--dim);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   white-space: nowrap; flex-shrink: 0;
@@ -128,8 +125,7 @@
 }
 
 .sf-btn-outline {
-  font-size: 12px; letter-spacing: .14em; padding: 8px 16px;
-  text-transform: uppercase; color: var(--mute);
+  font-size: 12px; letter-spacing: .05em; padding: 8px 16px; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   align-self: flex-start;
@@ -138,14 +134,13 @@
 .sf-btn-outline:hover { color: var(--dim); }
 
 .sf-save {
-  font-size: 12px; letter-spacing: .18em; padding: 10px 22px;
-  text-transform: uppercase;
+  font-size: 12px; letter-spacing: .05em; padding: 10px 22px;
   border: .5px solid; border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   align-self: flex-end;
   transition: background var(--dur-mid) var(--ease);
 }
-.sf-save:hover:not(:disabled) { background: rgba(245,146,12,.06); }
+.sf-save:hover:not(:disabled) { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 .sf-save:disabled { opacity: .4; }
 
 .sf-empty {
@@ -162,8 +157,7 @@
 .sf-danger-title { font-size: 13px; font-weight: 500; color: var(--dim); margin-bottom: 4px; }
 .sf-danger-sub   { font-size: 12px; color: var(--mute); line-height: 1.55; max-width: 300px; }
 .sf-danger-btn {
-  font-size: 12px; letter-spacing: .14em; padding: 7px 16px;
-  text-transform: uppercase; color: var(--mute);
+  font-size: 12px; letter-spacing: .05em; padding: 7px 16px; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   white-space: nowrap; flex-shrink: 0;
@@ -192,14 +186,13 @@
   font-family: var(--font-mono); letter-spacing: .06em; margin-top: 2px;
 }
 .sf-version-restore {
-  font-size: 11px; letter-spacing: .14em; padding: 5px 12px;
-  text-transform: uppercase; color: var(--teal);
-  border: .5px solid rgba(30,138,138,.25); border-radius: 2px;
+  font-size: 11px; letter-spacing: .05em; padding: 5px 12px; color: var(--teal);
+  border: .5px solid rgba(74, 142, 142, .25); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   flex-shrink: 0; white-space: nowrap;
   transition: background var(--dur-fast), opacity var(--dur-fast);
 }
-.sf-version-restore:hover:not(:disabled) { background: rgba(30,138,138,.07); }
+.sf-version-restore:hover:not(:disabled) { background: rgba(74, 142, 142, .07); }
 .sf-version-restore:disabled { opacity: .4; }
 .sf-version-hint {
   font-size: 11px; color: var(--ghost); letter-spacing: .06em;

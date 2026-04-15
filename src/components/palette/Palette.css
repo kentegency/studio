@@ -83,7 +83,7 @@
 }
 .pal-item:hover,
 .pal-item.selected { background: var(--s2); }
-.pal-item.selected { background: rgba(245,146,12,.07); }
+.pal-item.selected { background: rgba(var(--project-accent-rgb, 212,170,106), .07); }
 
 .pal-icon {
   width: 20px; height: 20px; flex-shrink: 0;

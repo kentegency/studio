@@ -76,7 +76,7 @@
   min-width: 36px; text-align: center; font-family: var(--font-mono);
 }
 .add-node-btn {
-  font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
   color: var(--project-accent, var(--orange));
   border: .5px solid color-mix(in srgb, var(--project-accent, var(--orange)) 30%, transparent);
   background: transparent; border-radius: 2px;
@@ -84,7 +84,7 @@
   transition: background var(--dur-mid) var(--ease);
   white-space: nowrap;
 }
-.add-node-btn:hover { background: rgba(245,146,12,.06); }
+.add-node-btn:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 
 /* ══════════════════════════════════════
    ARC ZONE — fills all remaining height
@@ -127,7 +127,7 @@
   caret-color: var(--project-accent, var(--orange));
   transition: border-color var(--dur-mid) var(--ease);
 }
-.nn-input:focus { border-color: rgba(245,146,12,.35); }
+.nn-input:focus { border-color: rgba(var(--project-accent-rgb, 212,170,106), .35); }
 .nn-input::placeholder { color: var(--mute); }
 .nn-select {
   background: var(--s2); border: .5px solid var(--b);
@@ -137,11 +137,11 @@
   transition: border-color var(--dur-mid) var(--ease);
 }
 .nn-pos-wrap { display: flex; align-items: center; gap: 12px; }
-.nn-label { font-size: 11px; letter-spacing: .16em; color: var(--mute); text-transform: uppercase; white-space: nowrap; font-family: var(--font-mono); }
+.nn-label { font-size: 11px; letter-spacing: .05em; color: var(--mute); text-transform: uppercase; white-space: nowrap; font-family: var(--font-mono); }
 .nn-pos-val { font-size: 12px; color: var(--orange); min-width: 32px; text-align: right; font-family: var(--font-mono); }
 .nn-foot { display: flex; justify-content: flex-end; gap: 8px; }
 .nn-cancel {
-  font-size: 11px; letter-spacing: .14em; padding: 7px 14px;
+  font-size: 11px; letter-spacing: .05em; padding: 7px 14px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -149,13 +149,13 @@
 }
 .nn-cancel:hover { color: var(--dim); }
 .nn-save {
-  font-size: 11px; letter-spacing: .14em; padding: 7px 16px;
+  font-size: 11px; letter-spacing: .05em; padding: 7px 16px;
   text-transform: uppercase; color: var(--orange);
-  border: .5px solid rgba(245,146,12,.28); border-radius: 2px;
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .28); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   transition: background var(--dur-mid) var(--ease);
 }
-.nn-save:hover    { background: rgba(245,146,12,.06); }
+.nn-save:hover    { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 .nn-save:disabled { opacity: .45; }
 
 /* ══════════════════════════════════════
@@ -280,7 +280,7 @@
 }
 .sm-act-path {
   font-size: 11px; color: var(--mute);
-  font-family: var(--font-mono); letter-spacing: .16em;
+  font-family: var(--font-mono); letter-spacing: .05em;
   text-transform: uppercase;
 }
 

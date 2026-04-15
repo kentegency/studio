@@ -5,8 +5,8 @@ import './Dashboard.css'
 
 const PROJECT_TYPES = ['film','brand','music','website','campaign','photo','other']
 const TYPE_COLORS = {
-  film:     '#1E8A8A',
-  brand:    '#F5920C',
+  film:     'var(--teal)',
+  brand:    'var(--accent)',
   music:    '#8B5CF6',
   website:  '#4ADE80',
   campaign: '#F59E0B',
@@ -16,7 +16,7 @@ const TYPE_COLORS = {
 
 const LOGO_PIXELS = [
   '#F4EFD8','#040402','#7A7A7A',
-  '#F5920C','#7A7A7A','#040402',
+  'var(--accent)','#7A7A7A','#040402',
   '#7A7A7A','#040402','#F4EFD8',
 ]
 
@@ -27,7 +27,7 @@ export default function Dashboard() {
   const { fetchNodes } = useNodeStore()
 
   const [creating, setCreating] = useState(false)
-  const [form, setForm] = useState({ name:'', logline:'', type:'film', accent_color:'#1E8A8A' })
+  const [form, setForm] = useState({ name:'', logline:'', type:'film', accent_color:'var(--teal)' })
   const [saving, setSaving] = useState(false)
   const [createError, setCreateError] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState(null)
@@ -92,7 +92,7 @@ export default function Dashboard() {
     setCreating(false)
     setCreateError('')
     setSelectedTemplate(null)
-    setForm({ name:'', logline:'', type:'film', accent_color:'#1E8A8A' })
+    setForm({ name:'', logline:'', type:'film', accent_color:'var(--teal)' })
     showToast(`${data.name} created.`)
   }
 
@@ -168,7 +168,7 @@ export default function Dashboard() {
                     onChange={e => setForm(f => ({
                       ...f,
                       type: e.target.value,
-                      accent_color: TYPE_COLORS[e.target.value] ?? '#F5920C'
+                      accent_color: TYPE_COLORS[e.target.value] ?? 'var(--accent)'
                     }))}>
                     {PROJECT_TYPES.map(t => (
                       <option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>
@@ -249,9 +249,9 @@ export default function Dashboard() {
         <div className="dash-grid">
           {projects.map(p => (
             <div key={p.id} className="dash-card" onClick={() => openProject(p)}>
-              <div className="dc-accent" style={{ background: p.accent_color ?? '#F5920C' }} />
+              <div className="dc-accent" style={{ background: p.accent_color ?? 'var(--accent)' }} />
               <div className="dc-body">
-                <div className="dc-type" style={{ color: p.accent_color ?? '#F5920C' }}>
+                <div className="dc-type" style={{ color: p.accent_color ?? 'var(--accent)' }}>
                   {p.type}
                 </div>
                 <div className="dc-name">{p.name}</div>

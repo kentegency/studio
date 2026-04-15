@@ -1,5 +1,4 @@
 .canvas-shell {
-  /* Fill at least the full viewport but allow scroll if narrower */
   position: relative;
   width: 100%;
   height: 100vh;
@@ -17,43 +16,34 @@
   background: var(--black);
   animation: fadeIn var(--dur-cinema) var(--ease) forwards;
 
-  /* Room identity vars — overridden per room below */
-  --room-glow-a: rgba(245,146,12,.022);
-  --room-glow-b: rgba(30,138,138,.018);
-  --room-glow-c: rgba(96,20,8,.015);
-  --room-transition: background var(--dur-cinema) var(--ease);
+  /* Room identity vars — project-accent-rgb drives the dominant glow */
+  --room-glow-a: rgba(var(--project-accent-rgb, 212,170,106), .020);
+  --room-glow-b: rgba(var(--project-accent-rgb, 212,170,106), .010);
+  --room-glow-c: rgba(var(--project-accent-rgb, 212,170,106), .008);
 }
 
-/* Studio — warm amber, the working environment */
+/* Studio — accent-led warmth */
 .canvas-shell[data-room="studio"] {
-  --room-glow-a: rgba(245,146,12,.028);
-  --room-glow-b: rgba(30,138,138,.014);
-  --room-glow-c: rgba(96,20,8,.018);
+  --room-glow-a: rgba(var(--project-accent-rgb, 212,170,106), .026);
+  --room-glow-b: rgba(var(--project-accent-rgb, 212,170,106), .012);
+  --room-glow-c: rgba(var(--project-accent-rgb, 212,170,106), .008);
 }
 
-/* Meeting — cooler teal, collaborative */
+/* Meeting — cooler, accent at lower presence */
 .canvas-shell[data-room="meeting"] {
-  --room-glow-a: rgba(30,138,138,.032);
-  --room-glow-b: rgba(245,146,12,.010);
-  --room-glow-c: rgba(30,80,138,.016);
+  --room-glow-a: rgba(var(--project-accent-rgb, 212,170,106), .014);
+  --room-glow-b: rgba(var(--project-accent-rgb, 212,170,106), .020);
+  --room-glow-c: rgba(74, 102, 130, .012);
 }
 
-/* Window — neutral, clean, client-facing */
+/* Window — near-neutral, accent barely present */
 .canvas-shell[data-room="window"] {
-  --room-glow-a: rgba(244,239,216,.012);
-  --room-glow-b: rgba(30,138,138,.010);
-  --room-glow-c: rgba(245,146,12,.008);
+  --room-glow-a: rgba(var(--project-accent-rgb, 212,170,106), .008);
+  --room-glow-b: rgba(236, 234, 228, .006);
+  --room-glow-c: rgba(var(--project-accent-rgb, 212,170,106), .004);
 }
 
-.canvas-grain {
-  position: absolute; inset: 0; pointer-events: none; z-index: 9990;
-  opacity: .48; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.055'/%3E%3C/svg%3E");
-}
-.canvas-scan {
-  position: absolute; inset: 0; pointer-events: none; z-index: 9989;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.055) 2px, rgba(0,0,0,0.055) 3px);
-}
+/* Canvas grain removed — dot grid + ambient radials provide all atmosphere needed */
 
 /* MAIN CANVAS AREA */
 .canvas-main {
@@ -64,14 +54,14 @@
   min-height: 0;
 }
 
-/* Ambient depth — reacts to room identity */
+/* Ambient depth — project-reactive, breathes with room identity */
 .canvas-main::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse 70% 55% at 38% 50%, var(--room-glow-a, rgba(245,146,12,.022)) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 40% at 5%  80%, var(--room-glow-b, rgba(30,138,138,.018)) 0%, transparent 55%),
-    radial-gradient(ellipse 30% 30% at 95% 20%, var(--room-glow-c, rgba(96,20,8,.015))    0%, transparent 55%);
+    radial-gradient(ellipse 65% 55% at 38% 50%, var(--room-glow-a) 0%, transparent 65%),
+    radial-gradient(ellipse 38% 40% at 5%  80%, var(--room-glow-b) 0%, transparent 55%),
+    radial-gradient(ellipse 28% 28% at 92% 22%, var(--room-glow-c) 0%, transparent 55%);
   transition: background var(--dur-cinema) var(--ease);
 }
 
@@ -79,7 +69,7 @@
 .canvas-main::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   z-index: 0;
-  background-image: radial-gradient(circle, rgba(255,255,255,.028) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255,255,255,.016) 1px, transparent 1px);
   background-size: 28px 28px;
   background-position: 14px 14px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 80%);
@@ -97,10 +87,10 @@
   position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
   transition: background var(--dur-cinema) var(--ease);
 }
-.canvas-shell[data-room="studio"]  .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(245,146,12,.18) 30%, rgba(245,146,12,.08) 70%, transparent 100%); }
-.canvas-shell[data-room="meeting"] .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(30,138,138,.2)  30%, rgba(30,138,138,.10) 70%, transparent 100%); }
+.canvas-shell[data-room="studio"]  .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(var(--project-accent-rgb, 212,170,106), .18) 30%, rgba(var(--project-accent-rgb, 212,170,106), .08) 70%, transparent 100%); }
+.canvas-shell[data-room="meeting"] .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(74, 142, 142, .2)  30%, rgba(74, 142, 142, .10) 70%, transparent 100%); }
 .canvas-shell[data-room="window"]  .topbar::after { background: linear-gradient(90deg, transparent 0%, rgba(244,239,216,.08) 30%, rgba(244,239,216,.04) 70%, transparent 100%); }
 
 /* Room label in topbar shifts tone */
-.canvas-shell[data-room="meeting"] .tb-room-badge { color: var(--teal); border-color: rgba(30,138,138,.25); }
+.canvas-shell[data-room="meeting"] .tb-room-badge { color: var(--teal); border-color: rgba(74, 142, 142, .25); }
 .canvas-shell[data-room="window"]  .tb-room-badge { color: var(--dim); border-color: rgba(160,152,144,.2); }

@@ -1,7 +1,7 @@
 #cur {
-  width: 6px; height: 6px;
+  width: 5px; height: 5px;
   border-radius: 50%;
-  background: var(--orange);
+  background: var(--project-accent, var(--accent));
   position: fixed; top: 0; left: 0;
   pointer-events: none;
   z-index: 99999;
@@ -15,13 +15,13 @@
     border-radius var(--dur-mid);
 }
 #cur.h {
-  width: 30px; height: 30px;
+  width: 28px; height: 28px;
   background: transparent;
-  border: 1px solid rgba(245,146,12,.42);
+  border: 1px solid rgba(var(--project-accent-rgb, 212,170,106), .38);
   border-radius: 50%;
 }
 #cur.ck {
-  width: 44px; height: 44px;
-  background: rgba(245,146,12,.065);
-  border: 1px solid rgba(245,146,12,.52);
+  width: 40px; height: 40px;
+  background: rgba(var(--project-accent-rgb, 212,170,106), .07);
+  border: 1px solid rgba(var(--project-accent-rgb, 212,170,106), .45);
 }

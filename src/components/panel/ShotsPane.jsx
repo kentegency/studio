@@ -6,7 +6,7 @@ import EmptyState from '../EmptyState'
 import '../EmptyState.css'
 import './Panes.css'
 
-const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2720' }
+const SH_COLOR = { done:'#4ADE80', progress:'var(--accent)', pending:'#2A2720' }
 const SH_LABEL = { done:'Done', progress:'In progress', pending:'Pending' }
 
 // ── SHOTS PANE — live data per selected node ───
@@ -254,7 +254,7 @@ export function TeamPane({ onInvite }) {
       .then(({ data }) => setContributors(data ?? []))
   }, [currentProject?.id])
 
-  const ROOM_COLOR = { studio:'#F5920C', meeting:'#1E8A8A', window:'#4ADE80' }
+  const ROOM_COLOR = { studio:'var(--accent)', meeting:'var(--teal)', window:'#4ADE80' }
 
   return (
     <div className="node-pane">
@@ -266,21 +266,21 @@ export function TeamPane({ onInvite }) {
         {/* Always show yourself — the CD */}
         {profile && (
           <div className="team-member">
-            <div className="tm-av" style={{ background:'#F5920C', color:'#040402' }}>
+            <div className="tm-av" style={{ background:'var(--accent)', color:'#040402' }}>
               {(profile.name ?? 'CD').slice(0,2).toUpperCase()}
             </div>
             <div className="tm-info">
               <div className="tm-name">{profile.name ?? 'Creative Director'}</div>
               <div className="tm-role">Creative Director · Owner</div>
             </div>
-            <span className="tm-badge" style={{ color:'#F5920C', background:'rgba(245,146,12,0.1)' }}>Studio</span>
+            <span className="tm-badge" style={{ color:'var(--accent)', background:'rgba(212,170,106,0.1)' }}>Studio</span>
           </div>
         )}
 
         {/* Live contributors from database */}
         {contributors.map(c => (
           <div key={c.id} className="team-member">
-            <div className="tm-av" style={{ background: c.color ?? '#1E8A8A', color:'#040402' }}>
+            <div className="tm-av" style={{ background: c.color ?? 'var(--teal)', color:'#040402' }}>
               {c.name.slice(0,2).toUpperCase()}
             </div>
             <div className="tm-info">
@@ -288,7 +288,7 @@ export function TeamPane({ onInvite }) {
               <div className="tm-role">{c.role}</div>
             </div>
             <span className="tm-badge"
-              style={{ color: ROOM_COLOR[c.room] ?? '#1E8A8A', background:`${ROOM_COLOR[c.room] ?? '#1E8A8A'}18` }}>
+              style={{ color: ROOM_COLOR[c.room] ?? 'var(--teal)', background:`${ROOM_COLOR[c.room] ?? 'var(--teal)'}18` }}>
               {c.room.charAt(0).toUpperCase() + c.room.slice(1)}
             </span>
           </div>
@@ -322,7 +322,7 @@ const FONTS = [
 
 export function StylePane({ onOpenSettings }) {
   const { currentProject } = useProjectStore()
-  const accent = currentProject?.accent_color ?? '#F5920C'
+  const accent = currentProject?.accent_color ?? 'var(--accent)'
 
   const TOKENS = [
     { k:'--project-accent', v: accent },

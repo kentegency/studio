@@ -12,7 +12,7 @@ const TOOLS = [
   { key:'eraser', label:'Eraser',
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/></svg> },
 ]
-const COLORS  = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#E05050','#8B5CF6','#A09890']
+const COLORS  = ['var(--accent)','var(--teal)','#F4EFD8','#4ADE80','#E05050','#8B5CF6','#A09890']
 const LAYOUTS = [
   { panels:4,  label:'4',  cols:2 },
   { panels:6,  label:'6',  cols:3 },
@@ -135,7 +135,7 @@ export default function Storyboard({ onClose }) {
   const [layout,      setLayout]      = useState(LAYOUTS[0])   // 4 panels default
   const [activePanel, setActivePanel] = useState(0)
   const [tool,        setTool]        = useState('pen')
-  const [color,       setColor]       = useState('#F5920C')
+  const [color,       setColor]       = useState('var(--accent)')
   const [saving,      setSaving]      = useState(false)
   const [saveProgress,setSaveProgress]= useState('')
 
@@ -165,7 +165,7 @@ export default function Storyboard({ onClose }) {
   // Save all panels as PNG assets
   const saveAll = async () => {
     if (!selectedNode?.id || !currentProject?.id || selectedNode.id.startsWith('cn')) {
-      showToast('Select a scene first to save the storyboard.', '#F5920C')
+      showToast('Select a scene first to save the storyboard.', 'var(--accent)')
       return
     }
     setSaving(true)

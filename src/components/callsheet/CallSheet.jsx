@@ -44,7 +44,7 @@ function openHTMLFallback(html) {
 }
 
 // ── STATUS COLOURS ────────────────────────────────────────────
-const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#4A4840' }
+const SH_COLOR = { done:'#4ADE80', progress:'var(--accent)', pending:'#4A4840' }
 
 // ── CALL SHEET HTML TEMPLATE ──────────────────────────────────
 function buildCallSheetHTML({ project, node, date, generalCall, location, director, shots, subjects, notes, profile }) {
@@ -62,7 +62,7 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
       </td>
       <td style="padding:10px 14px;border-bottom:.5px solid rgba(255,255,255,.05);">
         <span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;
-          color:${s.contact_status==='confirmed'?'#F5920C':'#4ADE80'};">
+          color:${s.contact_status==='confirmed'?'var(--accent)':'#4ADE80'};">
           ${s.contact_status}
         </span>
       </td>
@@ -91,7 +91,7 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
 
   const noteItems = notes.filter(n => n.room !== 'window').map(n => `
     <div style="padding:12px 16px;background:rgba(12,11,8,1);border-radius:2px;
-      border-left:2px solid ${n.color??'#F5920C'};margin-bottom:6px;">
+      border-left:2px solid ${n.color??'var(--accent)'};margin-bottom:6px;">
       <div style="font-size:13px;color:#A09890;line-height:1.65;">${n.body}</div>
     </div>`).join('')
 
@@ -118,7 +118,7 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
   .print-btn {
     font-size:11px; letter-spacing:.2em; padding:8px 20px;
     text-transform:uppercase; color:#F5920C;
-    border:.5px solid rgba(245,146,12,.3); border-radius:2px;
+    border:.5px solid rgba(212,170,106,.3); border-radius:2px;
     background:transparent; font-family:'IBM Plex Mono',monospace; cursor:pointer;
   }
   .doc { max-width:860px; margin:0 auto; padding:72px 0 80px; }
@@ -189,7 +189,7 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
       <div class="cs-meta-cell" style="margin-top:16px;">
         <div class="cs-meta-label">Scene Status</div>
         <div class="cs-meta-val" style="text-transform:uppercase;letter-spacing:.1em;font-size:11px;
-          color:${node.status==='approved'||node.status==='locked'?'#4ADE80':node.status==='review'?'#C07010':'#F5920C'}">
+          color:${node.status==='approved'||node.status==='locked'?'#4ADE80':node.status==='review'?'#C07010':'var(--accent)'}">
           ${node.status ?? 'concept'}
         </div>
       </div>
@@ -334,7 +334,7 @@ export default function CallSheet({ onClose }) {
 
       if (result.fallback) {
         openHTMLFallback(html)
-        showToast('Opened in browser — use Print to save as PDF.', '#F5920C')
+        showToast('Opened in browser — use Print to save as PDF.', 'var(--accent)')
       } else {
         showToast(`Call sheet saved — ${filename}`, '#4ADE80')
       }

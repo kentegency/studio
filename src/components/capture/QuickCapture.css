@@ -25,10 +25,10 @@
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--orange); border: none;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 24px rgba(245,146,12,.28);
+  box-shadow: 0 0 24px rgba(var(--project-accent-rgb, 212,170,106), .28);
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-mid) var(--ease);
 }
-.qc-btn:hover { transform: scale(1.08); box-shadow: 0 0 36px rgba(245,146,12,.44); }
+.qc-btn:hover { transform: scale(1.08); box-shadow: 0 0 36px rgba(var(--project-accent-rgb, 212,170,106), .44); }
 .qc-btn svg   { width: 16px; height: 16px; stroke: #040402; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* PANEL — wider, better spaced */
@@ -53,7 +53,7 @@
   background: linear-gradient(90deg, var(--orange), transparent 50%); opacity:.2;
 }
 .qcp-title {
-  font-size: 11px; letter-spacing: .28em; color: var(--orange);
+  font-size: 11px; letter-spacing: .06em; color: var(--orange);
   text-transform: uppercase; font-family: var(--font-mono); flex-shrink: 0;
 }
 .qcp-scene {
@@ -102,11 +102,11 @@
 .qcp-voice-btn:hover { color: #8B5CF6; border-color: rgba(139,92,246,.3); }
 
 .qcp-send {
-  font-size: 11.5px; letter-spacing: .18em; padding: 6px 16px;
+  font-size: 11.5px; letter-spacing: .05em; padding: 6px 16px;
   border-radius: 2px; text-transform: uppercase;
-  color: var(--orange); border: .5px solid rgba(245,146,12,.28);
+  color: var(--orange); border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .28);
   background: transparent; font-family: var(--font-mono);
   transition: background var(--dur-mid) var(--ease);
 }
-.qcp-send:hover:not(:disabled) { background: rgba(245,146,12,.07); }
+.qcp-send:hover:not(:disabled) { background: rgba(var(--project-accent-rgb, 212,170,106), .07); }
 .qcp-send:disabled { opacity: .35; }

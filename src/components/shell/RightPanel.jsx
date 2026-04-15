@@ -9,11 +9,11 @@ import BiblePane from '../bible/BiblePane'
 import './RightPanel.css'
 
 const TABS = [
-  { key: 'node',   label: 'Node'   },
-  { key: 'shots',  label: 'Shots'  },
-  { key: 'team',   label: 'Team'   },
-  { key: 'people', label: 'People' },
-  { key: 'style',  label: 'Style'  },
+  { key: 'node',   label: 'Scene'    },
+  { key: 'shots',  label: 'Shots'    },
+  { key: 'team',   label: 'Crew'     },
+  { key: 'people', label: 'Subjects' },
+  { key: 'style',  label: 'Identity' },
 ]
 
 export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }) {
@@ -56,7 +56,7 @@ export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }
     <aside className="right-panel">
       {activeRoom === 'meeting' && (
         <div className="rp-room-banner meeting">
-          <span className="rrb-dot" style={{ background:'#1E8A8A' }} />
+          <span className="rrb-dot" style={{ background:'var(--teal)' }} />
           Meeting — Contributor view
         </div>
       )}

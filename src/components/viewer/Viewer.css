@@ -16,7 +16,7 @@
 }
 .viewer-nav { display: flex; gap: 4px; flex-shrink: 0; }
 .vn-btn {
-  font-size: 12px; letter-spacing: .14em; padding: 5px 12px;
+  font-size: 12px; letter-spacing: .05em; padding: 5px 12px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -42,7 +42,7 @@
 
 .viewer-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 .va-btn {
-  font-size: 12px; letter-spacing: .14em; padding: 5px 12px;
+  font-size: 12px; letter-spacing: .05em; padding: 5px 12px;
   text-transform: uppercase; color: var(--dim);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -51,13 +51,13 @@
 }
 .va-btn:hover { color: var(--cream); border-color: var(--b2); }
 .va-close {
-  font-size: 12px; letter-spacing: .14em; padding: 5px 14px;
+  font-size: 12px; letter-spacing: .05em; padding: 5px 14px;
   text-transform: uppercase; color: var(--orange);
-  border: .5px solid rgba(245,146,12,.25); border-radius: 2px;
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .25); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   transition: background var(--dur-mid) var(--ease);
 }
-.va-close:hover { background: rgba(245,146,12,.06); }
+.va-close:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 
 /* BODY */
 .viewer-body {
@@ -80,7 +80,7 @@
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.vl-text { font-size: 12px; letter-spacing: .18em; color: var(--mute); text-transform: uppercase; }
+.vl-text { font-size: 12px; letter-spacing: .05em; color: var(--mute); text-transform: uppercase; }
 
 /* PDF */
 .viewer-pdf {
@@ -137,11 +137,11 @@
 .vnd-name { font-size: 14px; color: var(--cream); letter-spacing: .04em; }
 .vnd-sub  { font-size: 12px; color: var(--mute); letter-spacing: .08em; }
 .vnd-open {
-  font-size: 12px; letter-spacing: .18em; padding: 8px 18px;
+  font-size: 12px; letter-spacing: .05em; padding: 8px 18px;
   text-transform: uppercase; color: var(--orange);
-  border: .5px solid rgba(245,146,12,.25); border-radius: 2px;
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .25); border-radius: 2px;
   text-decoration: none; font-family: var(--font-mono);
   transition: background var(--dur-mid) var(--ease);
   margin-top: 8px;
 }
-.vnd-open:hover { background: rgba(245,146,12,.06); }
+.vnd-open:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }

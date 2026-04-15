@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const STATUS_RING = {
-  concept:  { color:'#3A3020', glow: false },
-  progress: { color:'#F5920C', glow: true  },
-  review:   { color:'#C07010', glow: true  },
+  concept:  { color:'#2A2A2E', glow: false },  /* barely visible — cool surface */
+  progress: { color:'#D4AA6A', glow: true  },  /* accent-full */
+  review:   { color:'#A88040', glow: true  },  /* accent desaturated */
   approved: { color:'#4ADE80', glow: true  },
   locked:   { color:'#4ADE80', glow: false },
 }
@@ -98,12 +98,12 @@ export default function Node({ node, selected, onClick, isDragging }) {
       {/* Main circle */}
       <circle
         cx={cx} cy={cy} r={node.r}
-        fill={isDragging ? 'rgba(245,146,12,0.8)' : node.fill}
+        fill={isDragging ? 'rgba(212,170,106,0.8)' : node.fill}
         style={{
           transform: `scale(${scale})`,
           transformOrigin: `${cx}px ${cy}px`,
           transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(.16,1,.3,1)',
-          filter: isDragging ? 'drop-shadow(0 0 8px rgba(245,146,12,0.6))' : 'none',
+          filter: isDragging ? 'drop-shadow(0 0 8px rgba(212,170,106,0.6))' : 'none',
         }} />
 
       {/* Shot count badge — shows inside node if shots exist */}

@@ -13,8 +13,8 @@ const CloseIcon  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 // ── STATUS CONFIG ─────────────────────────────────────────────
 const CONTACT_STATUS = {
   prospect:  { label: 'Prospect',  color: '#6A6258' },
-  contacted: { label: 'Contacted', color: '#F5920C' },
-  confirmed: { label: 'Confirmed', color: '#1E8A8A' },
+  contacted: { label: 'Contacted', color: 'var(--accent)' },
+  confirmed: { label: 'Confirmed', color: 'var(--teal)' },
   filmed:    { label: 'Filmed',    color: '#4ADE80' },
   declined:  { label: 'Declined',  color: '#E05050' },
 }
@@ -45,12 +45,12 @@ function SubjectForm({ subject, nodes, onSave, onClose }) {
     contact_info:subject?.contact_info ?? '',
     node_ids:    subject?.node_ids    ?? [],
     notes:       subject?.notes       ?? '',
-    color:       subject?.color       ?? '#1E8A8A',
+    color:       subject?.color       ?? 'var(--teal)',
   })
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  const COLORS = ['#1E8A8A','#F5920C','#8B5CF6','#4ADE80','#E05050','#F4EFD8','#A09890']
+  const COLORS = ['var(--teal)','var(--accent)','#8B5CF6','#4ADE80','#E05050','#F4EFD8','#A09890']
 
   const toggleNode = (id) => set('node_ids',
     form.node_ids.includes(id)
@@ -151,7 +151,7 @@ function SubjectDetail({ subject, nodes, onEdit, onClose, onDelete, onStatusCycl
       </div>
       <div className="sd-body">
         <div className="sd-hero">
-          <Avatar name={subject.name} color={subject.color ?? '#1E8A8A'} size={44} />
+          <Avatar name={subject.name} color={subject.color ?? 'var(--teal)'} size={44} />
           <div className="sd-hero-info">
             <div className="sd-name">{subject.name}</div>
             <div className="sd-title">{subject.title}</div>
@@ -378,7 +378,7 @@ export default function BiblePane() {
             return (
               <button key={subject.id} className="bible-row" data-hover
                 onClick={() => { setSelected(subject); setView('detail') }}>
-                <Avatar name={subject.name} color={subject.color ?? '#1E8A8A'} size={32} />
+                <Avatar name={subject.name} color={subject.color ?? 'var(--teal)'} size={32} />
                 <div className="br-info">
                   <div className="br-name">{subject.name}</div>
                   <div className="br-meta">

@@ -61,7 +61,7 @@ export default function Entry() {
         <span className="em-l">arc</span>
         <div className="em-track">
           <div className="em-zone" style={{ left:'2%',  width:'26%', background:'rgba(30,138,138,0.4)'  }} />
-          <div className="em-zone" style={{ left:'30%', width:'31%', background:'rgba(245,146,12,0.32)' }} />
+          <div className="em-zone" style={{ left:'30%', width:'31%', background:'rgba(212,170,106,0.32)' }} />
           <div className="em-zone" style={{ left:'63%', width:'34%', background:'rgba(180,60,30,0.36)'  }} />
           <div className="em-indicator" />
         </div>

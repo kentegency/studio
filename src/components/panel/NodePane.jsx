@@ -8,11 +8,11 @@ import './Panes.css'
 import '../EmptyState.css'
 
 const STATUSES      = ['concept','progress','review','approved','locked']
-const STATUS_COLORS = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+const STATUS_COLORS = { concept:'#6A6258', progress:'var(--accent)', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
 const STATUS_LABELS = { concept:'Concept', progress:'In Progress', review:'In Review', approved:'Approved ✓', locked:'Locked ✓' }
-const NOTE_COLORS   = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
+const NOTE_COLORS   = ['var(--accent)','var(--teal)','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
 const WAVEFORM      = [.3,.5,.8,.6,.9,.4,.7,.55,.8,.6,.4,.9,.7,.5,.3,.65,.8,.4,.7,.5,.9,.6,.4,.8,.5,.7,.35,.6,.9,.4,.8,.6,.5,.7,.3,.9,.6,.4,.75,.5]
-const TYPE_COLORS   = { pdf:'#E05050', image:'#1E8A8A', gif:'#8B5CF6', video:'#F5920C', audio:'#4ADE80', document:'#D4CAAA', reference:'#D4CAAA' }
+const TYPE_COLORS   = { pdf:'#E05050', image:'var(--teal)', gif:'#8B5CF6', video:'var(--accent)', audio:'#4ADE80', document:'#D4CAAA', reference:'#D4CAAA' }
 
 const getType = (asset) => {
   const ext = (asset.file_url?.split('.').pop() ?? '').toLowerCase()
@@ -43,7 +43,7 @@ export default function NodePane({ onUpload }) {
   const { currentProject }                       = useProjectStore()
 
   const [newNote,      setNewNote]      = useState('')
-  const [noteColor,    setNoteColor]    = useState('#F5920C')
+  const [noteColor,    setNoteColor]    = useState('var(--accent)')
   const [addingNote,   setAddingNote]   = useState(false)
   const [showWindow,     setShowWindow]     = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
@@ -346,7 +346,7 @@ export default function NodePane({ onUpload }) {
           ) : (
             <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
               <button className="window-link-btn" onClick={startSession} data-hover
-                style={{ color:'var(--project-accent, var(--orange))', borderColor:'rgba(245,146,12,.2)' }}>
+                style={{ color:'var(--project-accent, var(--orange))', borderColor:'rgba(212,170,106,.2)' }}>
                 <svg viewBox="0 0 24 24" style={{ width:13, height:13, stroke:'currentColor', fill:'none', strokeWidth:1.5, strokeLinecap:'round', flexShrink:0 }}>
                   <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
                 </svg>
@@ -406,7 +406,7 @@ export default function NodePane({ onUpload }) {
         ) : notes.length > 0 ? (
           notes.map((n,i) => (
             <div key={n.id??i} className={`note ${n.resolved?'resolved':''}`}
-              style={{ borderLeftColor:n.color??'#F5920C' }} data-hover>
+              style={{ borderLeftColor:n.color??'var(--accent)' }} data-hover>
               <div className="nb">{n.body}</div>
               <div className="nm">{n.room??'studio'} · {formatTime(n.created_at)}</div>
             </div>

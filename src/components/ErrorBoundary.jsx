@@ -34,7 +34,7 @@ export default class ErrorBoundary extends Component {
             style={{
               fontSize: '12px', letterSpacing: '.14em', padding: '8px 20px',
               textTransform: 'uppercase', color: 'var(--orange)',
-              border: '.5px solid rgba(245,146,12,.28)', borderRadius: '2px',
+              border: '.5px solid rgba(212,170,106,.28)', borderRadius: '2px',
               background: 'transparent', fontFamily: 'var(--font-mono)',
               cursor: 'none',
             }}>

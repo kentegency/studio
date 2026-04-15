@@ -4,7 +4,7 @@ import './Auth.css'
 
 const LOGO_PIXELS = [
   '#F4EFD8','#040402','#7A7A7A',
-  '#F5920C','#7A7A7A','#040402',
+  'var(--accent)','#7A7A7A','#040402',
   '#7A7A7A','#040402','#F4EFD8',
 ]
 

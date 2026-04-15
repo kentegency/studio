@@ -23,7 +23,7 @@
 .win-px   { width: 18px; height: 18px; }
 .win-loading-text { font-size: 13px; letter-spacing: .4em; color: var(--ghost); text-transform: uppercase; }
 .win-exp-title { font-family: var(--font-display); font-size: 28px; color: var(--dim); letter-spacing: .04em; }
-.win-exp-sub   { font-size: 13px; letter-spacing: .18em; color: var(--ghost); text-transform: uppercase; }
+.win-exp-sub   { font-size: 13px; letter-spacing: .05em; color: var(--ghost); text-transform: uppercase; }
 
 /* HEADER */
 .win-header {
@@ -40,7 +40,7 @@
   font-size: 10px; letter-spacing: .12em;
   color: var(--cream); text-transform: uppercase; flex: 1;
 }
-.win-type { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; }
+.win-type { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
 
 /* HERO */
 .win-hero {
@@ -49,7 +49,7 @@
   display: flex; flex-direction: column; gap: 12px;
   flex: 1; justify-content: center; max-width: 720px;
 }
-.win-hero-eye   { font-size: 13px; letter-spacing: .38em; text-transform: uppercase; }
+.win-hero-eye   { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
 .win-hero-title {
   font-family: var(--font-display);
   font-size: clamp(48px, 8vw, 96px);
@@ -61,7 +61,7 @@
   font-style: italic; color: var(--dim);
   line-height: 1.65; letter-spacing: .03em;
 }
-.win-hero-hint  { font-size: 12.5px; letter-spacing: .28em; color: var(--ghost); text-transform: uppercase; margin-top: 12px; }
+.win-hero-hint  { font-size: 12.5px; letter-spacing: .06em; color: var(--ghost); text-transform: uppercase; margin-top: 12px; }
 
 /* CONTENT */
 .win-content {
@@ -71,13 +71,13 @@
   max-width: 800px; width: 100%;
 }
 .win-node-header { display: flex; flex-direction: column; gap: 6px; }
-.win-node-eye   { font-size: 12px; letter-spacing: .32em; text-transform: uppercase; }
+.win-node-eye   { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
 .win-node-title {
   font-family: var(--font-display);
   font-size: clamp(36px, 6vw, 68px);
   color: var(--cream); line-height: .9; letter-spacing: .02em;
 }
-.win-node-status{ font-size: 12px; letter-spacing: .22em; text-transform: uppercase; }
+.win-node-status{ font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
 
 /* ASSETS */
 .win-assets {
@@ -97,7 +97,7 @@
   width: 100%; height: 100%;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 4px;
-  font-size: 12px; letter-spacing: .18em; color: var(--mute); text-transform: uppercase;
+  font-size: 12px; letter-spacing: .05em; color: var(--mute); text-transform: uppercase;
 }
 .win-asset-name { font-size: 11.5px; color: var(--ghost); text-align: center; padding: 0 8px; }
 
@@ -112,7 +112,7 @@
 
 /* REACTIONS */
 .win-reactions { display: flex; flex-direction: column; gap: 10px; }
-.win-react-label { font-size: 12px; letter-spacing: .26em; color: var(--mute); text-transform: uppercase; }
+.win-react-label { font-size: 12px; letter-spacing: .06em; color: var(--mute); text-transform: uppercase; }
 .win-react-row   { display: flex; gap: 8px; }
 .win-react-btn {
   width: 44px; height: 44px; border-radius: 3px;
@@ -127,13 +127,13 @@
 .win-approve {
   padding: 14px 28px; border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
-  font-size: 13px; letter-spacing: .22em; text-transform: uppercase;
+  font-size: 13px; letter-spacing: .05em; text-transform: uppercase;
   border: .5px solid; align-self: flex-start;
   transition: background var(--dur-mid) var(--ease);
 }
-.win-approve:hover { background: rgba(245,146,12,.06); }
+.win-approve:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 .win-approved {
-  font-size: 13px; letter-spacing: .15em;
+  font-size: 13px; letter-spacing: .05em;
   color: var(--green); text-transform: uppercase;
   padding: 12px 0; border-top: .5px solid rgba(74,222,128,.15);
 }
@@ -152,14 +152,14 @@
   padding: 12px 0;
 }
 .win-node-pill {
-  font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
   padding: 6px 12px; border-radius: 2px;
   border: .5px solid var(--b); background: transparent;
   color: var(--mute); font-family: var(--font-mono);
   transition: all var(--dur-mid) var(--ease);
 }
 .win-node-pill:hover { color: var(--dim); border-color: var(--b2); }
-.win-node-pill.on    { background: rgba(245,146,12,.06); }
+.win-node-pill.on    { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 
 /* FOOTER */
 .win-footer {
@@ -167,7 +167,7 @@
   padding: 16px 28px;
   border-top: .5px solid var(--b);
   display: flex; gap: 10px; align-items: center;
-  font-size: 12px; letter-spacing: .15em;
+  font-size: 12px; letter-spacing: .05em;
   color: var(--ghost); text-transform: uppercase;
   flex-shrink: 0;
 }
@@ -180,7 +180,7 @@
   border-bottom: .5px solid var(--b);
   flex-shrink: 0;
 }
-.win-intro-eye  { font-size: 12px; letter-spacing: .32em; text-transform: uppercase; }
+.win-intro-eye  { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
 .win-intro-title {
   font-family: var(--font-display);
   font-size: clamp(36px, 6vw, 72px);
@@ -199,7 +199,7 @@
 }
 .win-intro-dot  { width: 3px; height: 3px; border-radius: 50%; background: var(--mute); }
 .win-intro-hint {
-  font-size: 12px; letter-spacing: .14em;
+  font-size: 12px; letter-spacing: .05em;
   color: var(--dim); text-transform: uppercase;
   margin-top: 8px; padding: 10px 14px;
   background: rgba(255,255,255,.025);
@@ -218,7 +218,7 @@
 
 /* REACTION CONFIRM */
 .win-react-confirm {
-  font-size: 12px; letter-spacing: .14em;
+  font-size: 12px; letter-spacing: .05em;
   color: var(--green); text-transform: uppercase;
   margin-top: 8px;
 }
@@ -235,7 +235,7 @@
 .wac-body strong { font-weight: 500; color: var(--cream); }
 .wac-actions { display: flex; gap: 10px; margin-top: 6px; }
 .wac-cancel {
-  font-size: 12px; letter-spacing: .15em; padding: 10px 18px;
+  font-size: 12px; letter-spacing: .05em; padding: 10px 18px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -243,7 +243,7 @@
 }
 .wac-cancel:hover { color: var(--dim); }
 .wac-confirm {
-  font-size: 12px; letter-spacing: .15em; padding: 10px 22px;
+  font-size: 12px; letter-spacing: .05em; padding: 10px 22px;
   text-transform: uppercase; color: var(--black);
   border: .5px solid; border-radius: 2px;
   font-family: var(--font-mono); font-weight: 500;
@@ -290,7 +290,7 @@
   transition: all var(--dur-mid) var(--ease);
 }
 .win-node-pill:hover { color: var(--dim); border-color: var(--b2); }
-.win-node-pill.on    { background: rgba(245,146,12,.06); }
+.win-node-pill.on    { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 
 .win-react-btn {
   width: 52px; height: 52px; /* 44px minimum */
@@ -312,7 +312,7 @@
   border: .5px solid; align-self: flex-start;
   transition: background var(--dur-mid) var(--ease);
 }
-.win-approve:hover { background: rgba(245,146,12,.06); }
+.win-approve:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 
 /* SESSION JOIN BUTTON */
 .win-session-btn {
@@ -324,7 +324,7 @@
   cursor: pointer; margin-left: 8px;
   transition: background var(--dur-mid) var(--ease);
 }
-.win-session-btn:hover { background: rgba(245,146,12,.06); }
+.win-session-btn:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 
 /* CLIENT COMMENT */
 .win-comment {
@@ -339,20 +339,20 @@
   font-size: 15px; font-style: italic;
   color: rgba(244,239,216,.8);
   line-height: 1.65; resize: none; outline: none;
-  caret-color: var(--accent, #F5920C);
+  caret-color: var(--accent, var(--accent));
   transition: border-color .25s ease;
 }
 .win-comment-input:focus { border-color: rgba(255,255,255,.16); }
 .win-comment-input::placeholder { color: rgba(106,98,88,.7); font-style: italic; }
 .win-comment-send {
   align-self: flex-end;
-  font-size: 11px; letter-spacing: .16em; padding: 8px 18px;
+  font-size: 11px; letter-spacing: .05em; padding: 8px 18px;
   text-transform: uppercase; border: .5px solid;
   border-radius: 2px; background: transparent;
   font-family: 'IBM Plex Mono', monospace;
   transition: background .2s ease;
 }
-.win-comment-send:hover:not(:disabled) { background: rgba(245,146,12,.06); }
+.win-comment-send:hover:not(:disabled) { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 .win-comment-send:disabled { opacity: .4; }
 .win-comment-sent {
   margin-top: 16px; font-size: 13px;

@@ -26,7 +26,7 @@
   font-size: 18px; color: var(--cream); letter-spacing: .04em;
 }
 .upload-node {
-  font-size: 12px; letter-spacing: .15em;
+  font-size: 12px; letter-spacing: .05em;
   color: var(--orange); flex: 1;
 }
 .upload-close {
@@ -39,8 +39,8 @@
 /* DROP ZONE */
 .drop-zone {
   margin: 16px; border-radius: 2px;
-  border: 1px dashed rgba(245,146,12,.22);
-  background: rgba(245,146,12,.02);
+  border: 1px dashed rgba(var(--project-accent-rgb, 212,170,106), .22);
+  background: rgba(var(--project-accent-rgb, 212,170,106), .02);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 36px 20px; gap: 8px;
@@ -49,8 +49,8 @@
   flex-shrink: 0;
 }
 .drop-zone:hover, .drop-zone.dragging {
-  border-color: rgba(245,146,12,.5);
-  background: rgba(245,146,12,.05);
+  border-color: rgba(var(--project-accent-rgb, 212,170,106), .5);
+  background: rgba(var(--project-accent-rgb, 212,170,106), .05);
 }
 .dz-icon svg {
   width: 28px; height: 28px;
@@ -119,19 +119,19 @@
 }
 .upload-done-btn {
   font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--orange); border: .5px solid rgba(245,146,12,.25);
+  color: var(--orange); border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .25);
   background: transparent; border-radius: 2px;
   padding: 7px 16px; font-family: var(--font-ui);
   transition: background var(--dur-mid) var(--ease);
 }
-.upload-done-btn:hover { background: rgba(245,146,12,.06); }
+.upload-done-btn:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
 
 .ui-retry {
-  font-size: 11px; letter-spacing: .14em;
+  font-size: 11px; letter-spacing: .05em;
   color: var(--orange); text-transform: uppercase;
-  background: none; border: .5px solid rgba(245,146,12,.25);
+  background: none; border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .25);
   border-radius: 2px; padding: 3px 8px;
   font-family: var(--font-mono);
   transition: background var(--dur-mid) var(--ease);
 }
-.ui-retry:hover { background: rgba(245,146,12,.08); }
+.ui-retry:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .08); }

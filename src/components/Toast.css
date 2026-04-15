@@ -27,15 +27,15 @@
   font-family: var(--font-ui);
 }
 .toast-undo {
-  font-size: 12px; letter-spacing: .14em;
+  font-size: 12px; letter-spacing: .05em;
   color: var(--orange); text-transform: uppercase;
-  background: none; border: .5px solid rgba(245,146,12,.25);
+  background: none; border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .25);
   border-radius: 2px; padding: 4px 10px;
   font-family: var(--font-mono);
   transition: background var(--dur-mid) var(--ease);
   white-space: nowrap; flex-shrink: 0;
 }
-.toast-undo:hover { background: rgba(245,146,12,.08); }
+.toast-undo:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .08); }
 
 /* OFFLINE BANNER */
 .offline-banner {
@@ -44,7 +44,7 @@
   background: rgba(90,60,10,.95);
   border-bottom: .5px solid rgba(245,146,12,.2);
   padding: 6px 16px;
-  font-size: 12px; letter-spacing: .14em;
+  font-size: 12px; letter-spacing: .05em;
   color: var(--orange); text-align: center;
   font-family: var(--font-mono);
 }

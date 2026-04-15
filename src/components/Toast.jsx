@@ -28,7 +28,7 @@ export function Toast() {
 
   return (
     <div className={`toast-bar ${toast.visible ? 'in' : 'out'}`}>
-      <div className="toast-dot" style={{ background: toast.color ?? '#F5920C' }} />
+      <div className="toast-dot" style={{ background: toast.color ?? 'var(--accent)' }} />
       <span className="toast-msg">{toast.message}</span>
       {undoable && (
         <button className="toast-undo" onClick={handleUndo}>

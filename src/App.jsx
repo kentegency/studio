@@ -101,7 +101,7 @@ export default function App() {
   // Session guest page — no auth needed
   if (sessionToken) return (
     <>
-      <div className="grain" /><div className="scan" /><Cursor />
+      <Cursor />
       <SessionGuest sessionToken={sessionToken} />
     </>
   )
@@ -109,7 +109,7 @@ export default function App() {
   // Window page — no auth needed
   if (windowToken) return (
     <>
-      <div className="grain" /><div className="scan" /><Cursor />
+      <Cursor />
       <Window token={windowToken} />
     </>
   )
@@ -117,14 +117,14 @@ export default function App() {
   // Contributor page — no auth needed
   if (contributorToken) return (
     <>
-      <div className="grain" /><div className="scan" /><Cursor />
+      <Cursor />
       <ContributorView token={contributorToken} />
     </>
   )
 
   return (
     <>
-      <div className="grain" /><div className="scan" />
+      
       <Cursor /><Toast /><OfflineBanner />
       <Onboarding />
       {screen === 'loader'    && <Loader />}

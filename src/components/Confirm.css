@@ -43,7 +43,7 @@
   display: flex; justify-content: flex-end; gap: 8px;
 }
 .confirm-cancel {
-  font-size: 12px; letter-spacing: .16em; padding: 8px 16px;
+  font-size: 12px; letter-spacing: .05em; padding: 8px 16px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -51,7 +51,7 @@
 }
 .confirm-cancel:hover { color: var(--dim); }
 .confirm-btn {
-  font-size: 12px; letter-spacing: .16em; padding: 8px 20px;
+  font-size: 12px; letter-spacing: .05em; padding: 8px 20px;
   text-transform: uppercase;
   border: .5px solid; border-radius: 2px;
   background: transparent; font-family: var(--font-mono);

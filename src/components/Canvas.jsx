@@ -44,9 +44,17 @@ export default function Canvas() {
 
   // Inject project accent colour as CSS variable
   useEffect(() => {
-    const accent = currentProject?.accent_color ?? '#F5920C'
-    document.documentElement.style.setProperty('--project-accent', accent)
-    return () => document.documentElement.style.removeProperty('--project-accent')
+    const hex = currentProject?.accent_color ?? '#D4AA6A'
+    document.documentElement.style.setProperty('--project-accent', hex)
+    // Inject RGB components for rgba() composition in ambient system
+    const r = parseInt(hex.slice(1,3), 16)
+    const g = parseInt(hex.slice(3,5), 16)
+    const b = parseInt(hex.slice(5,7), 16)
+    document.documentElement.style.setProperty('--project-accent-rgb', `${r}, ${g}, ${b}`)
+    return () => {
+      document.documentElement.style.removeProperty('--project-accent')
+      document.documentElement.style.removeProperty('--project-accent-rgb')
+    }
   }, [currentProject?.accent_color])
   const [showUpload,   setShowUpload]   = useState(false)
   const [showPublish,  setShowPublish]  = useState(false)
@@ -115,8 +123,6 @@ export default function Canvas() {
 
   return (
     <div className="canvas-shell" data-room={activeRoom}>
-      <div className="canvas-grain" />
-      <div className="canvas-scan" />
 
       <Sidebar
         onUpload={() => setShowUpload(true)}

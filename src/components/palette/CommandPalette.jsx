@@ -125,7 +125,7 @@ function Highlight({ text, query }) {
   return <>{parts}</>
 }
 
-const STATUS_COLOR = { concept:'#3A3020', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+const STATUS_COLOR = { concept:'#3A3020', progress:'var(--accent)', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
 
 // ── PALETTE ───────────────────────────────────────────────────
 export default function CommandPalette({ onClose, onUpload, onInvite, onSettings, onWrap, onActs, onVoice }) {

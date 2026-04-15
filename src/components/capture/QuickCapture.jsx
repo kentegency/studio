@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useUIStore, useNotesStore, useAuthStore, useProjectStore, useNodeStore } from '../../stores'
 import './QuickCapture.css'
 
-const COLORS = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
+const COLORS = ['var(--accent)','var(--teal)','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
 
 export default function QuickCapture({ onVoice }) {
   const { overlays, openOverlay, closeOverlay, showToast } = useUIStore()

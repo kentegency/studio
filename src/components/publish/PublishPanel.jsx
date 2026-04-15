@@ -4,8 +4,8 @@ import { useUIStore, useProjectStore, useNodeStore } from '../../stores'
 import './Publish.css'
 
 const ROOM_INFO = {
-  studio:  { label: 'Studio',  color: '#F5920C', desc: 'Only you — private thinking layer' },
-  meeting: { label: 'Meeting', color: '#1E8A8A', desc: 'Contributors — your working team'  },
+  studio:  { label: 'Studio',  color: 'var(--accent)', desc: 'Only you — private thinking layer' },
+  meeting: { label: 'Meeting', color: 'var(--teal)', desc: 'Contributors — your working team'  },
   window:  { label: 'Window',  color: '#4ADE80', desc: 'Client — what they see on their tablet' },
 }
 
@@ -181,7 +181,7 @@ export default function PublishPanel({ onClose }) {
                       className={`pub-item ${selected[n.id] ? 'on' : ''}`}
                       onClick={() => toggle(n.id)} data-hover>
                       <div className="pub-check">{selected[n.id] ? '✓' : ''}</div>
-                      <div className="pub-note-color" style={{ background: n.color ?? '#F5920C' }} />
+                      <div className="pub-note-color" style={{ background: n.color ?? 'var(--accent)' }} />
                       <div className="pub-item-info">
                         <div className="pub-item-name">{n.body.slice(0, 60)}{n.body.length > 60 ? '…' : ''}</div>
                         <div className="pub-item-meta">

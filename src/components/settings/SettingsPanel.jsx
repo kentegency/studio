@@ -171,8 +171,8 @@ function VersionsTab({ projectId }) {
 }
 
 const ACCENT_PRESETS = [
-  { name:'Teal',   hex:'#1E8A8A' },
-  { name:'Orange', hex:'#F5920C' },
+  { name:'Teal',   hex:'var(--teal)' },
+  { name:'Orange', hex:'var(--accent)' },
   { name:'Purple', hex:'#8B5CF6' },
   { name:'Green',  hex:'#4ADE80' },
   { name:'Rose',   hex:'#EC4899' },
@@ -197,26 +197,26 @@ export default function SettingsPanel({ onClose }) {
 
   // Profile fields
   const [profileName,  setProfileName]  = useState(profile?.name ?? '')
-  const [profileColor, setProfileColor] = useState(profile?.color ?? '#F5920C')
+  const [profileColor, setProfileColor] = useState(profile?.color ?? 'var(--accent)')
 
   // Project fields
   const [projName,     setProjName]     = useState(currentProject?.name ?? '')
   const [projType,     setProjType]     = useState(currentProject?.type ?? 'film')
   const [projLogline,  setProjLogline]  = useState(currentProject?.logline ?? '')
-  const [projAccent,   setProjAccent]   = useState(currentProject?.accent_color ?? '#F5920C')
-  const [customAccent, setCustomAccent] = useState(currentProject?.accent_color ?? '#F5920C')
+  const [projAccent,   setProjAccent]   = useState(currentProject?.accent_color ?? 'var(--accent)')
+  const [customAccent, setCustomAccent] = useState(currentProject?.accent_color ?? 'var(--accent)')
 
   useEffect(() => {
     setProfileName(profile?.name ?? '')
-    setProfileColor(profile?.color ?? '#F5920C')
+    setProfileColor(profile?.color ?? 'var(--accent)')
   }, [profile])
 
   useEffect(() => {
     setProjName(currentProject?.name ?? '')
     setProjType(currentProject?.type ?? 'film')
     setProjLogline(currentProject?.logline ?? '')
-    setProjAccent(currentProject?.accent_color ?? '#F5920C')
-    setCustomAccent(currentProject?.accent_color ?? '#F5920C')
+    setProjAccent(currentProject?.accent_color ?? 'var(--accent)')
+    setCustomAccent(currentProject?.accent_color ?? 'var(--accent)')
   }, [currentProject?.id])
 
   const saveProfile = async () => {
@@ -425,7 +425,7 @@ export default function SettingsPanel({ onClose }) {
               <div className="sf-field">
                 <label className="sf-label">Profile colour</label>
                 <div className="sf-accent-grid">
-                  {['#F5920C','#1E8A8A','#4ADE80','#8B5CF6','#EC4899','#378ADD','#F4EFD8'].map(c => (
+                  {['var(--accent)','var(--teal)','#4ADE80','#8B5CF6','#EC4899','#378ADD','#F4EFD8'].map(c => (
                     <button key={c}
                       className={`sf-accent-swatch ${profileColor === c ? 'on' : ''}`}
                       style={{ background: c }}

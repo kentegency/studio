@@ -7,7 +7,7 @@ import './Timeline.css'
 
 const ACTS_DEMO = [
   { x:8,   width:268, fill:'rgba(30,138,138,0.055)', stroke:'rgba(30,138,138,0.13)',  label:'I — PAST',     labelFill:'rgba(30,138,138,0.65)',  labelX:12  },
-  { x:284, width:302, fill:'rgba(245,146,12,0.042)', stroke:'rgba(245,146,12,0.1)',   label:'II — PRESENT', labelFill:'rgba(245,146,12,0.6)',   labelX:288 },
+  { x:284, width:302, fill:'rgba(212,170,106,0.042)', stroke:'rgba(212,170,106,0.1)',   label:'II — PRESENT', labelFill:'rgba(212,170,106,0.6)',   labelX:288 },
   { x:594, width:300, fill:'rgba(90,18,10,0.052)',   stroke:'rgba(120,38,22,0.1)',    label:'III — FUTURE', labelFill:'rgba(180,60,30,0.65)',   labelX:598 },
 ]
 
@@ -24,11 +24,17 @@ const DEMO_NODES = [
   { id:'cn8', cx:870, cy:53, r:5,  fill:'#281010', label:'Scene 09', labelFill:'#482828', glow:false, status:'concept', act:'Zone III · 03',name:'Scene 09', position:.97, emphasis:1.0, type:'scene' },
 ]
 
-const STATUS_FILL  = { concept:'#3A3020', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+const STATUS_FILL  = {
+  concept:  '#1C1C20',  /* cool-neutral, barely above surface */
+  progress: '#D4AA6A',  /* accent-full */
+  review:   '#A88040',  /* accent-full desaturated — in-between state */
+  approved: '#4ADE80',
+  locked:   '#4ADE80',
+}
 const STATUS_LABEL = { concept:'Concept', progress:'In Progress', review:'In Review', approved:'Approved', locked:'Locked' }
 const ACT_COLORS   = {
   teal:   { fill:'rgba(30,138,138,0.055)',  stroke:'rgba(30,138,138,0.13)',  labelFill:'rgba(30,138,138,0.65)'  },
-  orange: { fill:'rgba(245,146,12,0.042)',  stroke:'rgba(245,146,12,0.1)',   labelFill:'rgba(245,146,12,0.6)'   },
+  orange: { fill:'rgba(212,170,106,0.042)',  stroke:'rgba(212,170,106,0.1)',   labelFill:'rgba(212,170,106,0.6)'   },
   red:    { fill:'rgba(90,18,10,0.052)',    stroke:'rgba(120,38,22,0.1)',    labelFill:'rgba(180,60,30,0.65)'   },
   purple: { fill:'rgba(139,92,246,0.042)', stroke:'rgba(139,92,246,0.12)',  labelFill:'rgba(139,92,246,0.65)'  },
   green:  { fill:'rgba(74,222,128,0.038)', stroke:'rgba(74,222,128,0.1)',   labelFill:'rgba(74,222,128,0.6)'   },
@@ -206,7 +212,15 @@ export default function Timeline() {
   const [sceneMode,   setSceneMode]   = useState(false)
   const [zoom,        setZoom]        = useState(1)
 
-  // ── DRAG STATE ────────────────────────────────────────────
+  // ── ZOOM via SVG viewBox — proportional, no clipping, labels stay readable ──
+  // viewBox width = 900 / zoom → zooming in narrows the visible coordinate range
+  // panOffset shifts which part of the 900px arc is visible
+  const [panOffset, setPanOffset] = useState(0)
+
+  // When zoom changes, clamp pan so we don't go out of bounds
+  const visibleWidth = 900 / zoom
+  const maxPan = Math.max(0, 900 - visibleWidth)
+  const clampedPan = Math.min(panOffset, maxPan)
   const [dragging,     setDragging]     = useState(null)  // { node, startPos }
   const [dragPos,      setDragPos]      = useState(null)  // 0–1 live position
   const [dragCx,       setDragCx]       = useState(null)  // live SVG x
@@ -225,10 +239,10 @@ export default function Timeline() {
         labelFill: n.status === 'approved' || n.status === 'locked'
           ? 'rgba(74,222,128,0.55)'
           : n.status === 'review' || n.status === 'progress'
-          ? 'rgba(245,146,12,0.5)'
+          ? 'rgba(212,170,106,0.5)'
           : '#4A4840',
         glow:     n.status === 'progress' || n.status === 'review',
-        glowFill: 'rgba(245,146,12,0.12)',
+        glowFill: 'rgba(212,170,106,0.12)',
         status:   n.status,
         act:      n.act ?? n.name,
         name:     n.name,
@@ -253,10 +267,12 @@ export default function Timeline() {
   const clientXToSVGPos = useCallback((clientX) => {
     const svg = svgRef.current
     if (!svg) return null
-    const rect = svg.getBoundingClientRect()        // already zoom-adjusted
-    const svgX  = (clientX - rect.left) / rect.width * 900
+    const rect = svg.getBoundingClientRect()
+    // Map clientX to SVG coordinate space accounting for viewBox pan + zoom
+    const normalised = (clientX - rect.left) / rect.width  // 0–1
+    const svgX = clampedPan + normalised * (900 / zoom)
     return Math.max(0.01, Math.min(0.99, svgX / 900))
-  }, [])
+  }, [zoom, clampedPan])
 
   const startDrag = useCallback((e, node) => {
     if (!node.id || node.id.startsWith('cn')) return  // demo nodes not draggable
@@ -342,7 +358,7 @@ export default function Timeline() {
       if (inInput) return
       if (e.key === 'z') setZoom(z => Math.min(z + 0.3, 2.5))
       if (e.key === 'x') setZoom(z => Math.max(z - 0.3, 0.5))
-      if (e.key === 'f') setZoom(1)
+      if (e.key === 'f') { setZoom(1); setPanOffset(0) }
       // S — advance status on selected node (not while dragging)
       if (e.key === 's' && selectedNode?.id && !selectedNode.id.startsWith('cn') && !dragging) {
         const { updateNode, selectNode: storeSelect } = useNodeStore.getState()
@@ -411,7 +427,7 @@ export default function Timeline() {
                 const actNodes = nodes.filter(n => n.act_id === act.id)
                 const done = actNodes.filter(n => n.status === 'approved' || n.status === 'locked').length
                 const pct  = actNodes.length > 0 ? Math.round((done / actNodes.length) * 100) : 0
-                const COLORS = ['#1E8A8A','#F5920C','#B43C1E']
+                const COLORS = ['var(--teal)','var(--accent)','#B43C1E']
                 return (
                   <div key={act.id} className="tl-act-stat">
                     <div className="tas-dot" style={{ background: COLORS[i] ?? '#6A6258' }} />
@@ -431,7 +447,7 @@ export default function Timeline() {
               <button className="tl-zoom-btn" onClick={() => setZoom(z => Math.max(z - 0.3, 0.5))} title="Zoom out (X)">−</button>
               <span className="tl-zoom-val">{Math.round(zoom * 100)}%</span>
               <button className="tl-zoom-btn" onClick={() => setZoom(z => Math.min(z + 0.3, 2.5))} title="Zoom in (Z)">+</button>
-              <button className="tl-zoom-btn tl-fit-btn" onClick={() => setZoom(1)} title="Fit to arc (F)">
+              <button className="tl-zoom-btn tl-fit-btn" onClick={() => { setZoom(1); setPanOffset(0) }} title="Fit to arc (F)">
                 <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
               </button>
             </div>
@@ -488,15 +504,29 @@ export default function Timeline() {
           </div>
         )}
 
-        {/* SVG arc — fills the zone */}
+        {/* SVG arc — viewBox-based zoom keeps everything proportional */}
         <div className="timeline-svg-wrap"
-          style={{ transform:`scaleX(${zoom})`, transformOrigin:'left center', transition:'transform .3s var(--ease)' }}>
+          onWheel={e => {
+            if (e.ctrlKey || e.metaKey) {
+              // Ctrl/Cmd + wheel = zoom
+              e.preventDefault()
+              const delta = e.deltaY > 0 ? -0.2 : 0.2
+              setZoom(z => Math.max(0.5, Math.min(2.5, z + delta)))
+            } else {
+              // Regular wheel = pan horizontally
+              e.preventDefault()
+              const newVW = 900 / zoom
+              const maxP = Math.max(0, 900 - newVW)
+              setPanOffset(p => Math.max(0, Math.min(maxP, p + e.deltaX * 0.5)))
+            }
+          }}>
           <svg id="csvg" className="timeline-svg"
             ref={svgRef}
-            viewBox="0 0 900 220"
+            viewBox={`${clampedPan} 0 ${Math.round(900 / zoom)} 220`}
             style={{
               width:'100%', height:'100%', minHeight:'180px', maxHeight:'360px',
               cursor: dragging ? 'grabbing' : 'default',
+              transition: dragging ? 'none' : 'all .25s var(--ease)',
             }}>
             {displayActs.map((act, i) => (
               <g key={i}>
@@ -515,12 +545,12 @@ export default function Timeline() {
               <>
                 <line
                   x1={dragCx} y1={28} x2={dragCx} y2={148}
-                  stroke="rgba(245,146,12,0.35)" strokeWidth={1}
+                  stroke="rgba(212,170,106,0.35)" strokeWidth={1}
                   strokeDasharray="3 3" />
                 <text
                   x={dragCx} y={170}
                   textAnchor="middle" fontSize={9}
-                  fontFamily="IBM Plex Mono" fill="rgba(245,146,12,0.6)">
+                  fontFamily="IBM Plex Mono" fill="rgba(212,170,106,0.6)">
                   {Math.round((dragPos ?? 0) * 100)}%
                 </text>
               </>

@@ -4,12 +4,12 @@ import './Contributor.css'
 
 const LOGO_PIXELS = [
   '#F4EFD8','#040402','#7A7A7A',
-  '#F5920C','#7A7A7A','#040402',
+  'var(--accent)','#7A7A7A','#040402',
   '#7A7A7A','#040402','#F4EFD8',
 ]
 
-const STATUS_COLORS = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
-const NOTE_COLORS   = ['#1E8A8A','#F5920C','#4ADE80','#F4EFD8','#8B5CF6','#E05050']
+const STATUS_COLORS = { concept:'#6A6258', progress:'var(--accent)', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+const NOTE_COLORS   = ['var(--teal)','var(--accent)','#4ADE80','#F4EFD8','#8B5CF6','#E05050']
 
 export default function ContributorView({ token }) {
   const [contributor, setContributor] = useState(null)
@@ -22,7 +22,7 @@ export default function ContributorView({ token }) {
   const [loading,     setLoading]     = useState(true)
   const [expired,     setExpired]     = useState(false)
   const [newNote,     setNewNote]     = useState('')
-  const [noteColor,   setNoteColor]   = useState('#1E8A8A')
+  const [noteColor,   setNoteColor]   = useState('var(--teal)')
   const [savingNote,  setSavingNote]  = useState(false)
   const [noteSaved,   setNoteSaved]   = useState(false)
 
@@ -97,8 +97,8 @@ export default function ContributorView({ token }) {
     setShots(s => s.map(sh => sh.id===shot.id ? {...sh,status:next} : sh))
   }
 
-  const SH_COLOR = { done:'#4ADE80', progress:'#F5920C', pending:'#2A2720' }
-  const accent = project?.accent_color ?? '#1E8A8A'
+  const SH_COLOR = { done:'#4ADE80', progress:'var(--accent)', pending:'#2A2720' }
+  const accent = project?.accent_color ?? 'var(--teal)'
 
   if (loading) return (
     <div className="contrib-loading">

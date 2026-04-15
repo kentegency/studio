@@ -54,7 +54,7 @@ function ClientComment({ project, selected, accent }) {
 
 const LOGO_PIXELS = [
   '#F4EFD8','#040402','#7A7A7A',
-  '#F5920C','#7A7A7A','#040402',
+  'var(--accent)','#7A7A7A','#040402',
   '#7A7A7A','#040402','#F4EFD8',
 ]
 
@@ -115,7 +115,7 @@ export default function Window({ token }) {
     await supabase.from('notes').insert({
       project_id: project.id, node_id: selected.id,
       body: `Client reacted ${r} to this scene.`,
-      color: '#F5920C', room: 'meeting', resolved: false,
+      color: 'var(--accent)', room: 'meeting', resolved: false,
     })
   }
 
@@ -137,8 +137,8 @@ export default function Window({ token }) {
     setApprovalState('approved')
   }
 
-  const STATUS_COLORS = { concept:'#6A6258', progress:'#F5920C', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
-  const accent = project?.accent_color ?? '#F5920C'
+  const STATUS_COLORS = { concept:'#6A6258', progress:'var(--accent)', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
+  const accent = project?.accent_color ?? 'var(--accent)'
 
   if (loading) return (
     <div className="win-loading">

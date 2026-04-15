@@ -42,7 +42,7 @@
 .auth-field { display: flex; flex-direction: column; gap: 6px; }
 
 .auth-label {
-  font-size: 11.5px; letter-spacing: .26em;
+  font-size: 11.5px; letter-spacing: .06em;
   color: var(--dim); text-transform: uppercase;
 }
 
@@ -57,7 +57,7 @@
   transition: border-color var(--dur-mid) var(--ease);
   caret-color: var(--orange);
 }
-.auth-input:focus { border-color: rgba(245,146,12,.4); }
+.auth-input:focus { border-color: rgba(var(--project-accent-rgb, 212,170,106), .4); }
 .auth-input::placeholder { color: var(--ghost); }
 
 .auth-error {

@@ -11,7 +11,7 @@ export function SketchOverlay() {
   const { user }                           = useAuthStore()
   const canvasRef  = useRef(null)
   const [drawing,  setDrawing]  = useState(false)
-  const [color,    setColor]    = useState('#F5920C')
+  const [color,    setColor]    = useState('var(--accent)')
   const [tool,     setTool]     = useState('pen')
   const [saving,   setSaving]   = useState(false)
   const ctxRef = useRef(null)
@@ -79,11 +79,11 @@ export function SketchOverlay() {
           })
           showToast(`Sketch saved to "${selectedNode.name}"`, '#4ADE80')
         } else {
-          showToast('Sketch saved locally — could not upload.', '#F5920C')
+          showToast('Sketch saved locally — could not upload.', 'var(--accent)')
         }
       } else {
         // No scene selected — just close
-        showToast(selectedNode ? 'Sketch closed.' : 'Select a scene first to save sketches to it.', '#F5920C')
+        showToast(selectedNode ? 'Sketch closed.' : 'Select a scene first to save sketches to it.', 'var(--accent)')
       }
     } catch (err) {
       console.error('Sketch save error:', err)
@@ -93,7 +93,7 @@ export function SketchOverlay() {
     closeOverlay('sketch')
   }
 
-  const COLORS = ['#F5920C','#1E8A8A','#F4EFD8','#4ADE80','#E05050','#8B5CF6']
+  const COLORS = ['var(--accent)','var(--teal)','#F4EFD8','#4ADE80','#E05050','#8B5CF6']
   const TOOLS  = [
     { key:'pen',    icon:<svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><circle cx="11" cy="11" r="2"/></svg> },
     { key:'marker', icon:<svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
@@ -162,7 +162,7 @@ const STAGE_NODES = [
 
 const ACT_COLORS = [
   'rgba(30,138,138,1)',   // Act I — teal
-  'rgba(245,146,12,1)',   // Act II — orange
+  'rgba(212,170,106,1)',   // Act II — orange
   'rgba(180,60,30,1)',    // Act III — red
 ]
 
@@ -201,7 +201,7 @@ export function StageOverlay() {
       <div style={{ fontSize:13, color:'var(--ghost)', letterSpacing:'.06em', textAlign:'center', lineHeight:1.7, maxWidth:320 }}>
         Add scenes to your timeline first.<br/>Stage mode presents them in sequence.
       </div>
-      <button style={{ fontSize:12, letterSpacing:'.18em', padding:'9px 22px', textTransform:'uppercase', color:'var(--orange)', border:'.5px solid rgba(245,146,12,.28)', borderRadius:2, background:'transparent', fontFamily:'var(--font-mono)', marginTop:8 }}
+      <button style={{ fontSize:12, letterSpacing:'.18em', padding:'9px 22px', textTransform:'uppercase', color:'var(--orange)', border:'.5px solid rgba(212,170,106,.28)', borderRadius:2, background:'transparent', fontFamily:'var(--font-mono)', marginTop:8 }}
         onClick={() => closeOverlay('stage')}>
         Add scenes →
       </button>
@@ -303,7 +303,7 @@ export function StageOverlay() {
         <svg viewBox="0 0 900 60" preserveAspectRatio="none" style={{ width:'100%', height:'60px', overflow:'visible' }}>
           {/* Act zones */}
           <rect x="0"   y="10" width="300" height="28" rx="2" fill="rgba(30,138,138,.08)"  stroke="rgba(30,138,138,.18)"  strokeWidth="0.5"/>
-          <rect x="308" y="10" width="284" height="28" rx="2" fill="rgba(245,146,12,.06)"  stroke="rgba(245,146,12,.16)"  strokeWidth="0.5"/>
+          <rect x="308" y="10" width="284" height="28" rx="2" fill="rgba(212,170,106,.06)"  stroke="rgba(212,170,106,.16)"  strokeWidth="0.5"/>
           <rect x="600" y="10" width="300" height="28" rx="2" fill="rgba(180,60,30,.07)"   stroke="rgba(180,60,30,.18)"   strokeWidth="0.5"/>
           <line x1="0" y1="24" x2="900" y2="24" stroke="#181410" strokeWidth="1.5"/>
           {stageNodes.map((n, i) => {

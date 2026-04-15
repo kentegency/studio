@@ -4,7 +4,7 @@ import './Loader.css'
 
 const PIXELS = [
   { color: '#F4EFD8' }, { color: '#040402' }, { color: '#7A7A7A' },
-  { color: '#F5920C' }, { color: '#7A7A7A' }, { color: '#040402' },
+  { color: 'var(--accent)' }, { color: '#7A7A7A' }, { color: '#040402' },
   { color: '#7A7A7A' }, { color: '#040402' }, { color: '#F4EFD8' },
 ]
 const SEQ = [3, 0, 6, 4, 1, 7, 2, 5, 8]

@@ -43,7 +43,7 @@ export default function Notifications({ onClose }) {
     setLoading(false)
   }
 
-  const ROOM_COLORS = { meeting:'#1E8A8A', window:'#4ADE80', studio:'#F5920C' }
+  const ROOM_COLORS = { meeting:'var(--teal)', window:'#4ADE80', studio:'var(--accent)' }
 
   const formatTime = (iso) => {
     if (!iso) return ''
@@ -77,7 +77,7 @@ export default function Notifications({ onClose }) {
 
           {items.map((item, i) => (
             <div key={item.id ?? i} className="notif-item">
-              <div className="ni-dot" style={{ background: item.color ?? ROOM_COLORS[item.room] ?? '#F5920C' }} />
+              <div className="ni-dot" style={{ background: item.color ?? ROOM_COLORS[item.room] ?? 'var(--accent)' }} />
               <div className="ni-content">
                 <div className="ni-body">{item.body}</div>
                 <div className="ni-meta">

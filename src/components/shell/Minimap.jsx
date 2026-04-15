@@ -3,7 +3,7 @@ import './Minimap.css'
 
 const STATUS_COLOR = {
   concept:  '#2A2720',
-  progress: '#F5920C',
+  progress: 'var(--accent)',
   review:   '#C07010',
   approved: '#4ADE80',
   locked:   '#4ADE80',
@@ -52,7 +52,7 @@ export default function Minimap() {
       <div className="cm-track">
         {/* Act zones */}
         <div className="cm-zone" style={{ left:'1%',  width:'28%', background:'rgba(30,138,138,0.28)'  }} />
-        <div className="cm-zone" style={{ left:'31%', width:'32%', background:'rgba(245,146,12,0.22)' }} />
+        <div className="cm-zone" style={{ left:'31%', width:'32%', background:'rgba(212,170,106,0.22)' }} />
         <div className="cm-zone" style={{ left:'65%', width:'33%', background:'rgba(180,60,30,0.24)'  }} />
 
         {/* Completion fill — green bar showing approved proportion */}

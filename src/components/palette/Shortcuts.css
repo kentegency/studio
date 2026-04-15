@@ -33,7 +33,7 @@
 .kbs-body::-webkit-scrollbar-thumb { background: var(--s3); }
 
 .kbs-section {
-  font-size: 10px; letter-spacing: .22em; color: var(--ghost);
+  font-size: 10px; letter-spacing: .05em; color: var(--ghost);
   text-transform: uppercase; padding: 10px 20px 4px;
   font-family: var(--font-mono);
 }

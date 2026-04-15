@@ -40,7 +40,7 @@
 
 .entry-rule {
   width: 0; height: 1px;
-  background: linear-gradient(90deg, rgba(245,146,12,.6), transparent);
+  background: linear-gradient(90deg, rgba(var(--project-accent-rgb, 212,170,106), .6), transparent);
   margin: 22px 0;
   transition: width 1.3s var(--ease);
 }
@@ -95,6 +95,6 @@
   position: absolute; top: -5px; left: 7%;
   width: 2px; height: 11px;
   background: var(--orange); border-radius: 1px;
-  box-shadow: 0 0 8px rgba(245,146,12,.55);
+  box-shadow: 0 0 8px rgba(var(--project-accent-rgb, 212,170,106), .55);
 }
 .em-l { font-size: 11.5px; letter-spacing: .22em; color: var(--mute); text-transform: uppercase; }

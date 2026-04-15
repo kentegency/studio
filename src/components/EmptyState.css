@@ -9,8 +9,8 @@
 
 .es-icon {
   width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(245,146,12,.08);
-  border: .5px solid rgba(245,146,12,.18);
+  background: rgba(var(--project-accent-rgb, 212,170,106), .08);
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .18);
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 4px;
 }
@@ -36,12 +36,12 @@
 .empty-state.compact .es-body { font-size: 11.5px; max-width: 180px; }
 
 .es-action {
-  font-size: 12px; letter-spacing: .16em;
+  font-size: 12px; letter-spacing: .05em;
   text-transform: uppercase; color: var(--orange);
-  border: .5px solid rgba(245,146,12,.25);
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .25);
   border-radius: 2px; padding: 7px 16px;
   background: transparent; font-family: var(--font-ui);
   margin-top: 4px;
   transition: background var(--dur-mid) var(--ease);
 }
-.es-action:hover { background: rgba(245,146,12,.06); }
+.es-action:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }

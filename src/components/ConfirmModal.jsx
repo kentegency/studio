@@ -27,8 +27,8 @@ export default function ConfirmModal({ title, body, confirmLabel, confirmColor, 
           <button
             className="confirm-btn"
             style={{
-              color: confirmColor ?? (danger ? '#E05050' : '#F5920C'),
-              borderColor: `${confirmColor ?? (danger ? '#E05050' : '#F5920C')}40`,
+              color: confirmColor ?? (danger ? '#E05050' : 'var(--accent)'),
+              borderColor: `${confirmColor ?? (danger ? '#E05050' : 'var(--accent)')}40`,
             }}
             onClick={onConfirm}>
             {confirmLabel ?? 'Confirm'}

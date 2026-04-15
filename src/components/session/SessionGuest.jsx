@@ -32,7 +32,7 @@ export default function SessionGuest({ sessionToken }) {
         {/* Brand */}
         <div className="sg-brand">
           <div className="sg-logo">
-            {['#F4EFD8','#040402','#7A7A7A','#F5920C','#7A7A7A','#040402','#7A7A7A','#040402','#F4EFD8'].map((c,i) => (
+            {['#F4EFD8','#040402','#7A7A7A','var(--accent)','#7A7A7A','#040402','#7A7A7A','#040402','#F4EFD8'].map((c,i) => (
               <div key={i} style={{ background:c, width:6, height:6, borderRadius:1 }} />
             ))}
           </div>

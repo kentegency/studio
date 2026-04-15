@@ -97,7 +97,7 @@
 }
 .vc-record {
   display: flex; align-items: center; gap: 8px;
-  font-size: 12px; letter-spacing: .16em; padding: 10px 28px;
+  font-size: 12px; letter-spacing: .05em; padding: 10px 28px;
   text-transform: uppercase; color: var(--cream);
   background: rgba(139,92,246,.15); border: .5px solid rgba(139,92,246,.35);
   border-radius: 2px; font-family: var(--font-mono);
@@ -111,7 +111,7 @@
 
 .vc-stop {
   display: flex; align-items: center; gap: 8px;
-  font-size: 12px; letter-spacing: .16em; padding: 10px 28px;
+  font-size: 12px; letter-spacing: .05em; padding: 10px 28px;
   text-transform: uppercase; color: var(--red);
   background: rgba(224,80,80,.1); border: .5px solid rgba(224,80,80,.25);
   border-radius: 2px; font-family: var(--font-mono);
@@ -121,7 +121,7 @@
 .vc-square { width: 8px; height: 8px; border-radius: 1px; background: var(--red); }
 
 .vc-discard {
-  font-size: 12px; letter-spacing: .16em; padding: 9px 16px;
+  font-size: 12px; letter-spacing: .05em; padding: 9px 16px;
   text-transform: uppercase; color: var(--mute);
   border: .5px solid var(--b); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
@@ -130,7 +130,7 @@
 .vc-discard:hover { color: var(--dim); }
 
 .vc-save {
-  font-size: 12px; letter-spacing: .16em; padding: 9px 22px;
+  font-size: 12px; letter-spacing: .05em; padding: 9px 22px;
   text-transform: uppercase; color: #8B5CF6;
   border: .5px solid rgba(139,92,246,.3); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);

@@ -4,8 +4,8 @@ import { useProjectStore, useUIStore } from '../../stores'
 import './Acts.css'
 
 const ACT_COLORS = [
-  { name:'Teal',   value:'teal',   hex:'#1E8A8A' },
-  { name:'Orange', value:'orange', hex:'#F5920C' },
+  { name:'Teal',   value:'teal',   hex:'var(--teal)' },
+  { name:'Orange', value:'orange', hex:'var(--accent)' },
   { name:'Red',    value:'red',    hex:'#B43C1E' },
   { name:'Purple', value:'purple', hex:'#8B5CF6' },
   { name:'Green',  value:'green',  hex:'#4ADE80' },
@@ -68,7 +68,7 @@ export default function ActsPanel({ onClose }) {
     }
   }
 
-  const getHex = (colorName) => ACT_COLORS.find(c => c.value === colorName)?.hex ?? '#1E8A8A'
+  const getHex = (colorName) => ACT_COLORS.find(c => c.value === colorName)?.hex ?? 'var(--teal)'
 
   return (
     <div className="acts-overlay" onClick={e => e.target === e.currentTarget && onClose()}>

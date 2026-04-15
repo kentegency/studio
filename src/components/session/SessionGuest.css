@@ -44,14 +44,14 @@
   max-width: 300px; line-height: 1.65;
 }
 .sg-join-btn {
-  font-size: 12px; letter-spacing: .18em; padding: 11px 28px;
+  font-size: 12px; letter-spacing: .05em; padding: 11px 28px;
   text-transform: uppercase; color: var(--orange);
-  border: .5px solid rgba(245,146,12,.28); border-radius: 2px;
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .28); border-radius: 2px;
   background: transparent; font-family: var(--font-mono);
   margin-top: 8px;
   transition: background var(--dur-mid) var(--ease);
 }
-.sg-join-btn:hover { background: rgba(245,146,12,.07); }
+.sg-join-btn:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .07); }
 
 /* SESSION */
 .sg-session {
@@ -100,6 +100,6 @@
   flex-shrink: 0;
 }
 .sgc-btn:hover { background: var(--s3); border-color: var(--b2); }
-.sgc-btn.off { background: rgba(245,146,12,.08); border-color: rgba(245,146,12,.18); color: var(--orange); }
+.sgc-btn.off { background: rgba(var(--project-accent-rgb, 212,170,106), .08); border-color: rgba(var(--project-accent-rgb, 212,170,106), .18); color: var(--orange); }
 .sgc-btn.end { background: rgba(224,80,80,.08); border-color: rgba(224,80,80,.2); color: var(--red); }
 .sgc-btn.end:hover { background: rgba(224,80,80,.16); }

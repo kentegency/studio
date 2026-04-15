@@ -11,7 +11,7 @@ export default function InvitePanel({ onClose }) {
   const { showToast }      = useUIStore()
 
   const [contributors, setContributors] = useState([])
-  const [form, setForm]   = useState({ name:'', role:ROLES[0], color:'#1E8A8A', node_ids:[] })
+  const [form, setForm]   = useState({ name:'', role:ROLES[0], color:'var(--teal)', node_ids:[] })
   const [saving, setSaving] = useState(false)
   const [generated, setGenerated] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -57,7 +57,7 @@ export default function InvitePanel({ onClose }) {
     const link = `${window.location.origin}/#/contributor/${data.link_token}`
     setGenerated({ ...data, link })
     setContributors(prev => [data, ...prev])
-    setForm({ name:'', role:ROLES[0], color:'#1E8A8A', node_ids:[] })
+    setForm({ name:'', role:ROLES[0], color:'var(--teal)', node_ids:[] })
     showToast(`Invite link generated for ${data.name}.`, '#4ADE80')
   }
 
@@ -73,7 +73,7 @@ export default function InvitePanel({ onClose }) {
     showToast(`${contributor.name} removed.`)
   }
 
-  const COLORS = ['#1E8A8A','#F5920C','#4ADE80','#8B5CF6','#EC4899','#F4EFD8']
+  const COLORS = ['var(--teal)','var(--accent)','#4ADE80','#8B5CF6','#EC4899','#F4EFD8']
 
   return (
     <div className="contrib-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
