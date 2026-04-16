@@ -113,3 +113,16 @@
 .stc-btn.end { background: rgba(224,80,80,.1); border-color: rgba(224,80,80,.2); flex: 0 0 36px; }
 .stc-btn.end svg { stroke: var(--red); width: 10px; height: 10px; }
 .stc-btn.end:hover { background: rgba(224,80,80,.2); }
+
+/* Recording + ICE badges in host tile */
+.st-rec-badge {
+  font-size: 9px; color: var(--red);
+  font-family: var(--font-mono); letter-spacing: .10em;
+  animation: pulse-dot 1.5s ease infinite;
+}
+.st-ice-label {
+  font-size: 9px; color: var(--ghost);
+  font-family: var(--font-mono); letter-spacing: .08em;
+  padding: 1px 5px; border-radius: 2px;
+  background: var(--s3); border: .5px solid var(--b);
+}

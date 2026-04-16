@@ -18,9 +18,9 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
   const { showToast }      = useUIStore()
 
   const {
-    state, start, endSession, toggleMute, toggleCamera,
+    state, start, endSession, toggleMute, toggleCamera, broadcastScene,
     localStream, remoteStream,
-    isMuted, isCamOff,
+    isMuted, isCamOff, iceLabel,
     transcript, duration,
     rawTranscript,
   } = useSession(sessionToken, 'host')
@@ -103,6 +103,12 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
         <div className="st-state">
           <div className={`st-state-dot ${state === 'connected' ? 'live' : ''}`} />
           <span>{stateLabel}</span>
+          {state === 'connected' && iceLabel && (
+            <span className="st-ice-label">{iceLabel}</span>
+          )}
+          {state === 'connected' && (
+            <span className="st-rec-badge">● REC</span>
+          )}
         </div>
         <button className="st-minimise" onClick={() => setMinimised(m => !m)} title={minimised ? 'Expand' : 'Minimise'}>
           {minimised ? '▲' : '▼'}
