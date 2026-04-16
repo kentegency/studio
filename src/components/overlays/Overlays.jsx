@@ -118,6 +118,9 @@ export function SketchOverlay() {
         <button className="ov-close-btn" data-hover onClick={saveAndClose} disabled={saving}>
           {saving ? 'Saving…' : selectedNode ? 'Save to scene →' : 'Close'}
         </button>
+        <button className="ov-discard-btn" data-hover onClick={() => closeOverlay('sketch')} title="Discard sketch (Esc)">
+          ×
+        </button>
       </div>
       <canvas ref={canvasRef} className="sk-canvas"
         onMouseDown={startDraw} onMouseMove={draw}
@@ -126,31 +129,10 @@ export function SketchOverlay() {
   )
 }
 
-// ── COMPARE ───────────────────────────────────
-export function CompareOverlay() {
-  const { closeOverlay, showToast } = useUIStore()
-  const select = (g) => { showToast(`${g} selected and locked.`, '#4ADE80'); closeOverlay('compare') }
-  return (
-    <div className="overlay">
-      <div className="ov-bar">
-        <span className="ov-label teal">Compare</span>
-        <button className="ov-close-btn" onClick={() => closeOverlay('compare')} data-hover>Close ×</button>
-      </div>
-      <div className="cmp-body">
-        <div className="cmp-side">
-          <span className="cmp-side-label">Option A</span>
-          <div className="cmp-asset teal-asset"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Upload to compare</span></div>
-          <button className="cmp-sel teal-sel" onClick={() => select('Option A')} data-hover>Select A →</button>
-        </div>
-        <div className="cmp-side">
-          <span className="cmp-side-label">Option B</span>
-          <div className="cmp-asset orange-asset"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Upload to compare</span></div>
-          <button className="cmp-sel orange-sel" onClick={() => select('Option B')} data-hover>Select B →</button>
-        </div>
-      </div>
-    </div>
-  )
-}
+// ── COMPARE — removed (non-functional shell) ──
+// Asset comparison is handled by opening two assets in the viewer side by side.
+// This export kept as empty stub to avoid import errors.
+export function CompareOverlay() { return null }
 
 // ── STAGE — full viewport, all devices ────────
 // Generic fallback — shown only when Stage is opened with no scenes in the project
@@ -366,19 +348,49 @@ export function StageOverlay() {
 
 // ── BRIEF ─────────────────────────────────────
 const BRIEF_QS = {
-  Film:    ['What is the core story in one sentence?','Who is the primary audience?','What is the emotional tone?','What does success look like for this film?','Reference films that capture the feeling you want?'],
-  Brand:   ['What does your brand feel like in three words?','Who is your primary customer?','Three brands you admire and why?','One brand that is everything you are not?','What does success look like 12 months after launch?'],
-  Music:   ['What three songs have made you cry and why?','How do you want people to feel after a show?','Who is the fan you are making this for?','What does your album cover look like in your head?','What does your music give people nothing else can?'],
-  Website: ['What is the primary action a visitor should take?','What feeling should the site give in the first 3 seconds?','Three websites you love and why?','What content do you have ready right now?','What does a successful website do for you?'],
+  Film:     ['What is the core story in one sentence?','Who is the primary audience?','What is the emotional tone?','What does success look like for this film?','Reference films that capture the feeling you want?'],
+  Brand:    ['What does your brand feel like in three words?','Who is your primary customer?','Three brands you admire and why?','One brand that is everything you are not?','What does success look like 12 months after launch?'],
+  Music:    ['What three songs have made you cry and why?','How do you want people to feel after a show?','Who is the fan you are making this for?','What does your album cover look like in your head?','What does your music give people nothing else can?'],
+  Website:  ['What is the primary action a visitor should take?','What feeling should the site give in the first 3 seconds?','Three websites you love and why?','What content do you have ready right now?','What does a successful website do for you?'],
+  Deck:     ['What is the single ask — what do you want the audience to do after this?','Who makes the final decision in the room?','What are the top 3 objections they will have?','What is the one thing they must remember?','What does a yes look like 6 months from now?'],
+  Campaign: ['What is the one feeling this campaign should create?','Who is the person you are trying to reach — describe them specifically?','What does this campaign need to do that advertising alone cannot?','Three campaigns that changed how you think about this category?','What does success look like in concrete, measurable terms?'],
 }
 export function BriefOverlay() {
   const { closeOverlay, showToast } = useUIStore()
-  const { currentProject }          = useProjectStore()
-  const [type,    setType]    = useState('Film')
-  const [answers, setAnswers] = useState({})
+  const { currentProject, updateProject } = useProjectStore()
+  const [type,    setType]    = useState(() => {
+    const t = currentProject?.type
+    if (t === 'film')    return 'Film'
+    if (t === 'brand')   return 'Brand'
+    if (t === 'music')   return 'Music'
+    if (t === 'website') return 'Website'
+    return 'Film'
+  })
+  const [answers, setAnswers] = useState(() => currentProject?.brief_answers ?? {})
+  const [saving,  setSaving]  = useState(false)
   const [saved,   setSaved]   = useState(false)
   const panelRef = useFocusTrap(true)
-  const save = () => { showToast('Brief saved.', '#4ADE80'); setSaved(true); setTimeout(() => closeOverlay('brief'), 600) }
+
+  const save = async () => {
+    if (!currentProject) return
+    setSaving(true)
+    const { supabase } = await import('../../lib/supabase')
+    const { error } = await supabase
+      .from('projects')
+      .update({ brief_answers: answers })
+      .eq('id', currentProject.id)
+    setSaving(false)
+    if (error) { showToast('Could not save brief.', 'var(--red)'); return }
+    // Update store so the data is immediately available to Wrap/Stage
+    updateProject(currentProject.id, { brief_answers: answers })
+    setSaved(true)
+    showToast('Brief saved to project.', 'var(--green)')
+    setTimeout(() => closeOverlay('brief'), 700)
+  }
+
+  const completedCount = Object.values(answers).filter(v => v?.trim()).length
+  const totalQuestions = Object.values(BRIEF_QS).flat().length
+
   return (
     <div className="overlay modal-overlay" onClick={e => e.target===e.currentTarget && closeOverlay('brief')}>
       <div className="modal-panel" ref={panelRef} role="dialog" aria-modal="true" aria-label="Creative Brief">
@@ -386,8 +398,10 @@ export function BriefOverlay() {
           <div>
             <span className="modal-title">Creative Brief</span>
             {currentProject && <span className="modal-project"> — {currentProject.name}</span>}
-            <div style={{ fontSize:'12px', color:'var(--mute)', marginTop:'4px', fontFamily:'var(--font-ui)', letterSpacing:'.03em' }}>
-              Document the concept, references, and directorial vision for this project.
+            <div style={{ fontSize:'12px', color:'var(--mute)', marginTop:'4px', fontFamily:'var(--font-ui)' }}>
+              {completedCount > 0
+                ? `${completedCount} answers saved — the foundation of your creative direction.`
+                : 'Document the concept, references, and vision for this project.'}
             </div>
           </div>
           <button className="modal-close" onClick={() => closeOverlay('brief')} data-hover>×</button>
@@ -409,7 +423,9 @@ export function BriefOverlay() {
         </div>
         <div className="modal-foot">
           <button className="bf-btn cancel" onClick={() => closeOverlay('brief')} data-hover>Cancel</button>
-          <button className="bf-btn save" onClick={save} data-hover>{saved?'Saved ✓':'Save to project →'}</button>
+          <button className="bf-btn save" onClick={save} disabled={saving} data-hover>
+            {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save to project →'}
+          </button>
         </div>
       </div>
     </div>
@@ -423,14 +439,31 @@ export function DigestOverlay() {
   const { nodes }          = useNodeStore()
   const panelRef = useFocusTrap(true)
 
-  // Group real notes by type
+  const [shotCount,  setShotCount]  = useState(null)
+  const [assetCount, setAssetCount] = useState(null)
+
+  useEffect(() => {
+    if (!currentProject) return
+    // Fetch shot count and asset count in parallel
+    const fetchCounts = async () => {
+      const { supabase } = await import('../../lib/supabase')
+      const [{ count: sc }, { count: ac }] = await Promise.all([
+        supabase.from('shots').select('*', { count:'exact', head:true }).eq('project_id', currentProject.id),
+        supabase.from('assets').select('*', { count:'exact', head:true }).eq('project_id', currentProject.id),
+      ])
+      setShotCount(sc ?? 0)
+      setAssetCount(ac ?? 0)
+    }
+    fetchCounts()
+  }, [currentProject?.id])
+
   const recentNotes = [...notes]
     .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 8)
+    .slice(0, 6)
 
   const approvedNodes = nodes.filter(n => n.status === 'approved' || n.status === 'locked')
   const inProgress    = nodes.filter(n => n.status === 'progress' || n.status === 'review')
-  const totalShots    = 0 // would need a separate fetch
+  const conceptNodes  = nodes.filter(n => n.status === 'concept')
 
   const isEmpty = recentNotes.length === 0 && nodes.length === 0
 
@@ -457,19 +490,21 @@ export function DigestOverlay() {
           </div>
         ) : (
           <div className="digest-body">
-            {/* Project stats */}
+            {/* Project stats — real counts */}
             <div className="dg">
               <div className="dg-l">Project status</div>
-              <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
+              <div className="dg-stats-grid">
                 {[
-                  { label:'Scenes', val: nodes.length },
-                  { label:'Approved', val: approvedNodes.length },
-                  { label:'In progress', val: inProgress.length },
-                  { label:'Concept', val: nodes.filter(n => n.status === 'concept').length },
+                  { label:'Scenes',     val: nodes.length,         color:'var(--cream)' },
+                  { label:'Approved',   val: approvedNodes.length, color:'var(--green)' },
+                  { label:'In progress',val: inProgress.length,    color:'var(--accent)' },
+                  { label:'Concept',    val: conceptNodes.length,  color:'var(--ghost)' },
+                  { label:'Shots',      val: shotCount ?? '…',     color:'var(--dim)' },
+                  { label:'Assets',     val: assetCount ?? '…',    color:'var(--dim)' },
                 ].map((s,i) => (
-                  <div key={i} style={{ background:'var(--s2)', border:'.5px solid var(--b)', borderRadius:'3px', padding:'8px 14px', minWidth:'80px', textAlign:'center' }}>
-                    <div style={{ fontSize:'18px', color:'var(--cream)', fontFamily:'var(--font-mono)', fontWeight:500 }}>{s.val}</div>
-                    <div style={{ fontSize:'11px', color:'var(--mute)', letterSpacing:'.12em', textTransform:'uppercase', marginTop:'3px', fontFamily:'var(--font-ui)' }}>{s.label}</div>
+                  <div key={i} className="dg-stat">
+                    <div className="dg-stat-val" style={{ color: s.color }}>{s.val}</div>
+                    <div className="dg-stat-label">{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -484,7 +519,7 @@ export function DigestOverlay() {
                   const time  = note.created_at ? new Date(note.created_at).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }) : ''
                   return (
                     <div key={i} className="di" data-hover>
-                      <div className="di-dot" style={{ background: note.color ?? 'var(--orange)' }} />
+                      <div className="di-dot" style={{ background: note.color ?? 'var(--accent)' }} />
                       <div>
                         <div className="di-text">{note.body?.slice(0, 80)}{note.body?.length > 80 ? '…' : ''}</div>
                         <div className="di-meta">{scene?.name ?? 'No scene'} · {time}</div>

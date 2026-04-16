@@ -5,7 +5,8 @@ import './Topbar.css'
 export default function Topbar({ onWrap, onSettings, onActs }) {
   const { activeRoom, setRoom, openOverlay, showToast } = useUIStore()
   const { currentProject } = useProjectStore()
-  const [showView, setShowView] = useState(false)
+  const [showView,     setShowView]     = useState(false)
+  const [showGenerate, setShowGenerate] = useState(false)
 
   const rooms = ['Studio', 'Meeting', 'Window']
 
@@ -21,12 +22,18 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
 
   return (
     <header className="topbar">
+      {/* Room badge only — project name lives in canvas header */}
       <div className="tb-proj">
-        <em>▸</em>
-        {currentProject?.name ?? 'The Kentegency'}
-        <span className="tb-room-badge">{activeRoom.charAt(0).toUpperCase() + activeRoom.slice(1)}</span>
+        <span className="tb-room-badge tb-room-badge--inline" style={{
+          color: activeRoom === 'window' ? 'var(--green)'
+               : activeRoom === 'meeting' ? 'var(--teal)'
+               : 'var(--accent)'
+        }}>
+          {activeRoom.charAt(0).toUpperCase() + activeRoom.slice(1)}
+        </span>
       </div>
 
+      {/* Room switcher — centre */}
       <div className="tb-rooms">
         {rooms.map(r => (
           <button key={r}
@@ -37,10 +44,12 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
         ))}
       </div>
 
+      {/* Actions — right, consolidated */}
       <div className="tb-actions">
-        {/* View dropdown — Digest + Brief consolidated here */}
+
+        {/* View ▾ — creative views */}
         <div className="tb-view-wrap">
-          <button className="tbb" onClick={() => setShowView(v => !v)} data-hover>
+          <button className="tbb" onClick={() => { setShowView(v => !v); setShowGenerate(false) }} data-hover>
             View ▾
           </button>
           {showView && (
@@ -55,7 +64,7 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
               </button>
               <button className="tb-vm-item" onClick={() => { openOverlay('digest'); setShowView(false) }}>
                 Digest
-                <span>Project overview</span>
+                <span>Project overview &amp; activity</span>
               </button>
               <button className="tb-vm-item" onClick={() => { openOverlay('brief'); setShowView(false) }}>
                 Brief
@@ -65,18 +74,26 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
           )}
         </div>
 
-        <button className="tbb" onClick={() => onActs?.()} data-hover title="Manage act zones">Acts</button>
-        <button className="tbb"
-          onClick={() => { openOverlay('stage'); showToast('Lights up.') }} data-hover>
-          Stage ↗
-        </button>
-        <button className="tbb"
-          onClick={() => openOverlay('callsheet')} data-hover title="Generate call sheet">
-          Call Sheet
-        </button>
-        <button className="tbb pr" onClick={() => onWrap?.()} data-hover>
-          Wrap it
-        </button>
+        {/* Generate ▾ — document outputs */}
+        <div className="tb-view-wrap">
+          <button className="tbb tbb-generate" onClick={() => { setShowGenerate(v => !v); setShowView(false) }} data-hover>
+            Generate ▾
+          </button>
+          {showGenerate && (
+            <div className="tb-view-menu" onMouseLeave={() => setShowGenerate(false)}>
+              <button className="tb-vm-item" onClick={() => { openOverlay('callsheet'); setShowGenerate(false) }}>
+                Call Sheet
+                <span>Day-of production document</span>
+              </button>
+              <button className="tb-vm-item" onClick={() => { onWrap?.(); setShowGenerate(false) }}>
+                Wrap document
+                <span>Final deliverable PDF</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ⌘K */}
         <button className="tbb-palette" onClick={() => window.__openPalette?.()} data-hover title="Command palette (⌘K)">
           ⌘K
         </button>

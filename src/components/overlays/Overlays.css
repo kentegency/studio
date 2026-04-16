@@ -360,3 +360,40 @@
   animation: pulse-dot 2s ease infinite;
   flex-shrink: 0;
 }
+
+/* Discard button — always visible exit from sketch/storyboard */
+.ov-discard-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  border: .5px solid var(--b);
+  color: var(--mute); font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--dur-fast), color var(--dur-fast);
+  flex-shrink: 0; line-height: 1;
+}
+.ov-discard-btn:hover {
+  background: rgba(224,80,80,.12);
+  border-color: rgba(224,80,80,.3);
+  color: var(--red);
+}
+
+/* ── DIGEST STATS GRID ── */
+.dg-stats-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-top: 4px;
+}
+.dg-stat {
+  background: var(--s2); border: .5px solid var(--b);
+  border-radius: var(--radius-md); padding: 10px 12px;
+  text-align: center;
+}
+.dg-stat-val {
+  font-size: 20px; font-family: var(--font-mono);
+  font-weight: var(--weight-label); line-height: 1;
+  margin-bottom: 4px;
+}
+.dg-stat-label {
+  font-size: 10px; color: var(--mute);
+  font-family: var(--font-ui); letter-spacing: .05em;
+}

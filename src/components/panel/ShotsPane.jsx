@@ -312,71 +312,142 @@ export function TeamPane({ onInvite }) {
   )
 }
 
-// ── STYLE PANE — project-aware ────────────────
-const FONTS = [
-  { label:'Display', value:'Bebas Neue',    style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:'16px' } },
-  { label:'Body',    value:'Cormorant',     style:{ fontFamily:"'Cormorant Garamond',serif", fontStyle:'italic', fontSize:'14px' } },
-  { label:'Mono',    value:'IBM Plex Mono', style:{ fontFamily:"'IBM Plex Mono',monospace", fontSize:'11px' } },
-  { label:'UI',      value:'Inter',         style:{ fontFamily:"'Inter',sans-serif", fontSize:'12px' } },
+
+// ── IDENTITY PANE — project creative identity ─
+const ACCENT_PRESETS = [
+  { name:'Sand',    hex:'#D4AA6A' },
+  { name:'Teal',    hex:'#2A8A7A' },
+  { name:'Indigo',  hex:'#5C6BC0' },
+  { name:'Crimson', hex:'#C0392B' },
+  { name:'Violet',  hex:'#7B5CE8' },
+  { name:'Forest',  hex:'#2E7D52' },
+  { name:'Slate',   hex:'#4A6580' },
+  { name:'Ember',   hex:'#C05020' },
+  { name:'Custom',  hex: null     },
 ]
 
 export function StylePane({ onOpenSettings }) {
-  const { currentProject } = useProjectStore()
-  const accent = currentProject?.accent_color ?? 'var(--accent)'
+  const { currentProject, updateProject } = useProjectStore()
+  const { showToast } = useUIStore()
+  const accent = currentProject?.accent_color ?? '#D4AA6A'
 
-  const TOKENS = [
-    { k:'--project-accent', v: accent },
-    { k:'--font-display',   v:'Bebas Neue' },
-    { k:'--font-ui',        v:'Inter' },
-    { k:'--font-mono',      v:'IBM Plex Mono' },
-    { k:'--motion',         v:'cinematic' },
-    { k:'--radius',         v:'2px' },
+  const [palette,   setPalette]   = useState(() => {
+    const saved = currentProject?.brief_answers?._palette
+    return saved ?? ['#D4AA6A','#ECEAE4','#1D1D21','#4ADE80','#E05050']
+  })
+  const [palLabels, setPalLabels] = useState(() => {
+    const saved = currentProject?.brief_answers?._palette_labels
+    return saved ?? ['Primary','Light','Dark','Positive','Alert']
+  })
+  const [customAccent, setCustomAccent] = useState(accent)
+
+  const saveAccent = async (hex) => {
+    if (!currentProject) return
+    await updateProject(currentProject.id, { accent_color: hex })
+    showToast('Accent updated.')
+  }
+
+  const savePalette = async (newPal, newLabels) => {
+    if (!currentProject) return
+    const existing = currentProject?.brief_answers ?? {}
+    await updateProject(currentProject.id, {
+      brief_answers: { ...existing, _palette: newPal, _palette_labels: newLabels }
+    })
+  }
+
+  const updateSwatch = (i, hex) => {
+    const next = [...palette]; next[i] = hex
+    setPalette(next); savePalette(next, palLabels)
+  }
+  const updateLabel = (i, label) => {
+    const next = [...palLabels]; next[i] = label
+    setPalLabels(next)
+  }
+
+  const TYPE_PREVIEW = [
+    { role:'Display',  sample:'Opening Sequence',
+      style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:'20px', letterSpacing:'.03em', color:'var(--cream)', lineHeight:1 } },
+    { role:'Creative', sample:'The work is what is colourful.',
+      style:{ fontFamily:"'Cormorant Garamond',serif", fontStyle:'italic', fontSize:'14px', color:'var(--dim)', lineHeight:1.6 } },
+    { role:'UI',       sample:'Scene inspector · 4 shots',
+      style:{ fontFamily:"'DM Sans',system-ui,sans-serif", fontSize:'12px', color:'var(--cream)', lineHeight:1.5 } },
+    { role:'Data',     sample:'S04 · 00:08 · IN REVIEW',
+      style:{ fontFamily:"'IBM Plex Mono',monospace", fontSize:'11px', letterSpacing:'.08em', color:'var(--dim)', lineHeight:1.5 } },
   ]
-
-  const PALETTE_BASE = ['#F4EFD8','#A09890','#4ADE80','#E05050','#8B5CF6']
-  const palette = [accent, ...PALETTE_BASE].slice(0, 6)
 
   return (
     <div className="node-pane">
       <div className="rph">
         <div className="rp-ey">{currentProject?.name ?? 'No project'}</div>
-        <div className="rp-ti">Style Tokens</div>
+        <div className="rp-ti">Identity</div>
       </div>
+
       <div className="sec">
-        <div className="sec-l">Project Palette</div>
-        <div className="color-row">
+        <div className="sec-l">Project accent</div>
+        <div className="id-accent-grid">
+          {ACCENT_PRESETS.map(p => p.hex ? (
+            <button key={p.name}
+              className={`id-swatch ${accent === p.hex ? 'on' : ''}`}
+              style={{ background: p.hex }}
+              title={p.name}
+              onClick={() => { setCustomAccent(p.hex); saveAccent(p.hex) }} />
+          ) : (
+            <label key="custom" className="id-swatch id-custom" title="Custom colour" style={{ position:'relative', overflow:'hidden' }}>
+              <input type="color" value={customAccent}
+                onChange={e => setCustomAccent(e.target.value)}
+                onBlur={e => saveAccent(e.target.value)}
+                style={{ opacity:0, position:'absolute', inset:0, cursor:'pointer', width:'100%', height:'100%' }} />
+              <span style={{ fontSize:'14px', color:'var(--ghost)', pointerEvents:'none' }}>+</span>
+            </label>
+          ))}
+        </div>
+        <div className="id-accent-preview" style={{ borderLeftColor: accent }}>
+          <span style={{ color: accent, fontFamily:'var(--font-mono)', fontSize:'10px' }}>{accent}</span>
+          <span style={{ fontSize:'11px', color:'var(--mute)', marginLeft:'8px' }}>arc · cursor · active states</span>
+        </div>
+      </div>
+
+      <div className="sec">
+        <div className="sec-l">Reference palette
+          <span style={{ fontSize:'10px', color:'var(--ghost)', fontWeight:400, marginLeft:'6px' }}>click to edit</span>
+        </div>
+        <div className="id-palette-row">
           {palette.map((c, i) => (
-            <div key={i} className="cp on" style={{ background:c }} />
+            <div key={i} className="id-pal-item">
+              <label className="id-pal-swatch" style={{ background: c, position:'relative', overflow:'hidden' }}>
+                <input type="color" value={c}
+                  onChange={e => updateSwatch(i, e.target.value)}
+                  style={{ opacity:0, position:'absolute', inset:0, cursor:'pointer', width:'100%', height:'100%' }} />
+              </label>
+              <input className="id-pal-label"
+                value={palLabels[i] ?? ''}
+                onChange={e => updateLabel(i, e.target.value)}
+                onBlur={() => savePalette(palette, palLabels)}
+                maxLength={10} placeholder="Label" />
+            </div>
           ))}
         </div>
-        <div style={{ marginTop:'8px' }}>
-          <button style={{ fontSize:'11px', color:'var(--orange)', background:'none', border:'none', letterSpacing:'.12em', textTransform:'uppercase', fontFamily:'var(--font-mono)' }}
-            onClick={() => onOpenSettings?.()}>
-            Change accent colour →
-          </button>
+        <div style={{ fontSize:'11px', color:'var(--ghost)', marginTop:'6px', lineHeight:1.5 }}>
+          Brand palette, moodboard anchors, or key scene tones.
         </div>
       </div>
+
       <div className="sec">
-        <div className="sec-l">Typography</div>
-        <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
-          {FONTS.map((f, i) => (
-            <div key={i} className="font-row">
-              <span className="fr-l">{f.label}</span>
-              <span className="fr-v" style={f.style}>{f.value}</span>
+        <div className="sec-l">Typography in use</div>
+        <div className="id-type-stack">
+          {TYPE_PREVIEW.map((t, i) => (
+            <div key={i} className="id-type-row">
+              <span className="id-type-role">{t.role}</span>
+              <span style={t.style}>{t.sample}</span>
             </div>
           ))}
         </div>
       </div>
-      <div className="sec">
-        <div className="sec-l">Active Tokens</div>
-        <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
-          {TOKENS.map((t, i) => (
-            <div key={i} className="tok">
-              <span className="tok-k">{t.k}</span>
-              <span className="tok-v" style={t.k==='--project-accent'?{color:accent}:{}}>{t.v}</span>
-            </div>
-          ))}
-        </div>
+
+      <div className="sec" style={{ paddingTop:'10px' }}>
+        <button className="id-settings-link" onClick={() => onOpenSettings?.()}>
+          Project settings — name, type, logline →
+        </button>
       </div>
     </div>
   )

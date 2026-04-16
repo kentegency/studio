@@ -39,7 +39,7 @@ const STEPS = [
     id:       'window',
     title:    'Share your Window with the client',
     body:     'Publish content to the Window room, generate a link, and send it to your client. They open it on any browser — no login needed. They can react and approve.',
-    target:   '.window-link-btn',
+    target:   '.wlink-copy',
     position: 'left',
     action:   'Start producing →',
     last:     true,

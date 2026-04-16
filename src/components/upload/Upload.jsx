@@ -84,10 +84,27 @@ export default function Upload({ onClose }) {
       <div className="upload-panel">
         <div className="upload-head">
           <span className="upload-title">Upload Assets</span>
-          <span className="upload-node">
-            {selectedNode ? `→ ${selectedNode.label ?? selectedNode.name}` : 'No node selected'}
-          </span>
           <button className="upload-close" onClick={onClose}>×</button>
+        </div>
+
+        {/* SCENE CONTEXT — prominent, always visible */}
+        <div className={`upload-scene-ctx ${selectedNode ? 'has-scene' : 'no-scene'}`}>
+          {selectedNode ? (
+            <>
+              <span className="usc-dot" />
+              <span className="usc-text">
+                Uploading to <strong>{selectedNode.name}</strong>
+              </span>
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" style={{ width:12,height:12,stroke:'currentColor',fill:'none',strokeWidth:2,flexShrink:0 }}>
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span className="usc-text">No scene selected — assets will not attach to a scene</span>
+            </>
+          )}
         </div>
 
         {/* DROP ZONE */}

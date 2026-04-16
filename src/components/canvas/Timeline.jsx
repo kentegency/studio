@@ -202,7 +202,7 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
 export default function Timeline() {
   const { selectedNode, selectNode, nodes, createNode, updateNode } = useNodeStore()
   const { currentProject, acts } = useProjectStore()
-  const { setMinimapPos, showToast } = useUIStore()
+  const { setMinimapPos, showToast, openOverlay } = useUIStore()
 
   const [showNewNode, setShowNewNode] = useState(false)
   const [newNodeName, setNewNodeName] = useState('')
@@ -210,7 +210,9 @@ export default function Timeline() {
   const [newNodeType, setNewNodeType] = useState('scene')
   const [creating,    setCreating]    = useState(false)
   const [sceneMode,   setSceneMode]   = useState(false)
+  const [listView,    setListView]    = useState(false)
   const [zoom,        setZoom]        = useState(1)
+  const [ctxMenu,     setCtxMenu]     = useState(null) // { x, y, node }
 
   // ── ZOOM via SVG viewBox — proportional, no clipping, labels stay readable ──
   // viewBox width = 900 / zoom → zooming in narrows the visible coordinate range
@@ -359,6 +361,7 @@ export default function Timeline() {
       if (e.key === 'z') setZoom(z => Math.min(z + 0.3, 2.5))
       if (e.key === 'x') setZoom(z => Math.max(z - 0.3, 0.5))
       if (e.key === 'f') { setZoom(1); setPanOffset(0) }
+      if (e.key === 'l' || e.key === 'L') setListView(v => !v)
       // S — advance status on selected node (not while dragging)
       if (e.key === 's' && selectedNode?.id && !selectedNode.id.startsWith('cn') && !dragging) {
         const { updateNode, selectNode: storeSelect } = useNodeStore.getState()
@@ -388,6 +391,23 @@ export default function Timeline() {
     setShowNewNode(false)
     setNewNodeName('')
     showToast(`${newNodeName} added.`)
+  }
+
+  const duplicateScene = async (node) => {
+    if (!currentProject) return
+    const newPos = Math.min(1, (node.position ?? 0.5) + 0.04)
+    const { error } = await createNode({
+      project_id: currentProject.id,
+      name:       `${node.name} (copy)`,
+      type:       node.type ?? 'scene',
+      position:   newPos,
+      emphasis:   node.emphasis ?? 1,
+      status:     'concept',
+      act_id:     node.act_id ?? null,
+    })
+    if (!error) showToast(`Duplicated "${node.name}".`)
+    else showToast('Could not duplicate scene.', '#E05050')
+    setCtxMenu(null)
   }
 
   return (
@@ -451,6 +471,24 @@ export default function Timeline() {
                 <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
               </button>
             </div>
+            {/* List / Arc view toggle */}
+            <button className={`tl-view-toggle ${listView ? 'on' : ''}`}
+              onClick={() => setListView(v => !v)}
+              title={listView ? 'Arc view (L)' : 'List view (L)'}>
+              {listView ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10z"/>
+                  <path d="M12 8v4l3 3"/>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                  <line x1="8" y1="18" x2="21" y2="18"/>
+                  <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+                  <line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+              )}
+            </button>
             {currentProject && (
               <button className="add-node-btn" onClick={() => setShowNewNode(s => !s)}>
                 + Add Scene
@@ -490,10 +528,51 @@ export default function Timeline() {
         </form>
       )}
 
-      {/* ── MIDDLE ZONE — arc fills the space ── */}
+      {/* ── MIDDLE ZONE — arc or list view ── */}
       <div className="tl-arc-zone">
-        {/* Empty state */}
-        {currentProject && !hasRealNodes && !showNewNode && (
+
+        {/* LIST VIEW — toggled with L key */}
+        {listView && currentProject && (
+          <div className="tl-list-view">
+            <div className="tlv-head">
+              <span className="tlv-col tlv-col-name">Scene</span>
+              <span className="tlv-col tlv-col-status">Status</span>
+              <span className="tlv-col tlv-col-shots">Shots</span>
+              <span className="tlv-col tlv-col-pos">Position</span>
+            </div>
+            {[...displayNodes]
+              .sort((a,b) => (a.position??0) - (b.position??0))
+              .map((node, i) => {
+                const STATUS_C = { concept:'var(--ghost)', progress:'var(--accent)', review:'#A88040', approved:'var(--green)', locked:'var(--green)' }
+                const isSelected = selectedNode?.id === node.id
+                return (
+                  <div key={node.id}
+                    className={`tlv-row ${isSelected ? 'on' : ''}`}
+                    onClick={() => onSelectNode(node)}>
+                    <span className="tlv-col tlv-col-name">
+                      <span className="tlv-idx">{String(i+1).padStart(2,'0')}</span>
+                      {node.name}
+                    </span>
+                    <span className="tlv-col tlv-col-status">
+                      <span className="tlv-dot" style={{ background: STATUS_C[node.status] ?? 'var(--ghost)' }} />
+                      {node.status}
+                    </span>
+                    <span className="tlv-col tlv-col-shots" style={{ color:'var(--ghost)', fontFamily:'var(--font-mono)', fontSize:'11px' }}>
+                      —
+                    </span>
+                    <span className="tlv-col tlv-col-pos" style={{ color:'var(--ghost)', fontFamily:'var(--font-mono)', fontSize:'11px' }}>
+                      {Math.round((node.position??0)*100)}%
+                    </span>
+                  </div>
+                )
+              })}
+            {!hasRealNodes && (
+              <div className="tlv-empty">No scenes yet — add a scene from the arc view</div>
+            )}
+          </div>
+        )}
+        {/* Empty state — only when not in list view */}
+        {!listView && currentProject && !hasRealNodes && !showNewNode && (
           <div className="tl-empty-state">
             <EmptyState
               icon={<svg viewBox="0 0 24 24" style={{width:'16px',height:'16px',stroke:'currentColor',fill:'none',strokeWidth:'1.5'}}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
@@ -504,8 +583,9 @@ export default function Timeline() {
           </div>
         )}
 
-        {/* SVG arc — viewBox-based zoom keeps everything proportional */}
+        {/* SVG arc — hidden when list view is active */}
         <div className="timeline-svg-wrap"
+          style={{ display: listView ? 'none' : undefined }}
           onWheel={e => {
             if (e.ctrlKey || e.metaKey) {
               // Ctrl/Cmd + wheel = zoom
@@ -570,6 +650,12 @@ export default function Timeline() {
                     window.addEventListener('mouseup', cancel, { once: true })
                     window.addEventListener('mousemove', cancel, { once: true })
                   }}
+                  onContextMenu={(e) => {
+                    e.preventDefault()
+                    if (!node.id?.startsWith('cn')) {
+                      setCtxMenu({ x: e.clientX, y: e.clientY, node })
+                    }
+                  }}
                   style={{ cursor: node.id?.startsWith('cn') ? 'pointer' : 'grab' }}>
                   <Node
                     node={{ ...displayNode, cy: 88 }}
@@ -590,8 +676,44 @@ export default function Timeline() {
           <span>Z zoom in</span><span>·</span>
           <span>X zoom out</span><span>·</span>
           <span>F fit arc</span><span>·</span>
-          <span>click node to open scene</span>
+          <span>L list view</span><span>·</span>
+          <span>1–5 panel tabs</span><span>·</span>
+          <span>right-click scene to duplicate</span>
         </div>
+      )}
+
+      {/* CONTEXT MENU — right-click on arc node */}
+      {ctxMenu && (
+        <>
+          {/* Click-away backdrop */}
+          <div
+            style={{ position:'fixed', inset:0, zIndex:4999 }}
+            onClick={() => setCtxMenu(null)} />
+          <div className="arc-ctx-menu"
+            style={{ top: ctxMenu.y, left: ctxMenu.x }}>
+            <div className="acm-scene-name">{ctxMenu.node?.name}</div>
+            <button className="acm-item" onClick={() => duplicateScene(ctxMenu.node)}>
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Duplicate scene
+            </button>
+            <button className="acm-item" onClick={() => {
+              selectNode(ctxMenu.node)
+              setCtxMenu(null)
+              openOverlay('sketch')
+            }}>
+              <svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+              Sketch this scene
+            </button>
+            <button className="acm-item" onClick={() => {
+              selectNode(ctxMenu.node)
+              setCtxMenu(null)
+              openOverlay('storyboard')
+            }}>
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Storyboard this scene
+            </button>
+          </div>
+        </>
       )}
     </div>
   )

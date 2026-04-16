@@ -93,3 +93,20 @@
   transition: color var(--dur-mid) var(--ease), border-color var(--dur-mid) var(--ease);
 }
 .tbb-palette:hover { color: var(--dim); border-color: var(--b2); }
+
+/* Generate button — slightly accented to signal output action */
+.tbb-generate {
+  color: var(--accent);
+  border-color: var(--accent-mid);
+}
+.tbb-generate:hover {
+  background: var(--accent-ghost);
+  color: var(--cream);
+}
+
+/* Room badge — inline in topbar left when project name removed */
+.tb-room-badge--inline {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .05em;
+  font-family: var(--font-ui);
+}

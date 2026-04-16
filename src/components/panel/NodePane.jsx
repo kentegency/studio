@@ -246,10 +246,14 @@ export default function NodePane({ onUpload }) {
       <div className="sec">
         <div className="sec-l">
           Assets — {assetsLoading ? '…' : assets.length}
-          <span onClick={() => openOverlay('compare')} data-hover>Compare</span>
+          {assets.length > 7 && (
+            <span style={{ color:'var(--accent)', fontSize:'10px', marginLeft:'6px' }}>
+              +{assets.length - 7} more
+            </span>
+          )}
         </div>
         <button className="upload-trigger" onClick={onUpload} data-hover>
-          <UpIcon /><span>Upload files to this node</span>
+          <UpIcon /><span>Upload files to this scene</span>
         </button>
         {assetsLoading ? (
           <div className="asset-grid" style={{ marginTop:'8px' }}>
@@ -258,34 +262,53 @@ export default function NodePane({ onUpload }) {
             ))}
           </div>
         ) : assets.length > 0 ? (
-          <div className="asset-grid" style={{ marginTop:'8px' }}>
-            {assets.slice(0,7).map((a, i) => {
-              const type = getType(a)
-              const tc   = TYPE_COLORS[type] ?? '#D4CAAA'
-              const isImg = type === 'image' || type === 'gif'
-              return (
-                <div key={a.id} className="at" data-hover
-                  onClick={() => openViewer(a, i)} title={a.name}>
-                  {isImg ? (
-                    <img src={a.file_url} alt={a.name}
-                      style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'2px' }}
-                      onError={e => { e.target.style.display='none' }} />
-                  ) : (
-                    <div className="at-type-icon" style={{ color:tc }}>
-                      {type === 'pdf'   && <PdfIcon />}
-                      {type === 'video' && <VidIcon />}
-                      {type === 'audio' && <AudIcon />}
-                      {(type === 'document' || type === 'reference') && <DocIcon />}
-                    </div>
-                  )}
-                  <span className="at-b" style={{ background:`${tc}22`, color:tc }}>
-                    {type.slice(0,3)}
-                  </span>
-                </div>
-              )
-            })}
-            <div className="at at-add" onClick={onUpload} data-hover><AddIcon /></div>
-          </div>
+          <>
+            <div className="asset-grid" style={{ marginTop:'8px' }}>
+              {assets.slice(0,7).map((a, i) => {
+                const type  = getType(a)
+                const tc    = TYPE_COLORS[type] ?? '#D4CAAA'
+                const isImg = type === 'image' || type === 'gif'
+                const inWindow  = a.room === 'window'
+                const inMeeting = a.room === 'meeting'
+                return (
+                  <div key={a.id} className="at" data-hover
+                    onClick={() => openViewer(a, i)} title={a.name}>
+                    {isImg ? (
+                      <img src={a.file_url} alt={a.name}
+                        style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'2px' }}
+                        onError={e => { e.target.style.display='none' }} />
+                    ) : (
+                      <div className="at-type-icon" style={{ color:tc }}>
+                        {type === 'pdf'   && <PdfIcon />}
+                        {type === 'video' && <VidIcon />}
+                        {type === 'audio' && <AudIcon />}
+                        {(type === 'document' || type === 'reference') && <DocIcon />}
+                      </div>
+                    )}
+                    <span className="at-b" style={{ background:`${tc}22`, color:tc }}>
+                      {type.slice(0,3)}
+                    </span>
+                    {/* Room badge — shows where asset is published */}
+                    {inWindow && (
+                      <span className="at-room-badge at-room-window" title="Visible to client in Window" />
+                    )}
+                    {inMeeting && !inWindow && (
+                      <span className="at-room-badge at-room-meeting" title="Shared in Meeting room" />
+                    )}
+                  </div>
+                )
+              })}
+              {assets.length <= 7 && (
+                <div className="at at-add" onClick={onUpload} data-hover><AddIcon /></div>
+              )}
+            </div>
+            {/* Show all link when more than 7 */}
+            {assets.length > 7 && (
+              <button className="assets-show-all" onClick={() => openOverlay('moodboard')} data-hover>
+                View all {assets.length} assets in Moodboard →
+              </button>
+            )}
+          </>
         ) : (
           <div style={{ marginTop:'6px' }}>
             <EmptyState compact icon={<ImgIcon />}

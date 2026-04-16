@@ -135,3 +135,24 @@
   transition: background var(--dur-mid) var(--ease);
 }
 .ui-retry:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .08); }
+
+/* ── SCENE CONTEXT BANNER ── */
+.upload-scene-ctx {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; font-size: 12px;
+  border-bottom: .5px solid var(--b);
+  font-family: var(--font-ui);
+}
+.upload-scene-ctx.has-scene {
+  background: rgba(212,170,106,.06);
+  color: var(--cream);
+}
+.upload-scene-ctx.no-scene {
+  background: rgba(224,80,80,.06);
+  color: var(--red);
+}
+.usc-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+}
+.usc-text strong { color: var(--accent); }

@@ -27,6 +27,19 @@ export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }
 
   useEffect(() => { setTimeout(() => setVisible(true), 100) }, [])
 
+  // 1–5 keys switch tabs when no input is focused
+  useEffect(() => {
+    const TAB_KEYS = { '1':'node', '2':'shots', '3':'team', '4':'people', '5':'style' }
+    const handler = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const key = TAB_KEYS[e.key]
+      if (key) switchTab(key)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   // Window room shows a preview of what client sees
   if (activeRoom === 'window') {
     return (

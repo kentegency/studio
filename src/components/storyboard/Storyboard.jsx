@@ -283,6 +283,7 @@ export default function Storyboard({ onClose }) {
             disabled={saving || !selectedNode}>
             {saving ? saveProgress || 'Saving…' : `Save ${layout.panels} panels →`}
           </button>
+          <button className="ov-discard-btn" onClick={onClose} title="Close without saving (Esc)">×</button>
         </div>
       </div>
 
