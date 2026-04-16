@@ -1,7 +1,11 @@
 // useSession.js — WebRTC via Supabase Realtime signalling
-// FIX: presence-based offer sequencing — host waits for guest presence before sending offer
-// FIX: iceConnectionState drives 'connected' — not ontrack (which requires video)
-// FIX: reconnection attempt on transient disconnect (not permanent failure)
+// FIXES APPLIED:
+// 1. newPresences is an object {presenceRef: [entry]}, not array — use Object.values().flat()
+// 2. presenceState() same shape — Object.values().flat()
+// 3. presence key must be unique per client (role+timestamp), not just role
+// 4. ICE state drives 'connected', not ontrack
+// 5. No double onicecandidate assignment
+// 6. Reconnection on transient disconnect
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
@@ -23,6 +27,10 @@ const ICE_SERVERS = [
   }] : []),
 ]
 
+// Flatten Supabase presence state object → array of entries
+// presenceState() returns { [presenceKey]: [{presence_ref, ...userData}] }
+const flattenPresence = (obj) => Object.values(obj || {}).flat()
+
 export function useSession(sessionToken, role = 'host') {
   const [state,        setState]       = useState('idle')
   const [remoteStream, setRemoteStream] = useState(null)
@@ -31,7 +39,7 @@ export function useSession(sessionToken, role = 'host') {
   const [isCamOff,     setIsCamOff]     = useState(false)
   const [transcript,   setTranscript]   = useState('')
   const [duration,     setDuration]     = useState(0)
-  const [iceType,      setIceType]      = useState(null) // 'host'|'srflx'|'relay'
+  const [iceLabel,     setIceLabel]     = useState(null)
 
   const pcRef          = useRef(null)
   const channelRef     = useRef(null)
@@ -42,7 +50,7 @@ export function useSession(sessionToken, role = 'host') {
   const offerSentRef   = useRef(false)
   const reconnectRef   = useRef(null)
 
-  // ── CLEANUP ─────────────────────────────────
+  // ── CLEANUP ────────────────────────────────────────────
   const cleanup = useCallback(() => {
     pcRef.current?.close()
     pcRef.current = null
@@ -59,118 +67,129 @@ export function useSession(sessionToken, role = 'host') {
     offerSentRef.current = false
   }, [])
 
-  // ── SIGNAL ──────────────────────────────────
+  // ── SIGNAL via broadcast ───────────────────────────────
   const signal = useCallback((type, payload) => {
     channelRef.current?.send({
-      type: 'broadcast',
-      event: 'signal',
+      type:    'broadcast',
+      event:   'signal',
       payload: { type, payload, from: role },
     })
   }, [role])
 
-  // ── CREATE OFFER (host only, called after guest presence) ──
+  // ── SEND OFFER — host only, called once when guest arrives ──
   const sendOffer = useCallback(async (pc) => {
     if (offerSentRef.current) return
     offerSentRef.current = true
+    console.log('[session] host sending offer')
     try {
       const offer = await pc.createOffer()
       await pc.setLocalDescription(offer)
       signal('offer', offer)
     } catch (err) {
-      console.error('Offer error:', err)
+      console.error('[session] offer error:', err)
       setState('error')
     }
   }, [signal])
 
-  // ── BUILD PEER CONNECTION ────────────────────
-  const buildPC = useCallback((stream) => {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS })
-    pcRef.current = pc
-
-    stream.getTracks().forEach(track => pc.addTrack(track, stream))
-
-    pc.ontrack = (e) => {
-      setRemoteStream(e.streams[0])
-    }
-
-    pc.onicecandidate = (e) => {
-      if (e.candidate) signal('ice', e.candidate)
-    }
-
-    // ── KEY FIX: ICE state drives 'connected', not ontrack ──
-    pc.oniceconnectionstatechange = () => {
-      const s = pc.iceConnectionState
-      if (s === 'connected' || s === 'completed') {
-        setState('connected')
-        clearTimeout(reconnectRef.current)
-      }
-      if (s === 'disconnected') {
-        // Transient — give it 5s before declaring error
-        reconnectRef.current = setTimeout(() => {
-          if (pcRef.current?.iceConnectionState === 'disconnected') {
-            setState('error')
-          }
-        }, 5000)
-      }
-      if (s === 'failed') {
-        setState('error')
-      }
-    }
-
-    // Track ICE candidate type for quality indicator
-    pc.onicecandidate = (e) => {
-      if (e.candidate) {
-        signal('ice', e.candidate)
-        const t = e.candidate.type // 'host' | 'srflx' | 'relay'
-        if (t === 'relay') setIceType('relay')
-        else if (t === 'srflx' && iceType !== 'relay') setIceType('srflx')
-        else if (!iceType) setIceType('host')
-      }
-    }
-
-    return pc
-  }, [signal, iceType])
-
-  // ── START SESSION ────────────────────────────
+  // ── START ──────────────────────────────────────────────
   const start = useCallback(async () => {
     setState('joining')
     offerSentRef.current = false
 
     try {
+      // 1. Get media
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       localStreamRef.current = stream
       setLocalStream(stream)
 
-      const pc = buildPC(stream)
+      // 2. Create peer connection — single onicecandidate handler
+      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS })
+      pcRef.current = pc
 
-      // Subscribe to signalling channel
+      stream.getTracks().forEach(track => pc.addTrack(track, stream))
+
+      pc.ontrack = (e) => {
+        console.log('[session] remote track received')
+        setRemoteStream(e.streams[0])
+      }
+
+      // ICE candidate → signal to peer + track quality
+      pc.onicecandidate = (e) => {
+        if (!e.candidate) return
+        signal('ice', e.candidate)
+        const t = e.candidate.type
+        setIceLabel(prev => {
+          if (prev === 'TURN') return prev
+          if (t === 'relay') return 'TURN'
+          if (t === 'srflx') return 'STUN'
+          return prev ?? 'Local'
+        })
+      }
+
+      // ICE connection state → drives UI state
+      pc.oniceconnectionstatechange = () => {
+        const s = pc.iceConnectionState
+        console.log('[session] ICE state:', s)
+        if (s === 'connected' || s === 'completed') {
+          setState('connected')
+          clearTimeout(reconnectRef.current)
+        } else if (s === 'disconnected') {
+          // Transient — wait 6s before declaring error
+          reconnectRef.current = setTimeout(() => {
+            if (pcRef.current?.iceConnectionState === 'disconnected') {
+              setState('error')
+            }
+          }, 6000)
+        } else if (s === 'failed') {
+          setState('error')
+        }
+      }
+
+      pc.onconnectionstatechange = () => {
+        console.log('[session] connection state:', pc.connectionState)
+      }
+
+      // 3. Create channel — unique presence key per client
+      // Using role+timestamp ensures no key collision if multiple guests
+      const presenceKey = role === 'host' ? 'host' : `guest-${Date.now()}`
       const channel = supabase.channel(`session:${sessionToken}`, {
         config: {
           broadcast: { self: false },
-          presence:  { key: role },
+          presence:  { key: presenceKey },
         }
       })
       channelRef.current = channel
 
-      // ── KEY FIX: host sends offer only after guest presence ──
+      // 4. Host: wait for guest presence BEFORE sending offer
       if (role === 'host') {
         channel.on('presence', { event: 'join' }, ({ newPresences }) => {
-          const guestPresent = newPresences.some(p => p.role === 'guest')
-          if (guestPresent) sendOffer(pc)
+          // FIX: newPresences is { [ref]: [{...userData}] }, not an array
+          const entries = flattenPresence(newPresences)
+          console.log('[session] host presence join entries:', entries)
+          const guestJoined = entries.some(p => p.role === 'guest')
+          if (guestJoined) sendOffer(pc)
         })
-        // Also check if guest is already present when host joins late
+
+        // Sync fires when local state is reconciled — catch case where
+        // host joins AFTER guest (e.g. host page refresh)
         channel.on('presence', { event: 'sync' }, () => {
+          if (offerSentRef.current) return
           const state = channel.presenceState()
-          const guestPresent = Object.values(state).flat().some(p => p.role === 'guest')
+          // FIX: presenceState() is same shape — flatten it
+          const entries = flattenPresence(state)
+          console.log('[session] host presence sync entries:', entries)
+          const guestPresent = entries.some(p => p.role === 'guest')
           if (guestPresent) sendOffer(pc)
         })
       }
 
-      // Signal handler
+      // 5. Signal handler — offer/answer/ICE/end
       channel.on('broadcast', { event: 'signal' }, async ({ payload: msg }) => {
         if (!pcRef.current) return
         const { type, payload, from } = msg
-        if (from === role) return
+        if (from === role) return // ignore own messages
+
+        console.log('[session] signal received:', type, 'from:', from)
 
         try {
           if (type === 'offer' && role === 'guest') {
@@ -178,42 +197,52 @@ export function useSession(sessionToken, role = 'host') {
             const answer = await pcRef.current.createAnswer()
             await pcRef.current.setLocalDescription(answer)
             signal('answer', answer)
-          }
-          if (type === 'answer' && role === 'host') {
+          } else if (type === 'answer' && role === 'host') {
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(payload))
-          }
-          if (type === 'ice') {
-            await pcRef.current.addIceCandidate(new RTCIceCandidate(payload))
-          }
-          if (type === 'end') {
+          } else if (type === 'ice') {
+            try {
+              await pcRef.current.addIceCandidate(new RTCIceCandidate(payload))
+            } catch {
+              // ICE candidate errors are common and non-fatal — ignore
+            }
+          } else if (type === 'end') {
             endSession(false)
-          }
-          if (type === 'scene' && role === 'guest') {
-            // Host broadcast their selected scene — for future shared scene view
+          } else if (type === 'scene' && role === 'guest') {
             window.__sessionSceneUpdate?.(payload)
           }
         } catch (err) {
-          // ICE candidate errors are common and non-fatal
-          if (type !== 'ice') console.error('Signal handler error:', type, err)
+          console.error('[session] signal handler error:', type, err)
         }
       })
 
-      await channel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          // Guest tracks presence after subscribing — this triggers host's offer
-          if (role === 'guest') {
-            await channel.track({ role: 'guest', joinedAt: Date.now() })
-          } else {
-            await channel.track({ role: 'host', joinedAt: Date.now() })
+      // 6. Subscribe — then track presence
+      // IMPORTANT: register all listeners BEFORE subscribe()
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Channel subscribe timeout')), 10000)
+        channel.subscribe((status) => {
+          console.log('[session] channel status:', status)
+          if (status === 'SUBSCRIBED') {
+            clearTimeout(timeout)
+            // Track presence AFTER subscribe confirms — this is what triggers host's offer
+            channel.track({ role, joinedAt: Date.now() })
+              .then(() => {
+                console.log('[session] presence tracked, role:', role)
+                resolve()
+              })
+              .catch(reject)
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            clearTimeout(timeout)
+            reject(new Error(`Channel ${status}`))
           }
-        }
+        })
       })
 
+      // 7. Start transcript + timer
       startTranscript()
       timerRef.current = setInterval(() => setDuration(d => d + 1), 1000)
 
     } catch (err) {
-      console.error('Session start error:', err)
+      console.error('[session] start error:', err)
       if (err.name === 'NotAllowedError') {
         setState('permission_denied')
       } else {
@@ -221,9 +250,9 @@ export function useSession(sessionToken, role = 'host') {
       }
       cleanup()
     }
-  }, [sessionToken, role, signal, sendOffer, buildPC, cleanup])
+  }, [sessionToken, role, signal, sendOffer, cleanup])
 
-  // ── TRANSCRIPT ───────────────────────────────
+  // ── TRANSCRIPT ─────────────────────────────────────────
   const startTranscript = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
@@ -243,11 +272,11 @@ export function useSession(sessionToken, role = 'host') {
         setTranscript(transcriptRef.current)
       }
     }
-    rec.onerror = () => {}
+    rec.onerror = () => {} // Non-fatal
     try { rec.start() } catch {}
   }, [])
 
-  // ── END SESSION ──────────────────────────────
+  // ── END SESSION ────────────────────────────────────────
   const endSession = useCallback((notify = true) => {
     if (notify) signal('end', {})
     cleanup()
@@ -255,12 +284,12 @@ export function useSession(sessionToken, role = 'host') {
     clearInterval(timerRef.current)
   }, [signal, cleanup])
 
-  // ── BROADCAST SELECTED SCENE (host → guest) ──
+  // ── BROADCAST SCENE (host → guest) ────────────────────
   const broadcastScene = useCallback((node) => {
     if (role === 'host') signal('scene', { id: node.id, name: node.name })
   }, [role, signal])
 
-  // ── MIC / CAM ────────────────────────────────
+  // ── MIC / CAM ──────────────────────────────────────────
   const toggleMute = useCallback(() => {
     localStreamRef.current?.getAudioTracks().forEach(t => { t.enabled = !t.enabled })
     setIsMuted(m => !m)
@@ -275,8 +304,6 @@ export function useSession(sessionToken, role = 'host') {
 
   const formatDuration = (s) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-
-  const iceLabel = { host: 'Local', srflx: 'STUN', relay: 'TURN' }[iceType] ?? null
 
   return {
     state, start, endSession, toggleMute, toggleCamera, broadcastScene,

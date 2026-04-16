@@ -126,3 +126,14 @@
   padding: 1px 5px; border-radius: 2px;
   background: var(--s3); border: .5px solid var(--b);
 }
+
+/* Debug log strip in session tile */
+.st-debug {
+  padding: 4px 8px;
+  background: rgba(0,0,0,.7);
+  border-top: .5px solid rgba(255,255,255,.05);
+}
+.st-debug-line {
+  font-size: 9px; color: #4ADE80;
+  font-family: monospace; line-height: 1.5;
+}

@@ -9,6 +9,26 @@ const MicOff = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 const CamOn  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
 const CamOff = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06A3 3 0 0 1 9 15a3 3 0 0 1-1.5-5.5"/></svg>
 
+// Debug log component — visible on screen, helps diagnose connection issues
+function DebugLog({ logs }) {
+  if (!logs.length) return null
+  return (
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      background: 'rgba(0,0,0,.85)', padding: '8px 16px',
+      fontFamily: 'monospace', fontSize: '11px', color: '#4ADE80',
+      maxHeight: '120px', overflowY: 'auto', zIndex: 9999,
+      borderTop: '.5px solid rgba(255,255,255,.08)',
+    }}>
+      {logs.slice(-8).map((l, i) => (
+        <div key={i} style={{ color: l.startsWith('✗') ? '#E05050' : l.startsWith('●') ? '#F5920C' : '#4ADE80' }}>
+          {l}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function SessionGuest({ sessionToken }) {
   const {
     state, start, endSession, toggleMute, toggleCamera,
@@ -19,12 +39,31 @@ export default function SessionGuest({ sessionToken }) {
   const localRef  = useRef(null)
   const remoteRef = useRef(null)
 
-  // Project info — fetch from session token
   const [project,     setProject]     = useState(null)
-  const [chatMsg,     setChatMsg]     = useState('')
-  const [chatLog,     setChatLog]     = useState([])
   const [activeScene, setActiveScene] = useState(null)
   const [mediaReady,  setMediaReady]  = useState(false)
+  const [debugLogs,   setDebugLogs]   = useState([])
+
+  // Intercept [session] console.log lines for on-screen debug
+  useEffect(() => {
+    const orig = console.log
+    console.log = (...args) => {
+      orig(...args)
+      const msg = args.join(' ')
+      if (msg.includes('[session]')) {
+        setDebugLogs(l => [...l, `${new Date().toLocaleTimeString()} ${msg.replace('[session] ','')}`])
+      }
+    }
+    const origErr = console.error
+    console.error = (...args) => {
+      origErr(...args)
+      const msg = args.join(' ')
+      if (msg.includes('[session]')) {
+        setDebugLogs(l => [...l, `✗ ${new Date().toLocaleTimeString()} ${msg.replace('[session] ','')}`])
+      }
+    }
+    return () => { console.log = orig; console.error = origErr }
+  }, [])
 
   // Load project info from session token
   useEffect(() => {
@@ -195,7 +234,7 @@ export default function SessionGuest({ sessionToken }) {
           </div>
         )}
 
-        {/* ENDED */}
+      {/* ENDED */}
         {state === 'ended' && (
           <div className="sg-lobby">
             <div className="sg-lobby-title">{stateMsg.title}</div>
@@ -207,6 +246,9 @@ export default function SessionGuest({ sessionToken }) {
           </div>
         )}
       </div>
+
+      {/* Debug log — visible during testing, remove in production */}
+      <DebugLog logs={debugLogs} />
     </div>
   )
 }
