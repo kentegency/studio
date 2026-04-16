@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 import { useSession } from './useSession'
 import { supabase } from '../../lib/supabase'
 import './Session.css'
@@ -9,21 +9,18 @@ const MicOff = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 const CamOn  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
 const CamOff = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06A3 3 0 0 1 9 15a3 3 0 0 1-1.5-5.5"/></svg>
 
-// Debug log component — visible on screen, helps diagnose connection issues
 function DebugLog({ logs }) {
   if (!logs.length) return null
   return (
     <div style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: 'rgba(0,0,0,.85)', padding: '8px 16px',
-      fontFamily: 'monospace', fontSize: '11px', color: '#4ADE80',
-      maxHeight: '120px', overflowY: 'auto', zIndex: 9999,
-      borderTop: '.5px solid rgba(255,255,255,.08)',
+      position:'fixed', bottom:0, left:0, right:0,
+      background:'rgba(0,0,0,.85)', padding:'6px 14px',
+      fontFamily:'monospace', fontSize:'10px', color:'#4ADE80',
+      maxHeight:'100px', overflowY:'auto', zIndex:9999,
+      borderTop:'.5px solid rgba(255,255,255,.06)',
     }}>
-      {logs.slice(-8).map((l, i) => (
-        <div key={i} style={{ color: l.startsWith('✗') ? '#E05050' : l.startsWith('●') ? '#F5920C' : '#4ADE80' }}>
-          {l}
-        </div>
+      {logs.slice(-8).map((l,i) => (
+        <div key={i} style={{ color: l.startsWith('✗') ? '#E05050' : '#4ADE80' }}>{l}</div>
       ))}
     </div>
   )
@@ -36,36 +33,77 @@ export default function SessionGuest({ sessionToken }) {
     isMuted, isCamOff, iceLabel, duration,
   } = useSession(sessionToken, 'guest')
 
-  const localRef  = useRef(null)
-  const remoteRef = useRef(null)
+  // ── STREAMS ──────────────────────────────────────────────
+  // Keep latest stream refs so callback refs can attach them immediately on mount
+  const localStreamRef  = useRef(null)
+  const remoteStreamRef = useRef(null)
 
-  const [project,     setProject]     = useState(null)
-  const [activeScene, setActiveScene] = useState(null)
-  const [mediaReady,  setMediaReady]  = useState(false)
-  const [debugLogs,   setDebugLogs]   = useState([])
+  // Store registered video elements so we can push streams to them as they arrive
+  const localEls  = useRef(new Set())
+  const remoteEls = useRef(new Set())
 
-  // Intercept [session] console.log lines for on-screen debug
+  // Sync refs when streams change, push to all registered elements
   useEffect(() => {
-    const orig = console.log
-    console.log = (...args) => {
-      orig(...args)
-      const msg = args.join(' ')
-      if (msg.includes('[session]')) {
-        setDebugLogs(l => [...l, `${new Date().toLocaleTimeString()} ${msg.replace('[session] ','')}`])
-      }
+    localStreamRef.current = localStream
+    localEls.current.forEach(el => {
+      if (el && el.srcObject !== localStream) el.srcObject = localStream
+    })
+  }, [localStream])
+
+  useEffect(() => {
+    remoteStreamRef.current = remoteStream
+    remoteEls.current.forEach(el => {
+      if (el && el.srcObject !== remoteStream) el.srcObject = remoteStream
+    })
+    if (remoteStream) {
+      addDebug('● remote stream received — tracks: ' + remoteStream.getTracks().length)
     }
-    const origErr = console.error
-    console.error = (...args) => {
-      origErr(...args)
-      const msg = args.join(' ')
-      if (msg.includes('[session]')) {
-        setDebugLogs(l => [...l, `✗ ${new Date().toLocaleTimeString()} ${msg.replace('[session] ','')}`])
-      }
+  }, [remoteStream])
+
+  // Callback ref factories — attach stream immediately when element mounts
+  const makeLocalRef = useCallback(() => (el) => {
+    if (!el) return
+    localEls.current.add(el)
+    if (localStreamRef.current && el.srcObject !== localStreamRef.current) {
+      el.srcObject = localStreamRef.current
     }
-    return () => { console.log = orig; console.error = origErr }
   }, [])
 
-  // Load project info from session token
+  const makeRemoteRef = useCallback(() => (el) => {
+    if (!el) return
+    remoteEls.current.add(el)
+    if (remoteStreamRef.current && el.srcObject !== remoteStreamRef.current) {
+      el.srcObject = remoteStreamRef.current
+    }
+  }, [])
+
+  // ── PROJECT INFO ─────────────────────────────────────────
+  const [project,    setProject]    = useState(null)
+  const [activeScene,setActiveScene]= useState(null)
+  const [mediaReady, setMediaReady] = useState(false)
+  const [debugLogs,  setDebugLogs]  = useState([])
+
+  const addDebug = useCallback((msg) => {
+    setDebugLogs(l => [...l, `${new Date().toLocaleTimeString()} ${msg}`])
+  }, [])
+
+  // Intercept [session] console logs
+  useEffect(() => {
+    const orig = console.log
+    const origErr = console.error
+    console.log = (...args) => {
+      orig(...args)
+      const m = args.join(' ')
+      if (m.includes('[session]')) addDebug(m.replace('[session] ', ''))
+    }
+    console.error = (...args) => {
+      origErr(...args)
+      const m = args.join(' ')
+      if (m.includes('[session]')) addDebug('✗ ' + m.replace('[session] ', ''))
+    }
+    return () => { console.log = orig; console.error = origErr }
+  }, [addDebug])
+
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
@@ -78,36 +116,39 @@ export default function SessionGuest({ sessionToken }) {
     load()
   }, [sessionToken])
 
-  // Attach video streams
-  useEffect(() => {
-    if (localRef.current  && localStream) {
-      localRef.current.srcObject = localStream
-      setMediaReady(true)
-    }
-    if (remoteRef.current && remoteStream) remoteRef.current.srcObject = remoteStream
-  }, [localStream, remoteStream])
-
-  // Receive host's selected scene broadcasts
   useEffect(() => {
     window.__sessionSceneUpdate = (node) => setActiveScene(node)
     return () => { delete window.__sessionSceneUpdate }
   }, [])
 
+  // Pre-join camera test — attach to the preview element
+  const testMedia = async () => {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video:true, audio:true })
+      localStreamRef.current = s
+      localEls.current.forEach(el => { if (el) el.srcObject = s })
+      setMediaReady(true)
+      addDebug('● camera test OK')
+    } catch (e) {
+      addDebug('✗ camera test failed: ' + e.message)
+    }
+  }
+
   const accent = project?.accent_color ?? 'var(--accent)'
 
   const stateMsg = {
-    idle:             { title: 'You\'re invited to a session', sub: 'Check your camera and microphone, then join.' },
-    joining:          { title: 'Connecting…', sub: 'Establishing a secure connection with the Creative Director.' },
-    connected:        { title: 'Connected', sub: '' },
-    ended:            { title: 'Session ended', sub: 'The transcript has been saved by the Creative Director.' },
-    error:            { title: 'Connection failed', sub: 'Check your camera and microphone permissions and try again.' },
-    permission_denied:{ title: 'Camera access required', sub: 'Allow camera and microphone access in your browser, then try again.' },
+    idle:             { title:'You\'re invited to a session',    sub:'Check your camera and microphone, then join.' },
+    joining:          { title:'Connecting…',                     sub:'Establishing a secure connection.' },
+    connected:        { title:'Connected',                       sub:'' },
+    ended:            { title:'Session ended',                   sub:'The transcript has been saved by the Creative Director.' },
+    error:            { title:'Connection failed',               sub:'Check your camera and microphone permissions and try again.' },
+    permission_denied:{ title:'Camera access required',          sub:'Allow camera and microphone access in your browser, then try again.' },
   }[state] ?? { title: state, sub: '' }
 
   return (
     <div className="sg-wrap" style={{ '--session-accent': accent }}>
 
-      {/* TOP BAR — always visible */}
+      {/* TOP BAR */}
       <div className="sg-topbar">
         <div className="sg-logo-row">
           {['#ECEAE4','#0E0E11','#8A8680',accent,'#8A8680','#0E0E11','#8A8680','#0E0E11','#ECEAE4'].map((c,i) => (
@@ -129,10 +170,10 @@ export default function SessionGuest({ sessionToken }) {
         )}
       </div>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
       <div className="sg-main">
 
-        {/* IDLE — lobby */}
+        {/* IDLE / ERROR */}
         {(state === 'idle' || state === 'error' || state === 'permission_denied') && (
           <div className="sg-lobby">
             {project?.logline && (
@@ -141,36 +182,29 @@ export default function SessionGuest({ sessionToken }) {
             <div className="sg-lobby-title">{stateMsg.title}</div>
             <div className="sg-lobby-sub">{stateMsg.sub}</div>
 
-            {/* Camera preview before joining */}
+            {/* Preview — callback ref attaches stream immediately on mount */}
             <div className="sg-preview-wrap">
-              <video ref={localRef} className="sg-preview-video" autoPlay playsInline muted />
+              <video ref={makeLocalRef()} className="sg-preview-video"
+                autoPlay playsInline muted />
               {!mediaReady && (
                 <div className="sg-preview-placeholder">
                   <CamOn />
-                  <span>Camera preview</span>
+                  <span>No camera preview</span>
                 </div>
               )}
             </div>
 
-            <button className="sg-join-btn" style={{ borderColor: accent, color: accent }}
+            <button className="sg-join-btn" style={{ borderColor:accent, color:accent }}
               onClick={start}>
               {state === 'error' || state === 'permission_denied' ? 'Try again →' : 'Join session →'}
             </button>
-
-            {/* Pre-join camera check */}
-            <button className="sg-check-btn" onClick={async () => {
-              try {
-                const s = await navigator.mediaDevices.getUserMedia({ video:true, audio:true })
-                if (localRef.current) localRef.current.srcObject = s
-                setMediaReady(true)
-              } catch { setMediaReady(false) }
-            }}>
+            <button className="sg-check-btn" onClick={testMedia}>
               Test camera &amp; mic
             </button>
           </div>
         )}
 
-        {/* JOINING — waiting */}
+        {/* JOINING */}
         {state === 'joining' && (
           <div className="sg-lobby">
             <div className="sg-joining-anim">
@@ -178,49 +212,49 @@ export default function SessionGuest({ sessionToken }) {
             </div>
             <div className="sg-lobby-title">{stateMsg.title}</div>
             <div className="sg-lobby-sub">{stateMsg.sub}</div>
-            {/* Still show camera preview */}
+            {/* Preview during joining — same callback ref pattern */}
             <div className="sg-preview-wrap sg-preview-sm">
-              <video ref={localRef} className="sg-preview-video" autoPlay playsInline muted />
+              <video ref={makeLocalRef()} className="sg-preview-video"
+                autoPlay playsInline muted />
             </div>
           </div>
         )}
 
-        {/* CONNECTED — full session view */}
+        {/* CONNECTED — full session */}
         {state === 'connected' && (
           <div className="sg-session">
 
-            {/* Remote video — main */}
+            {/* Remote video — HOST feed */}
             <div className="sg-remote-wrap">
-              <video ref={remoteRef} className="sg-remote" autoPlay playsInline />
-              {/* Duration */}
+              {/* Callback ref attaches remoteStream the instant this element mounts */}
+              <video ref={makeRemoteRef()} className="sg-remote"
+                autoPlay playsInline />
               <div className="sg-duration">
                 <span className="sg-duration-dot" style={{ background: accent }} />
                 {duration}
               </div>
-              {/* Shared scene from host */}
               {activeScene && (
                 <div className="sg-scene-badge">
-                  <span className="sg-scene-label">Viewing scene</span>
-                  <span className="sg-scene-name" style={{ color: accent }}>{activeScene.name}</span>
+                  <span className="sg-scene-label">Host viewing</span>
+                  <span className="sg-scene-name" style={{ color:accent }}>{activeScene.name}</span>
                 </div>
               )}
             </div>
 
-            {/* Local PiP */}
+            {/* Guest local PiP — callback ref attaches localStream on mount */}
             <div className="sg-local-wrap">
-              <video ref={localRef} className="sg-local" autoPlay playsInline muted />
+              <video ref={makeLocalRef()} className="sg-local"
+                autoPlay playsInline muted />
               <span className="sg-local-label">You</span>
             </div>
 
             {/* Controls */}
             <div className="sg-controls">
-              <button className={`sgc-btn ${isMuted ? 'off' : ''}`} onClick={toggleMute}
-                title={isMuted ? 'Unmute' : 'Mute'}>
+              <button className={`sgc-btn ${isMuted ? 'off' : ''}`} onClick={toggleMute}>
                 {isMuted ? <MicOff /> : <MicOn />}
                 <span>{isMuted ? 'Unmute' : 'Mute'}</span>
               </button>
-              <button className={`sgc-btn ${isCamOff ? 'off' : ''}`} onClick={toggleCamera}
-                title={isCamOff ? 'Camera on' : 'Camera off'}>
+              <button className={`sgc-btn ${isCamOff ? 'off' : ''}`} onClick={toggleCamera}>
                 {isCamOff ? <CamOff /> : <CamOn />}
                 <span>{isCamOff ? 'Cam on' : 'Cam off'}</span>
               </button>
@@ -234,12 +268,12 @@ export default function SessionGuest({ sessionToken }) {
           </div>
         )}
 
-      {/* ENDED */}
+        {/* ENDED */}
         {state === 'ended' && (
           <div className="sg-lobby">
             <div className="sg-lobby-title">{stateMsg.title}</div>
             <div className="sg-lobby-sub">{stateMsg.sub}</div>
-            <button className="sg-join-btn" style={{ borderColor: accent, color: accent }}
+            <button className="sg-join-btn" style={{ borderColor:accent, color:accent }}
               onClick={() => window.history.back()}>
               ← Close
             </button>
@@ -247,7 +281,6 @@ export default function SessionGuest({ sessionToken }) {
         )}
       </div>
 
-      {/* Debug log — visible during testing, remove in production */}
       <DebugLog logs={debugLogs} />
     </div>
   )

@@ -30,6 +30,31 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
   const tileRef        = useRef(null)
   const [debugLogs, setDebugLogs] = useState([])
 
+  // Keep latest streams in refs so callback refs can read them on mount
+  const localStreamRef  = useRef(null)
+  const remoteStreamRef = useRef(null)
+
+  useEffect(() => {
+    localStreamRef.current = localStream
+    if (localVideoRef.current && localStream) localVideoRef.current.srcObject = localStream
+  }, [localStream])
+
+  useEffect(() => {
+    remoteStreamRef.current = remoteStream
+    if (remoteVideoRef.current && remoteStream) remoteVideoRef.current.srcObject = remoteStream
+  }, [remoteStream])
+
+  // Callback refs — attach stream immediately when video element mounts
+  const setLocalVideo = useCallback((el) => {
+    localVideoRef.current = el
+    if (el && localStreamRef.current) el.srcObject = localStreamRef.current
+  }, [])
+
+  const setRemoteVideo = useCallback((el) => {
+    remoteVideoRef.current = el
+    if (el && remoteStreamRef.current) el.srcObject = remoteStreamRef.current
+  }, [])
+
   // Intercept [session] logs for on-screen debug
   useEffect(() => {
     const orig = console.log
@@ -48,12 +73,6 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
   const [dragging, setDragging] = useState(false)
   const [minimised,setMinimised]= useState(false)
   const dragStart = useRef(null)
-
-  // Attach streams to video elements
-  useEffect(() => {
-    if (localVideoRef.current  && localStream)  localVideoRef.current.srcObject  = localStream
-    if (remoteVideoRef.current && remoteStream) remoteVideoRef.current.srcObject = remoteStream
-  }, [localStream, remoteStream])
 
   // Auto-start
   useEffect(() => { start() }, [])
@@ -134,7 +153,7 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
           {/* Video area */}
           <div className="st-video-area">
             {/* Remote — main view */}
-            <video ref={remoteVideoRef} className="st-remote" autoPlay playsInline muted={false} />
+            <video ref={setRemoteVideo} className="st-remote" autoPlay playsInline muted={false} />
             {state !== 'connected' && (
               <div className="st-waiting">
                 <div className="st-waiting-dot" />
@@ -142,7 +161,7 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
               </div>
             )}
             {/* Local — picture-in-picture */}
-            <video ref={localVideoRef} className="st-local" autoPlay playsInline muted />
+            <video ref={setLocalVideo} className="st-local" autoPlay playsInline muted />
           </div>
 
           {/* Live transcript strip */}
