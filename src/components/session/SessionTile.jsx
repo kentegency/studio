@@ -28,7 +28,6 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
   const localVideoRef  = useRef(null)
   const remoteVideoRef = useRef(null)
   const tileRef        = useRef(null)
-  const [debugLogs, setDebugLogs] = useState([])
 
   // Keep latest streams in refs so callback refs can read them on mount
   const localStreamRef  = useRef(null)
@@ -53,19 +52,6 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
   const setRemoteVideo = useCallback((el) => {
     remoteVideoRef.current = el
     if (el && remoteStreamRef.current) el.srcObject = remoteStreamRef.current
-  }, [])
-
-  // Intercept [session] logs for on-screen debug
-  useEffect(() => {
-    const orig = console.log
-    console.log = (...args) => {
-      orig(...args)
-      const msg = args.join(' ')
-      if (msg.includes('[session]')) {
-        setDebugLogs(l => [...l.slice(-10), `${new Date().toLocaleTimeString()} ${msg.replace('[session] ','')}`])
-      }
-    }
-    return () => { console.log = orig }
   }, [])
 
   // Drag state
@@ -170,15 +156,6 @@ export default function SessionTile({ sessionToken, onEnd, onSaveTranscript }) {
               <span className="st-transcript-text">
                 {transcript.slice(-120)}
               </span>
-            </div>
-          )}
-
-          {/* Debug log strip */}
-          {debugLogs.length > 0 && (
-            <div className="st-debug">
-              {debugLogs.slice(-3).map((l, i) => (
-                <div key={i} className="st-debug-line">{l}</div>
-              ))}
             </div>
           )}
 

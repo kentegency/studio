@@ -48,7 +48,17 @@ async function generatePDF(html, filename) {
 }
 
 // ── HTML fallback — open in new tab for browser print ─────────
-function openHTMLFallback(html) {
+function openHTMLFallback(html, existingTab) {
+  // Write into an already-open tab (avoids popup blockers)
+  // existingTab is opened synchronously in the button onClick before any async work
+  if (existingTab && !existingTab.closed) {
+    existingTab.document.open()
+    existingTab.document.write(html)
+    existingTab.document.close()
+    existingTab.focus()
+    return
+  }
+  // Fallback: blob URL (may be blocked but worth trying)
   const blob = new Blob([html], { type: 'text/html' })
   const url  = URL.createObjectURL(blob)
   window.open(url, '_blank')
@@ -62,10 +72,11 @@ export default function WrapPanel({ onClose }) {
   const panelRef = useFocusTrap(true)
   const [generating, setGenerating] = useState(false)
   const [progress,   setProgress]   = useState('')
+  const tabRef = useRef(null)
 
   const approvedNodes = nodes.filter(n => n.status === 'approved' || n.status === 'locked').length
 
-  const generate = async () => {
+  const generate = async (preOpenedTab) => {
     if (!currentProject) { showToast('Open a project first.', '#E05050'); return }
     setGenerating(true)
     setProgress('Fetching project data…')
@@ -432,7 +443,7 @@ export default function WrapPanel({ onClose }) {
         const result = await generatePDF(html, filename)
         if (result.fallback) {
           // No Browserless token — open HTML in new tab with print button
-          openHTMLFallback(html)
+          openHTMLFallback(html, preOpenedTab)
           showToast('Opened in new tab. Click "Print / Save PDF" to download.', '${accentHex}')
         } else {
           showToast(`${filename} downloaded.`, '#4ADE80')
@@ -441,7 +452,7 @@ export default function WrapPanel({ onClose }) {
       } catch (fnErr) {
         // Edge Function not deployed yet — fall back to HTML tab
         console.warn('PDF function unavailable, using HTML fallback:', fnErr)
-        openHTMLFallback(html)
+        openHTMLFallback(html, preOpenedTab)
         showToast('Opened in new tab. Click "Print / Save PDF" to download.', '${accentHex}')
       }
 
@@ -501,7 +512,12 @@ export default function WrapPanel({ onClose }) {
         <div className="wrap-foot">
           <button className="wrap-cancel" onClick={onClose} data-hover>Cancel</button>
           <button className="wrap-generate"
-            onClick={generate}
+            onClick={() => {
+              // Open tab synchronously inside click handler — avoids popup blockers
+              const tab = window.open('about:blank', '_blank')
+              tabRef.current = tab
+              generate(tab)
+            }}
             disabled={generating || !currentProject}
             data-hover>
             {generating ? (progress || 'Building…') : 'Generate PDF →'}

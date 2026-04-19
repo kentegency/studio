@@ -76,7 +76,7 @@ export default function ActsPanel({ onClose }) {
         <div className="acts-head">
           <div>
             <div className="acts-title">Act Zones</div>
-            <div className="acts-sub">Structure your timeline into acts</div>
+            <div className="acts-sub">Hover any act zone on the arc to edit it directly</div>
           </div>
           <button className="acts-close" onClick={onClose}>×</button>
         </div>

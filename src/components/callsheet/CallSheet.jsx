@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useFocusTrap } from '../../lib/useFocusTrap'
 import { supabase } from '../../lib/supabase'
 import { useProjectStore, useNodeStore, useUIStore, useAuthStore } from '../../stores'
@@ -38,7 +38,14 @@ async function generatePDF(html, filename) {
   return { fallback: false }
 }
 
-function openHTMLFallback(html) {
+function openHTMLFallback(html, existingTab) {
+  if (existingTab && !existingTab.closed) {
+    existingTab.document.open()
+    existingTab.document.write(html)
+    existingTab.document.close()
+    existingTab.focus()
+    return
+  }
   const blob = new Blob([html], { type: 'text/html' })
   window.open(URL.createObjectURL(blob), '_blank')
 }
@@ -287,7 +294,9 @@ export default function CallSheet({ onClose }) {
 
   const selectedNode = realNodes.find(n => n.id === selectedNodeId)
 
-  const generate = async () => {
+  const tabRef = useRef(null)
+
+  const generate = async (preOpenedTab) => {
     if (!currentProject) { showToast('Open a project first.', '#E05050'); return }
     if (!selectedNode)   { showToast('Select a scene.', '#E05050'); return }
 
@@ -333,7 +342,7 @@ export default function CallSheet({ onClose }) {
       const result   = await generatePDF(html, filename)
 
       if (result.fallback) {
-        openHTMLFallback(html)
+        openHTMLFallback(html, preOpenedTab)
         showToast('Opened in browser — use Print to save as PDF.', 'var(--accent)')
       } else {
         showToast(`Call sheet saved — ${filename}`, '#4ADE80')
@@ -439,7 +448,11 @@ export default function CallSheet({ onClose }) {
         <div className="cs-panel-foot">
           <button className="cs-cancel" onClick={onClose}>Cancel</button>
           <button className="cs-generate"
-            onClick={generate}
+            onClick={() => {
+              const tab = window.open('about:blank', '_blank')
+              tabRef.current = tab
+              generate(tab)
+            }}
             disabled={generating || !selectedNode}>
             {generating ? progress || 'Generating…' : 'Generate call sheet →'}
           </button>

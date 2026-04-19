@@ -83,12 +83,14 @@ export default function Canvas() {
     window.__openPalette  = () => setShowPalette(true)
     window.__openShortcuts= () => setShowShortcuts(true)
     window.__startSession = (token) => setSessionToken(token)
+    window.__openActs     = () => setShowActs(true)
     return () => {
       delete window.__openViewer
       delete window.__openVoice
       delete window.__openPalette
       delete window.__openShortcuts
       delete window.__startSession
+      delete window.__openActs
     }
   }, [])
 

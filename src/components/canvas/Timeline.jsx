@@ -206,6 +206,7 @@ export default function Timeline() {
   const { setMinimapPos, showToast, openOverlay } = useUIStore()
   const vocab = getVocab(currentProject?.type)
 
+  const [hoveredAct,   setHoveredAct]   = useState(null) // index of hovered act zone
   const [showNewNode, setShowNewNode] = useState(false)
   const [newNodeName, setNewNodeName] = useState('')
   const [newNodePos,  setNewNodePos]  = useState(0.5)
@@ -504,6 +505,18 @@ export default function Timeline() {
                 + {vocab.nodeVerb ?? 'Add scene'}
               </button>
             )}
+            {currentProject && (
+              <button className="tl-acts-btn"
+                onClick={() => window.__openActs?.()}
+                title="Edit act zones">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <rect x="3" y="3" width="18" height="4" rx="1"/>
+                  <rect x="3" y="10" width="18" height="4" rx="1"/>
+                  <rect x="3" y="17" width="18" height="4" rx="1"/>
+                </svg>
+                Acts
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -645,9 +658,13 @@ export default function Timeline() {
 
               return (
                 <g key={i}>
-                  {/* Zone background */}
+                  {/* Zone background — pointer events for hover */}
                   <rect x={act.x} y={28} width={act.width} height={120} rx={3}
-                    fill={act.fill} stroke={act.stroke} strokeWidth={0.5}/>
+                    fill={act.fill} stroke={act.stroke} strokeWidth={0.5}
+                    style={{ cursor: 'default' }}
+                    onMouseEnter={() => setHoveredAct(i)}
+                    onMouseLeave={() => setHoveredAct(null)}
+                  />
 
                   {/* Completion progress — thin fill on bottom edge */}
                   {completion > 0 && (
@@ -675,6 +692,30 @@ export default function Timeline() {
                       letterSpacing={0.5}>
                       {displayName}
                     </text>
+                  )}
+
+                  {/* Edit icon — appears on hover, opens ActsPanel */}
+                  {hoveredAct === i && (
+                    <g
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => { e.stopPropagation(); window.__openActs?.() }}
+                      onMouseEnter={() => setHoveredAct(i)}
+                      onMouseLeave={() => setHoveredAct(null)}>
+                      <rect
+                        x={act.x + act.width - 26} y={32}
+                        width={20} height={16} rx={2}
+                        fill="rgba(255,255,255,0.06)"
+                        stroke={act.labelFill} strokeWidth={0.5}
+                        strokeOpacity={0.4}
+                      />
+                      <text
+                        x={act.x + act.width - 16} y={43}
+                        textAnchor="middle"
+                        fill={act.labelFill} opacity={0.8}
+                        fontSize={9} fontFamily="IBM Plex Mono">
+                        ✎
+                      </text>
+                    </g>
                   )}
                 </g>
               )

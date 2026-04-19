@@ -9,23 +9,6 @@ const MicOff = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 const CamOn  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
 const CamOff = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06A3 3 0 0 1 9 15a3 3 0 0 1-1.5-5.5"/></svg>
 
-function DebugLog({ logs }) {
-  if (!logs.length) return null
-  return (
-    <div style={{
-      position:'fixed', bottom:0, left:0, right:0,
-      background:'rgba(0,0,0,.85)', padding:'6px 14px',
-      fontFamily:'monospace', fontSize:'10px', color:'#4ADE80',
-      maxHeight:'100px', overflowY:'auto', zIndex:9999,
-      borderTop:'.5px solid rgba(255,255,255,.06)',
-    }}>
-      {logs.slice(-8).map((l,i) => (
-        <div key={i} style={{ color: l.startsWith('✗') ? '#E05050' : '#4ADE80' }}>{l}</div>
-      ))}
-    </div>
-  )
-}
-
 export default function SessionGuest({ sessionToken }) {
   const {
     state, start, endSession, toggleMute, toggleCamera,
@@ -55,9 +38,6 @@ export default function SessionGuest({ sessionToken }) {
     remoteEls.current.forEach(el => {
       if (el && el.srcObject !== remoteStream) el.srcObject = remoteStream
     })
-    if (remoteStream) {
-      addDebug('● remote stream received — tracks: ' + remoteStream.getTracks().length)
-    }
   }, [remoteStream])
 
   // Callback ref factories — attach stream immediately when element mounts
@@ -81,28 +61,6 @@ export default function SessionGuest({ sessionToken }) {
   const [project,    setProject]    = useState(null)
   const [activeScene,setActiveScene]= useState(null)
   const [mediaReady, setMediaReady] = useState(false)
-  const [debugLogs,  setDebugLogs]  = useState([])
-
-  const addDebug = useCallback((msg) => {
-    setDebugLogs(l => [...l, `${new Date().toLocaleTimeString()} ${msg}`])
-  }, [])
-
-  // Intercept [session] console logs
-  useEffect(() => {
-    const orig = console.log
-    const origErr = console.error
-    console.log = (...args) => {
-      orig(...args)
-      const m = args.join(' ')
-      if (m.includes('[session]')) addDebug(m.replace('[session] ', ''))
-    }
-    console.error = (...args) => {
-      origErr(...args)
-      const m = args.join(' ')
-      if (m.includes('[session]')) addDebug('✗ ' + m.replace('[session] ', ''))
-    }
-    return () => { console.log = orig; console.error = origErr }
-  }, [addDebug])
 
   useEffect(() => {
     const load = async () => {
@@ -280,8 +238,6 @@ export default function SessionGuest({ sessionToken }) {
           </div>
         )}
       </div>
-
-      <DebugLog logs={debugLogs} />
     </div>
   )
 }
