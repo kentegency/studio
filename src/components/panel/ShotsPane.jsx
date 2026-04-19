@@ -218,27 +218,80 @@ export function ShotsPane() {
           </div>
           <div className="shot-list-mini">
             {shots.map(shot => (
-              <div key={shot.id}
-                className="shm"
-                style={{ borderLeftColor: SH_COLOR[shot.status] ?? '#2A2720' }}
-                onClick={() => cycleStatus(shot)}
-                title={`${shot.name} — click to advance status`}
-                data-hover>
-                <span className="shm-n">{String(shot.number).padStart(2,'0')}</span>
-                <div className="shm-info">
-                  <div className="shm-name">{shot.name}</div>
-                  <div className="shm-meta">
-                    <span className="shm-type">{shot.shot_type}</span>
-                    <span className="shm-kind">{shot.shot_kind}</span>
-                    <span className="shm-dur">{shot.duration}</span>
-                  </div>
-                </div>
-                <div className="shm-dot" style={{ background: SH_COLOR[shot.status] ?? '#2A2720' }} />
-              </div>
+              <ShotRow
+                key={shot.id}
+                shot={shot}
+                onStatusCycle={() => cycleStatus(shot)}
+                onDelete={async () => {
+                  const { error } = await supabase.from('shots').delete().eq('id', shot.id)
+                  if (!error) setShots(prev => prev.filter(s => s.id !== shot.id))
+                }}
+                onRename={async (name) => {
+                  const { error } = await supabase.from('shots').update({ name }).eq('id', shot.id)
+                  if (!error) setShots(prev => prev.map(s => s.id === shot.id ? { ...s, name } : s))
+                }}
+                SH_COLOR={SH_COLOR}
+              />
             ))}
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ── SHOT ROW — with delete + inline rename ────
+function ShotRow({ shot, onStatusCycle, onDelete, onRename, SH_COLOR }) {
+  const [editingName, setEditingName] = useState(false)
+  const [nameVal,     setNameVal]     = useState(shot.name)
+
+  const commitRename = () => {
+    const trimmed = nameVal.trim()
+    if (trimmed && trimmed !== shot.name) onRename(trimmed)
+    else setNameVal(shot.name)
+    setEditingName(false)
+  }
+
+  return (
+    <div className="shm shm-interactive"
+      style={{ borderLeftColor: SH_COLOR[shot.status] ?? '#2A2720' }}>
+      {/* Number — click cycles status */}
+      <span className="shm-n" onClick={onStatusCycle}
+        style={{ cursor:'pointer' }} title="Click to advance status">
+        {String(shot.number).padStart(2,'0')}
+      </span>
+      <div className="shm-info" style={{ flex:1 }}>
+        {editingName ? (
+          <input
+            className="shm-name-input"
+            value={nameVal}
+            autoFocus
+            onChange={e => setNameVal(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={e => {
+              if (e.key === 'Enter') commitRename()
+              if (e.key === 'Escape') { setNameVal(shot.name); setEditingName(false) }
+            }}
+            onClick={e => e.stopPropagation()}
+          />
+        ) : (
+          <div className="shm-name"
+            onDoubleClick={() => { setNameVal(shot.name); setEditingName(true) }}
+            title="Double-click to rename">
+            {shot.name}
+          </div>
+        )}
+        <div className="shm-meta">
+          <span className="shm-type">{shot.shot_type}</span>
+          <span className="shm-kind">{shot.shot_kind}</span>
+          <span className="shm-dur">{shot.duration}</span>
+        </div>
+      </div>
+      <div className="shm-dot" style={{ background: SH_COLOR[shot.status] ?? '#2A2720' }}
+        onClick={onStatusCycle} title="Advance status" />
+      {/* Delete — appears on hover */}
+      <button className="shm-del" onClick={e => { e.stopPropagation(); onDelete() }}
+        title="Delete shot">×</button>
     </div>
   )
 }

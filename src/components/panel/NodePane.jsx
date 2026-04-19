@@ -36,7 +36,7 @@ const DocIcon  = () => <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v1
 const MicIcon  = () => <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:'1.5',strokeLinecap:'round',flexShrink:0}}><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
 
 export default function NodePane({ onUpload }) {
-  const { selectedNode, selectNode, updateNode, nodes } = useNodeStore()
+  const { selectedNode, selectNode, updateNode, nodes, deleteNode } = useNodeStore()
   const { assets, fetchAssets }                  = useAssetsStore()
   const { notes, fetchNotes, addNote }           = useNotesStore()
   const { openOverlay, showToast }               = useUIStore()
@@ -51,6 +51,7 @@ export default function NodePane({ onUpload }) {
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [saveIndicator,  setSaveIndicator]  = useState(false)
   const [confirmLock,    setConfirmLock]    = useState(false)
+  const [confirmDelete,  setConfirmDelete]  = useState(false)
 
   const [assetsLoading, setAssetsLoading] = useState(false)
   const [notesLoading,  setNotesLoading]  = useState(false)
@@ -122,6 +123,11 @@ export default function NodePane({ onUpload }) {
   )
 
   const name   = selectedNode?.name  ?? selectedNode?.label ?? 'Untitled'
+  const [editingName, setEditingName] = useState(false)
+  const [nameVal,     setNameVal]     = useState(name)
+
+  // Keep nameVal in sync when scene changes
+  useEffect(() => { setNameVal(name); setEditingName(false) }, [selectedNode?.id])
   const act    = selectedNode?.act   ?? ''
   const status = selectedNode?.status ?? 'concept'
   const color  = STATUS_COLORS[status] ?? '#6A6258'
@@ -229,7 +235,34 @@ export default function NodePane({ onUpload }) {
           />
         )}
         <div className="rp-ey">{act || `${vocab.node} · ${Math.round((selectedNode.position ?? 0) * 100)}%`}</div>
-        <div className="rp-ti">{name}</div>
+        {editingName ? (
+          <input
+            className="rp-ti-input"
+            value={nameVal}
+            autoFocus
+            onChange={e => setNameVal(e.target.value)}
+            onBlur={async () => {
+              const trimmed = nameVal.trim()
+              if (trimmed && trimmed !== name) {
+                await updateNode(selectedNode.id, { name: trimmed })
+                showToast(`Renamed to "${trimmed}".`)
+              } else {
+                setNameVal(name)
+              }
+              setEditingName(false)
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') e.target.blur()
+              if (e.key === 'Escape') { setNameVal(name); setEditingName(false) }
+            }}
+          />
+        ) : (
+          <div className="rp-ti"
+            onDoubleClick={() => { setNameVal(name); setEditingName(true) }}
+            title="Double-click to rename">
+            {name}
+          </div>
+        )}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div className="rp-st" style={{ cursor:'pointer' }}
             onClick={cycleStatus} data-hover title="Click to advance status">
@@ -463,11 +496,7 @@ export default function NodePane({ onUpload }) {
           </div>
         ) : notes.length > 0 ? (
           notes.map((n,i) => (
-            <div key={n.id??i} className={`note ${n.resolved?'resolved':''}`}
-              style={{ borderLeftColor:n.color??'var(--accent)' }} data-hover>
-              <div className="nb">{n.body}</div>
-              <div className="nm">{n.room??'studio'} · {formatTime(n.created_at)}</div>
-            </div>
+            <NoteItem key={n.id??i} note={n} onRefresh={() => fetchNotes(selectedNode.id)} />
           ))
         ) : !addingNote && (
           <EmptyState compact icon={<NoteIcon />}
@@ -488,6 +517,29 @@ export default function NodePane({ onUpload }) {
             <div className="locked-badge">⊠ Locked · {formatTime(selectedNode.locked_at)}</div>
           </div>
         )}
+
+        {/* Scene delete — always available unless locked */}
+        {selectedNode && !selectedNode.locked && (
+          <div className="scene-delete-row">
+            {confirmDelete ? (
+              <div className="scene-delete-confirm">
+                <span>Delete "{selectedNode.name}"? This removes all assets, shots and notes.</span>
+                <div style={{ display:'flex', gap:'8px', marginTop:'8px' }}>
+                  <button className="sdc-yes" onClick={async () => {
+                    await deleteNode(selectedNode.id)
+                    setConfirmDelete(false)
+                    showToast(`"${selectedNode.name}" deleted.`)
+                  }}>Delete permanently</button>
+                  <button className="sdc-no" onClick={() => setConfirmDelete(false)}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button className="scene-delete-btn" onClick={() => setConfirmDelete(true)} data-hover>
+                ⊗ Delete this scene
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Asset context menu — right-click → move to scene */}
@@ -497,6 +549,27 @@ export default function NodePane({ onUpload }) {
             onClick={() => setAssetCtx(null)} />
           <div className="arc-ctx-menu" style={{ top: assetCtx.y, left: assetCtx.x }}>
             <div className="acm-scene-name">{assetCtx.asset.name?.slice(0,28)}</div>
+
+            {/* Delete asset */}
+            <button className="acm-item acm-item-danger"
+              onClick={async () => {
+                const { supabase } = await import('../../lib/supabase')
+                // Delete from storage if it's a real file (not a URL reference)
+                if (assetCtx.asset.file_path && !assetCtx.asset.file_path.startsWith('http')) {
+                  await supabase.storage.from('assets').remove([assetCtx.asset.file_path])
+                }
+                await supabase.from('assets').delete().eq('id', assetCtx.asset.id)
+                setAssetCtx(null)
+                showToast('Asset deleted.')
+                await fetchAssets(selectedNode.id)
+              }}>
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              Delete asset
+            </button>
+
+            {/* Divider */}
+            <div style={{ height:'.5px', background:'var(--b)', margin:'4px 0' }} />
+
             <div style={{ padding:'6px 12px 4px', fontSize:'10px', color:'var(--ghost)', fontFamily:'var(--font-mono)', letterSpacing:'.08em' }}>
               Move to scene
             </div>
@@ -516,6 +589,61 @@ export default function NodePane({ onUpload }) {
                 No other scenes yet
               </div>
             )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function NoteItem({ note, onRefresh }) {
+  const [editing,  setEditing]  = useState(false)
+  const [body,     setBody]     = useState(note.body ?? '')
+  const [saving,   setSaving]   = useState(false)
+
+  const save = async () => {
+    if (!body.trim()) return
+    setSaving(true)
+    const { supabase } = await import('../../lib/supabase')
+    await supabase.from('notes').update({ body: body.trim() }).eq('id', note.id)
+    setSaving(false)
+    setEditing(false)
+    onRefresh()
+  }
+
+  const del = async () => {
+    const { supabase } = await import('../../lib/supabase')
+    await supabase.from('notes').delete().eq('id', note.id)
+    onRefresh()
+  }
+
+  return (
+    <div className={`note note-interactive ${note.resolved ? 'resolved' : ''}`}
+      style={{ borderLeftColor: note.color ?? 'var(--accent)' }}>
+      {editing ? (
+        <div className="note-edit-wrap">
+          <textarea className="note-edit-input"
+            value={body}
+            autoFocus
+            rows={3}
+            onChange={e => setBody(e.target.value)}
+          />
+          <div className="note-edit-footer">
+            <button className="note-edit-save" onClick={save} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+            <button className="note-edit-cancel" onClick={() => { setBody(note.body ?? ''); setEditing(false) }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="nb">{note.body}</div>
+          <div className="nm">{note.room ?? 'studio'} · {formatTime(note.created_at)}</div>
+          <div className="note-actions">
+            <button className="note-act-btn" onClick={() => { setBody(note.body ?? ''); setEditing(true) }} title="Edit note">✎</button>
+            <button className="note-act-btn note-act-del" onClick={del} title="Delete note">×</button>
           </div>
         </>
       )}

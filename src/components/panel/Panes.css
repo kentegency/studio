@@ -567,3 +567,125 @@
   font-size: 10px; color: var(--ghost);
   font-family: var(--font-mono);
 }
+
+/* ── SCENE RENAME INPUT ── */
+.rp-ti-input {
+  font-family: var(--font-display);
+  font-size: 22px; color: var(--cream);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--accent-mid);
+  outline: none;
+  width: 100%;
+  padding: 0 0 2px 0;
+  caret-color: var(--accent);
+  letter-spacing: .04em;
+  line-height: 1;
+}
+.rp-ti-input:focus { border-bottom-color: var(--accent); }
+
+/* ── NOTE EDIT + DELETE ── */
+.note-interactive { position: relative; }
+.note-actions {
+  display: none;
+  position: absolute; top: 6px; right: 6px;
+  gap: 4px;
+}
+.note-interactive:hover .note-actions { display: flex; }
+.note-act-btn {
+  width: 20px; height: 20px; border-radius: 2px;
+  background: var(--s3); border: .5px solid var(--b2);
+  color: var(--dim); font-size: 12px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.note-act-btn:hover { background: var(--s4); color: var(--cream); }
+.note-act-del:hover { background: rgba(224,80,80,.15); color: var(--red); border-color: rgba(224,80,80,.3); }
+.note-edit-wrap { display: flex; flex-direction: column; gap: 6px; }
+.note-edit-input {
+  width: 100%; background: var(--s2); border: .5px solid var(--accent-mid);
+  border-radius: 2px; color: var(--cream); font-family: var(--font-ui);
+  font-size: 12px; line-height: 1.5; padding: 6px 8px;
+  outline: none; resize: vertical; min-height: 60px;
+  caret-color: var(--accent);
+}
+.note-edit-footer { display: flex; gap: 6px; }
+.note-edit-save {
+  font-size: 11px; padding: 4px 12px; border-radius: 2px;
+  background: transparent; border: .5px solid var(--accent-mid);
+  color: var(--accent); font-family: var(--font-ui);
+  transition: background var(--dur-fast);
+}
+.note-edit-save:hover { background: var(--accent-ghost); }
+.note-edit-cancel {
+  font-size: 11px; padding: 4px 10px; border-radius: 2px;
+  background: transparent; border: .5px solid var(--b);
+  color: var(--mute); font-family: var(--font-ui);
+}
+.note-edit-cancel:hover { color: var(--dim); }
+
+/* ── SHOT ROW INTERACTIVE ── */
+.shm-interactive { position: relative; }
+.shm-del {
+  display: none;
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; border-radius: 2px;
+  background: var(--s3); border: .5px solid var(--b2);
+  color: var(--ghost); font-size: 13px; line-height: 1;
+  align-items: center; justify-content: center;
+  transition: background var(--dur-fast), color var(--dur-fast);
+  cursor: pointer;
+}
+.shm-interactive:hover .shm-del { display: flex; }
+.shm-del:hover { background: rgba(224,80,80,.15); color: var(--red); border-color: rgba(224,80,80,.3); }
+.shm-name-input {
+  width: 100%; background: transparent;
+  border: none; border-bottom: 1px solid var(--accent-mid);
+  color: var(--cream); font-family: var(--font-ui);
+  font-size: 12px; padding: 1px 0; outline: none;
+  caret-color: var(--accent);
+}
+
+/* ── CONTEXT MENU DANGER ITEM ── */
+.acm-item-danger {
+  color: var(--red) !important;
+}
+.acm-item-danger svg { stroke: var(--red); }
+.acm-item-danger:hover { background: rgba(224,80,80,.1) !important; }
+
+/* ── SCENE DELETE ── */
+.scene-delete-row {
+  padding: 8px 14px 14px;
+  border-top: .5px solid var(--b);
+  margin-top: 4px;
+}
+.scene-delete-btn {
+  font-size: 11px; color: var(--ghost);
+  background: none; border: none;
+  font-family: var(--font-ui); letter-spacing: .03em;
+  padding: 4px 0;
+  transition: color var(--dur-fast);
+}
+.scene-delete-btn:hover { color: var(--red); }
+.scene-delete-confirm {
+  font-size: 11px; color: var(--dim);
+  line-height: 1.6;
+  padding: 8px 10px;
+  background: rgba(224,80,80,.06);
+  border: .5px solid rgba(224,80,80,.2);
+  border-radius: 3px;
+}
+.sdc-yes {
+  font-size: 11px; padding: 5px 12px; border-radius: 2px;
+  background: rgba(224,80,80,.12);
+  border: .5px solid rgba(224,80,80,.3);
+  color: var(--red); font-family: var(--font-ui);
+  transition: background var(--dur-fast);
+}
+.sdc-yes:hover { background: rgba(224,80,80,.22); }
+.sdc-no {
+  font-size: 11px; padding: 5px 10px; border-radius: 2px;
+  background: transparent; border: .5px solid var(--b);
+  color: var(--mute); font-family: var(--font-ui);
+}
+.sdc-no:hover { color: var(--dim); }

@@ -618,16 +618,67 @@ export default function Timeline() {
               cursor: dragging ? 'grabbing' : 'default',
               transition: dragging ? 'none' : 'all .25s var(--ease)',
             }}>
-            {displayActs.map((act, i) => (
-              <g key={i}>
-                <rect x={act.x} y={28} width={act.width} height={120} rx={3}
-                  fill={act.fill} stroke={act.stroke} strokeWidth={0.5}/>
-                <text x={act.labelX + 6} y={20} fill={act.labelFill}
-                  fontSize={11} fontFamily="IBM Plex Mono" letterSpacing={2.5} fontWeight={400}>
-                  {act.label}
-                </text>
-              </g>
-            ))}
+            {displayActs.map((act, i) => {
+              // Compute completion for this act zone
+              const actNodes = displayNodes.filter(n => {
+                const nx = n.cx
+                return nx >= act.x && nx <= (act.x + act.width)
+              })
+              const doneNodes = actNodes.filter(n =>
+                n.status === 'approved' || n.status === 'locked'
+              ).length
+              const completion = actNodes.length > 0 ? doneNodes / actNodes.length : 0
+              const progressW  = act.width * completion
+
+              // Parse act label into number + name
+              // Supports "Act I — Name", "I — Name", "I · Name", "Name" formats
+              const labelStr = act.label ?? ''
+              const romanMatch = labelStr.match(/^(I{1,3}V?|VI{0,3}|IV|IX)\s*[·—\-]\s*(.*)/)
+              const actNum  = romanMatch ? romanMatch[1] : String(i + 1)
+              const actName = romanMatch ? romanMatch[2] : labelStr
+
+              // Truncate name to fit zone width (approx 7px per char at 10px font)
+              const maxChars = Math.max(3, Math.floor((act.width - 20) / 7))
+              const displayName = actName.length > maxChars
+                ? actName.slice(0, maxChars - 1) + '…'
+                : actName
+
+              return (
+                <g key={i}>
+                  {/* Zone background */}
+                  <rect x={act.x} y={28} width={act.width} height={120} rx={3}
+                    fill={act.fill} stroke={act.stroke} strokeWidth={0.5}/>
+
+                  {/* Completion progress — thin fill on bottom edge */}
+                  {completion > 0 && (
+                    <rect
+                      x={act.x} y={145} width={progressW} height={3} rx={1.5}
+                      fill={act.labelFill} opacity={0.55}
+                    />
+                  )}
+
+                  {/* Act number — small mono, top-left inside zone */}
+                  <text
+                    x={act.x + 8} y={44}
+                    fill={act.labelFill} opacity={0.9}
+                    fontSize={9} fontFamily="IBM Plex Mono"
+                    letterSpacing={1.5} fontWeight={500}>
+                    {actNum}
+                  </text>
+
+                  {/* Act name — below number, truncated */}
+                  {displayName && (
+                    <text
+                      x={act.x + 8} y={56}
+                      fill={act.labelFill} opacity={0.6}
+                      fontSize={9} fontFamily="IBM Plex Mono"
+                      letterSpacing={0.5}>
+                      {displayName}
+                    </text>
+                  )}
+                </g>
+              )
+            })}
             <line x1={0} y1={88} x2={900} y2={88} stroke="rgba(255,255,255,0.04)" strokeWidth={1}/>
 
             {/* Drag guide — vertical snap line */}

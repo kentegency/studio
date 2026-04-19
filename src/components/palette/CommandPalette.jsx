@@ -138,15 +138,92 @@ export default function CommandPalette({ onClose, onUpload, onInvite, onSettings
   const listRef   = useRef(null)
 
   const commands = useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, onClose })
+  const { currentProject } = useProjectStore()
 
-  // Filter + score
-  const filtered = query
+  // Live search results — parallel Supabase queries when query ≥ 2 chars
+  const [searchResults, setSearchResults] = useState([])
+  const [searching,     setSearching]     = useState(false)
+  const searchTimer = useRef(null)
+
+  useEffect(() => {
+    clearTimeout(searchTimer.current)
+    if (!query || query.length < 2 || !currentProject) {
+      setSearchResults([])
+      setSearching(false)
+      return
+    }
+    setSearching(true)
+    searchTimer.current = setTimeout(async () => {
+      const { supabase } = await import('../../lib/supabase')
+      const q = `%${query}%`
+      const pid = currentProject.id
+
+      const [
+        { data: noteHits },
+        { data: assetHits },
+        { data: subjectHits },
+      ] = await Promise.all([
+        supabase.from('notes').select('id, body, node_id, nodes(name)')
+          .eq('project_id', pid).ilike('body', q).limit(5),
+        supabase.from('assets').select('id, name, node_id, nodes(name)')
+          .eq('project_id', pid).ilike('name', q).limit(5),
+        supabase.from('subjects').select('id, name, title, organisation')
+          .eq('project_id', pid).ilike('name', q).limit(4),
+      ])
+
+      const results = [
+        ...(noteHits ?? []).map(n => ({
+          id:    `sr-note-${n.id}`,
+          group: 'Search — Notes',
+          icon:  '◈',
+          label: n.body?.slice(0, 60) + (n.body?.length > 60 ? '…' : ''),
+          sub:   n.nodes?.name ?? 'Unassigned',
+          action: () => {
+            const node = nodes.find(nd => nd.id === n.node_id)
+            if (node) { selectNode(node); setTab('node') }
+            onClose()
+          },
+        })),
+        ...(assetHits ?? []).map(a => ({
+          id:    `sr-asset-${a.id}`,
+          group: 'Search — Assets',
+          icon:  '↑',
+          label: a.name,
+          sub:   a.nodes?.name ?? 'Unassigned',
+          action: () => {
+            const node = nodes.find(nd => nd.id === a.node_id)
+            if (node) { selectNode(node); setTab('node') }
+            onClose()
+          },
+        })),
+        ...(subjectHits ?? []).map(s => ({
+          id:    `sr-subj-${s.id}`,
+          group: 'Search — People',
+          icon:  '⊕',
+          label: s.name,
+          sub:   [s.title, s.organisation].filter(Boolean).join(' · '),
+          action: () => { setTab('people'); onClose() },
+        })),
+      ]
+
+      setSearchResults(results)
+      setSearching(false)
+    }, 280)
+  }, [query, currentProject?.id])
+
+  // Merge search results + command filter
+  const filteredCommands = query
     ? commands
         .map(cmd => ({ cmd, ...fuzzyMatch(query, cmd.label) }))
         .filter(({ match }) => match)
         .sort((a, b) => b.score - a.score)
         .map(({ cmd }) => cmd)
     : commands
+
+  // Search results prepend when query ≥ 2
+  const filtered = query.length >= 2
+    ? [...searchResults, ...filteredCommands]
+    : filteredCommands
 
   // Group results
   const groups = filtered.reduce((acc, cmd) => {
@@ -204,7 +281,7 @@ export default function CommandPalette({ onClose, onUpload, onInvite, onSettings
           <input
             ref={inputRef}
             className="pal-input"
-            placeholder="Search commands, scenes, tools…"
+            placeholder="Search notes, assets, people, scenes — or type a command…"
             value={query}
             onChange={e => setQuery(e.target.value)}
             autoComplete="off"
@@ -214,10 +291,13 @@ export default function CommandPalette({ onClose, onUpload, onInvite, onSettings
 
         {/* Results */}
         <div className="pal-list" ref={listRef}>
-          {flat.length === 0 && (
-            <div className="pal-empty">No commands match "{query}"</div>
+          {searching && (
+            <div className="pal-searching">Searching…</div>
           )}
-          {Object.entries(groups).map(([group, cmds]) => (
+          {!searching && flat.length === 0 && query && (
+            <div className="pal-empty">No results for "{query}"</div>
+          )}
+          {!searching && Object.entries(groups).map(([group, cmds]) => (
             <div key={group} className="pal-group">
               <div className="pal-group-label">{group}</div>
               {cmds.map(cmd => {
@@ -230,8 +310,13 @@ export default function CommandPalette({ onClose, onUpload, onInvite, onSettings
                     onClick={() => execute(cmd)}
                     onMouseEnter={() => setSelected(idx)}>
                     <span className="pal-icon">{cmd.icon}</span>
-                    <span className="pal-label">
-                      <Highlight text={cmd.label} query={query} />
+                    <span className="pal-label-wrap">
+                      <span className="pal-label">
+                        <Highlight text={cmd.label} query={query} />
+                      </span>
+                      {cmd.sub && (
+                        <span className="pal-sub">{cmd.sub}</span>
+                      )}
                     </span>
                     {cmd.status && (
                       <span className="pal-status-dot"
