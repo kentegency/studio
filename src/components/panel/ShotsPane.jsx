@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useNodeStore, useProjectStore, useUIStore, useAuthStore } from '../../stores'
+import { getVocab } from '../../lib/vocabulary'
 import { undoStack } from '../../lib/undo'
 import EmptyState from '../EmptyState'
 import '../EmptyState.css'
@@ -14,6 +15,7 @@ export function ShotsPane() {
   const { selectedNode }   = useNodeStore()
   const { currentProject } = useProjectStore()
   const { showToast, openOverlay } = useUIStore()
+  const vocab = getVocab(currentProject?.type)
 
   const [shots,      setShots]      = useState([])
   const [loading,    setLoading]    = useState(false)
@@ -99,7 +101,7 @@ export function ShotsPane() {
       <div className="rph">
         <div className="rp-ey">{selectedNode.act ?? selectedNode.name}</div>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div className="rp-ti">Shot List</div>
+          <div className="rp-ti">{vocab.shots}</div>
           <button
             style={{ fontSize:'11px', color:'var(--mute)', background:'none', border:'.5px solid var(--b)', borderRadius:'2px', padding:'3px 9px', fontFamily:'var(--font-mono)', letterSpacing:'.1em', transition:'color var(--dur-fast), border-color var(--dur-fast)' }}
             onClick={() => openOverlay('storyboard')}
@@ -128,6 +130,7 @@ export function ShotsPane() {
       {addingShot && (
         <div style={{ padding:'10px 14px 0' }}>
           <div className="shot-presets">
+            {/* Vocab-aware: only show presets if shotPresets exist for this project type */}
             <div className="shot-preset-label">Quick add</div>
             <div className="shot-preset-row">
               {[

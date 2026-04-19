@@ -108,7 +108,7 @@
   stroke-width: 1.5; stroke-linecap: round;
 }
 .stc-btn:hover { background: var(--s3); border-color: var(--b2); }
-.stc-btn.off { background: rgba(245,146,12,.1); border-color: rgba(245,146,12,.2); }
+.stc-btn.off { background: rgba(var(--project-accent-rgb, 212,170,106), .1); border-color: rgba(var(--project-accent-rgb, 212,170,106), .2); }
 .stc-btn.off svg { stroke: var(--orange); }
 .stc-btn.end { background: rgba(224,80,80,.1); border-color: rgba(224,80,80,.2); flex: 0 0 36px; }
 .stc-btn.end svg { stroke: var(--red); width: 10px; height: 10px; }

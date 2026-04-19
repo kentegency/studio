@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useUIStore, useNodeStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
+import { getVocab } from '../../lib/vocabulary'
 import { useFocusTrap } from '../../lib/useFocusTrap'
 import './Overlays.css'
 
@@ -158,6 +159,7 @@ export function StageOverlay() {
   const { closeOverlay } = useUIStore()
   const { nodes }        = useNodeStore()
   const { currentProject } = useProjectStore()
+  const vocab = getVocab(currentProject?.type)
 
   // Use real nodes if available — Stage reads from the actual project
   const stageNodes = (currentProject && nodes.length > 0)
@@ -166,7 +168,7 @@ export function StageOverlay() {
         .map(n => ({
           id:    n.id,
           title: n.name.toUpperCase(),
-          act:   n.act ?? `${n.type ?? 'Scene'} · ${Math.round((n.position??0)*100)}%`,
+          act:   n.act ?? `${vocab.node} · ${Math.round((n.position??0)*100)}%`,
           desc:  n.description ?? '',
         }))
     : STAGE_NODES

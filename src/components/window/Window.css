@@ -121,7 +121,7 @@
   transition: border-color var(--dur-mid) var(--ease), transform var(--dur-fast) var(--ease), background var(--dur-mid) var(--ease);
 }
 .win-react-btn:hover { border-color: var(--b2); transform: scale(1.1); }
-.win-react-btn.on    { background: rgba(245,146,12,.1); border-color: rgba(245,146,12,.3); transform: scale(1.15); }
+.win-react-btn.on    { background: rgba(var(--project-accent-rgb, 212,170,106), .1); border-color: rgba(var(--project-accent-rgb, 212,170,106), .3); transform: scale(1.15); }
 
 /* APPROVE */
 .win-approve {

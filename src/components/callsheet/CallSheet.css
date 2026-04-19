@@ -90,7 +90,7 @@
   font-family: var(--font-body); font-style: italic;
   font-size: 14px; color: var(--mute); line-height: 1.65;
   padding: 10px 12px; background: var(--s2);
-  border-radius: 2px; border-left: 2px solid rgba(245,146,12,.2);
+  border-radius: 2px; border-left: 2px solid rgba(var(--project-accent-rgb, 212,170,106), .2);
 }
 
 /* What will be included */

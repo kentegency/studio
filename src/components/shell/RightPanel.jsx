@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useUIStore } from '../../stores'
+import { useUIStore, useProjectStore } from '../../stores'
+import { getVocab } from '../../lib/vocabulary'
 import NodePane from '../panel/NodePane'
 import { ShotsPane } from '../panel/ShotsPane'
 import { TeamPane }  from '../panel/ShotsPane'
@@ -8,17 +9,20 @@ import WindowPreview from '../panel/WindowPreview'
 import BiblePane from '../bible/BiblePane'
 import './RightPanel.css'
 
-const TABS = [
-  { key: 'node',   label: 'Scene'    },
-  { key: 'shots',  label: 'Shots'    },
-  { key: 'team',   label: 'Crew'     },
-  { key: 'people', label: 'Subjects' },
-  { key: 'style',  label: 'Identity' },
-]
 
 export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }) {
   const { activeTab, setTab, activeRoom } = useUIStore()
+  const { currentProject } = useProjectStore()
   const [visible, setVisible] = useState(false)
+  const vocab = getVocab(currentProject?.type)
+
+  const TABS = [
+    { key: 'node',   label: vocab.node     },
+    { key: 'shots',  label: vocab.shots    },
+    { key: 'team',   label: vocab.crew     },
+    { key: 'people', label: vocab.subjects },
+    { key: 'style',  label: 'Identity'    },
+  ]
 
   const switchTab = (key) => {
     setVisible(false)

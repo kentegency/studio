@@ -46,7 +46,7 @@
 .mb-toggle svg { width: 14px; height: 14px; stroke: var(--mute); fill: none; stroke-width: 1.5; }
 .mb-toggle:hover { background: var(--s2); border-color: var(--b2); }
 .mb-toggle:hover svg { stroke: var(--dim); }
-.mb-toggle.on { background: rgba(245,146,12,.1); border-color: rgba(245,146,12,.2); }
+.mb-toggle.on { background: rgba(var(--project-accent-rgb, 212,170,106), .1); border-color: rgba(var(--project-accent-rgb, 212,170,106), .2); }
 .mb-toggle.on svg { stroke: var(--orange); }
 
 /* FILTER BAR */
@@ -68,7 +68,7 @@
 .mb-filter-btn:hover { color: var(--dim); border-color: var(--b2); }
 .mb-filter-btn.on {
   color: var(--project-accent, var(--orange));
-  border-color: rgba(245,146,12,.3);
+  border-color: rgba(var(--project-accent-rgb, 212,170,106), .3);
   background: rgba(var(--project-accent-rgb, 212,170,106), .07);
 }
 .mb-filter-pill {

@@ -23,6 +23,8 @@ export default function Upload({ onClose }) {
 
   const [dragging, setDragging]   = useState(false)
   const [files, setFiles]         = useState([])   // { file, progress, done, error }
+  const [urlInput, setUrlInput]   = useState('')
+  const [urlAdding, setUrlAdding] = useState(false)
   const inputRef = useRef()
 
   const addFiles = (incoming) => {
@@ -79,6 +81,27 @@ export default function Upload({ onClose }) {
     return (bytes/(1024*1024)).toFixed(1) + ' MB'
   }
 
+  const addUrlReference = async () => {
+    const url = urlInput.trim()
+    if (!url || !url.startsWith('http')) return
+    if (!currentProject || !selectedNode) {
+      showToast('Select a scene first.', '#E05050'); return
+    }
+    setUrlAdding(true)
+    try {
+      const name = decodeURIComponent(url.split('/').pop().split('?')[0] || 'Reference link')
+      const { supabase } = await import('../../lib/supabase')
+      const { error } = await supabase.from('assets').insert({
+        project_id: currentProject.id, node_id: selectedNode.id,
+        uploaded_by: profile?.id, name, file_url: url, file_path: url,
+        type: 'reference', room: 'studio', size_bytes: 0,
+      })
+      if (!error) { showToast('Reference link added.', '#4ADE80'); setUrlInput('') }
+      else showToast('Could not add reference.', '#E05050')
+    } catch { showToast('Could not add reference.', '#E05050') }
+    setUrlAdding(false)
+  }
+
   return (
     <div className="upload-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="upload-panel">
@@ -126,6 +149,24 @@ export default function Upload({ onClose }) {
           </div>
           <div className="dz-label">Drop files here or click to browse</div>
           <div className="dz-sub">Images · Video · Audio · PDF · Documents</div>
+        </div>
+
+        {/* URL / LINK IMPORT */}
+        <div className="url-import-row">
+          <input
+            className="url-import-input"
+            type="url"
+            placeholder="Paste a URL — Behance, Pinterest, Drive, any reference link…"
+            value={urlInput}
+            onChange={e => setUrlInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && addUrlReference()}
+          />
+          <button
+            className="url-import-btn"
+            onClick={addUrlReference}
+            disabled={urlAdding || !urlInput.trim().startsWith('http')}>
+            {urlAdding ? '…' : 'Add'}
+          </button>
         </div>
 
         {/* FILE LIST */}

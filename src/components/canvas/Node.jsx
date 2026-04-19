@@ -140,59 +140,80 @@ export default function Node({ node, selected, onClick, isDragging }) {
           name={node.name ?? node.label}
           status={status}
           statusColor={ring.color}
-          shotData={shotData} />
+          shotData={shotData}
+          description={node.description} />
       )}
     </g>
   )
 }
 
 // Tooltip rendered inside SVG
-function Tooltip({ cx, cy, name, status, statusColor, shotData }) {
-  const W = 140
-  const H = shotData ? 52 : 38
+function Tooltip({ cx, cy, name, status, statusColor, shotData, description }) {
+  const W   = 160
+  const desc = description ? description.slice(0, 72) + (description.length > 72 ? '…' : '') : null
+  // Height: base 38, +14 for shots, +28 for description (wraps to ~2 lines)
+  const H   = 38 + (shotData ? 14 : 0) + (desc ? 28 : 0)
   const PAD = 8
-  // Position above node, clamped to viewport
-  const tx = Math.max(W/2 + 4, Math.min(896 - W/2, cx))
-  const ty = cy - 28
+  const tx  = Math.max(W/2 + 4, Math.min(896 - W/2, cx))
+  const ty  = cy - 28
+
+  // Wrap description into two SVG text lines
+  const descLines = desc ? (() => {
+    const words = desc.split(' ')
+    const lines = []
+    let cur = ''
+    words.forEach(w => {
+      const test = cur ? cur + ' ' + w : w
+      if (test.length > 26) { lines.push(cur); cur = w }
+      else cur = test
+    })
+    if (cur) lines.push(cur)
+    return lines.slice(0, 2)
+  })() : []
 
   return (
     <g style={{ pointerEvents:'none' }}>
-      {/* Background */}
       <rect
         x={tx - W/2} y={ty - H}
         width={W} height={H} rx={3}
-        fill="#0C0B08" stroke="rgba(255,255,255,0.1)" strokeWidth={0.5} />
-      {/* Arrow */}
+        fill="#111115" stroke="rgba(255,255,255,0.09)" strokeWidth={0.5} />
       <polygon
         points={`${tx-5},${ty} ${tx+5},${ty} ${tx},${ty+6}`}
-        fill="#0C0B08" stroke="rgba(255,255,255,0.1)" strokeWidth={0.5} />
+        fill="#111115" stroke="rgba(255,255,255,0.09)" strokeWidth={0.5} />
       {/* Name */}
-      <text
-        x={tx} y={ty - H + PAD + 6}
+      <text x={tx} y={ty - H + PAD + 6}
         textAnchor="middle" fontSize={11}
-        fontFamily="Inter, sans-serif" fontWeight={500}
-        fill="#F4EFD8">
-        {name.length > 18 ? name.slice(0, 16) + '…' : name}
+        fontFamily="DM Sans, system-ui, sans-serif" fontWeight={500}
+        fill="#ECEAE4">
+        {name.length > 20 ? name.slice(0, 18) + '…' : name}
       </text>
       {/* Status */}
-      <text
-        x={tx} y={ty - H + PAD + 20}
-        textAnchor="middle" fontSize={9.5}
-        fontFamily="IBM Plex Mono"
-        letterSpacing={1}
+      <text x={tx} y={ty - H + PAD + 20}
+        textAnchor="middle" fontSize={9}
+        fontFamily="IBM Plex Mono" letterSpacing={1}
         fill={statusColor}>
         {status.toUpperCase()}
       </text>
       {/* Shot count */}
       {shotData && (
-        <text
-          x={tx} y={ty - H + PAD + 36}
-          textAnchor="middle" fontSize={9.5}
+        <text x={tx} y={ty - H + PAD + 34}
+          textAnchor="middle" fontSize={9}
           fontFamily="IBM Plex Mono"
-          fill="rgba(160,152,144,0.9)">
-          {shotData.done}/{shotData.total} shots done
+          fill="rgba(138,134,128,0.9)">
+          {shotData.done}/{shotData.total} shots
         </text>
       )}
+      {/* Description — up to 2 lines in Cormorant italic */}
+      {descLines.map((line, i) => (
+        <text key={i}
+          x={tx} y={ty - H + PAD + (shotData ? 48 : 34) + i * 13}
+          textAnchor="middle" fontSize={10}
+          fontFamily="Cormorant Garamond, Georgia, serif"
+          fontStyle="italic"
+          fill="rgba(160,152,144,0.75)">
+          {line}
+        </text>
+      ))}
     </g>
   )
 }

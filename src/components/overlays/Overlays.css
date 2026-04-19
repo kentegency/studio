@@ -37,7 +37,7 @@
   transition: all var(--dur-mid) var(--ease);
 }
 .sk-tool:hover { color: var(--dim); background: var(--s2); }
-.sk-tool.on    { color: var(--orange); background: rgba(var(--project-accent-rgb, 212,170,106), .08); border-color: rgba(245,146,12,.2); }
+.sk-tool.on    { color: var(--orange); background: rgba(var(--project-accent-rgb, 212,170,106), .08); border-color: rgba(var(--project-accent-rgb, 212,170,106), .2); }
 .sk-tool svg   { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; }
 
 .sk-colors { display: flex; gap: 4px; align-items: center; padding-left: 10px; border-left: .5px solid var(--b); }

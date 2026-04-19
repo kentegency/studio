@@ -90,9 +90,13 @@ export default function WrapPanel({ onClose }) {
       const doneShots   = (allShots??[]).filter(s => s.status==='done').length
       const filmedSubjects = (subjects??[]).filter(s => s.contact_status === 'filmed')
 
-      const STATUS_COLOR = { concept:'#6A6258', progress:'var(--accent)', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
-      const ACT_COLOR    = (i) => i <= 2 ? 'var(--teal)' : i <= 5 ? 'var(--accent)' : '#B43C1E'
-      const SH_COLOR     = { done:'#4ADE80', progress:'var(--accent)', pending:'#2A2520' }
+      // Use project accent colour throughout the document
+      const accentHex   = currentProject.accent_color ?? '#D4AA6A'
+      const accentDim   = accentHex + '55' // 33% opacity approximation for decorative uses
+
+      const STATUS_COLOR = { concept:'#6A6258', progress:accentHex, review:'#A88040', approved:'#4ADE80', locked:'#4ADE80' }
+      const ACT_COLOR    = (i) => i <= 2 ? '#4A9E9E' : i <= 5 ? accentHex : '#B43C1E'
+      const SH_COLOR     = { done:'#4ADE80', progress:accentHex, pending:'#2A2520' }
 
       setProgress('Assembling document…')
 
@@ -104,7 +108,7 @@ export default function WrapPanel({ onClose }) {
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#040402; color:#F4EFD8; font-family:'IBM Plex Mono',monospace; }
+  body { background:#0E0E11; color:#ECEAE4; font-family:'IBM Plex Mono',monospace; }
   @page { size: A4; margin: 0; }
   @media print {
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -114,14 +118,14 @@ export default function WrapPanel({ onClose }) {
 
   .print-bar {
     position:fixed; top:0; left:0; right:0; height:52px;
-    background:rgba(4,4,2,.98); border-bottom:.5px solid rgba(255,255,255,.08);
+    background:rgba(14,14,17,.98); border-bottom:.5px solid rgba(255,255,255,.08);
     display:flex; align-items:center; justify-content:space-between;
     padding:0 32px; z-index:100;
   }
   .print-label { font-size:12px; letter-spacing:.3em; color:#7A7268; text-transform:uppercase; }
   .print-btn {
     font-size:12px; letter-spacing:.2em; padding:9px 22px;
-    text-transform:uppercase; color:#F5920C;
+    text-transform:uppercase; color:${accentHex};
     border:.5px solid rgba(212,170,106,.3); border-radius:2px;
     background:transparent; font-family:'IBM Plex Mono',monospace;
     cursor:pointer;
@@ -130,21 +134,32 @@ export default function WrapPanel({ onClose }) {
   .doc { max-width:860px; margin:0 auto; padding:72px 0 80px; }
 
   /* COVER */
-  .cover { background:#040402; padding:72px 64px; min-height:520px; display:flex; flex-direction:column; justify-content:space-between; margin-bottom:2px; }
-  .cover-type  { font-size:11px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:28px; }
+  .cover { background:#0E0E11; padding:72px 64px; min-height:520px; display:flex; flex-direction:column; justify-content:space-between; margin-bottom:2px; }
+  .cover-type  { font-size:11px; letter-spacing:.4em; color:${accentHex}; text-transform:uppercase; margin-bottom:28px; }
   .cover-title { font-family:'Bebas Neue',sans-serif; font-size:80px; color:#F4EFD8; line-height:.9; letter-spacing:.015em; margin-bottom:20px; }
-  .cover-rule  { width:120px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin-bottom:20px; }
+  .cover-rule  { width:120px; height:1px; background:linear-gradient(90deg,${accentHex},transparent); margin-bottom:20px; }
   .cover-log   { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; color:#7A7268; line-height:1.65; max-width:500px; margin-bottom:32px; }
   .cover-meta  { font-size:11px; letter-spacing:.1em; color:#4A4840; line-height:2; }
   .cover-stats { display:flex; gap:40px; margin-top:24px; flex-wrap:wrap; }
-  .cs-val { font-family:'Bebas Neue',sans-serif; font-size:40px; color:#F5920C; line-height:1; }
+  .cs-val { font-family:'Bebas Neue',sans-serif; font-size:40px; color:${accentHex}; line-height:1; }
   .cs-key { font-size:10px; letter-spacing:.22em; color:#4A4840; text-transform:uppercase; margin-top:4px; }
 
   /* SECTIONS */
   .section   { padding:56px 64px; border-top:.5px solid rgba(255,255,255,.06); }
-  .sec-eye   { font-size:10px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:10px; }
+  .sec-eye   { font-size:10px; letter-spacing:.4em; color:${accentHex}; text-transform:uppercase; margin-bottom:10px; }
   .sec-title { font-family:'Bebas Neue',sans-serif; font-size:36px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
-  .sec-rule  { width:60px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin:16px 0 28px; }
+  .sec-rule  { width:60px; height:1px; background:linear-gradient(90deg,${accentHex},transparent); margin:16px 0 28px; }
+  /* Brief Q&A */
+  .brief-qa  { margin-bottom:24px; padding-bottom:24px; border-bottom:.5px solid rgba(255,255,255,.06); }
+  .brief-qa:last-of-type { border-bottom:none; }
+  .bq-q { font-size:11px; letter-spacing:.08em; color:#6A6258; text-transform:uppercase; margin-bottom:8px; }
+  .bq-a { font-family:'Cormorant Garamond',serif; font-size:17px; font-style:italic; color:#D4CAAA; line-height:1.7; max-width:640px; }
+  /* Brief palette */
+  .brief-palette-label { font-size:10px; letter-spacing:.3em; color:#4A4840; text-transform:uppercase; margin:28px 0 12px; }
+  .brief-palette { display:flex; gap:16px; flex-wrap:wrap; }
+  .brief-swatch { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .brief-swatch-label { font-size:10px; color:#6A6258; letter-spacing:.06em; }
+  .brief-swatch-hex { font-size:9px; color:#4A4840; font-family:monospace; letter-spacing:.06em; }
 
   /* SCENES */
   .scene { display:flex; gap:16px; padding:14px 16px; background:rgba(12,11,8,1); border-radius:2px; margin-bottom:6px; border-left:3px solid; }
@@ -157,7 +172,7 @@ export default function WrapPanel({ onClose }) {
   .scene-subjects { font-size:10px; color:#4A4840; letter-spacing:.06em; margin-top:3px; }
 
   /* SHOTS */
-  .shot-group-label { font-size:11px; letter-spacing:.28em; color:#F5920C; text-transform:uppercase; margin:20px 0 8px; opacity:.7; }
+  .shot-group-label { font-size:11px; letter-spacing:.28em; color:${accentHex}; text-transform:uppercase; margin:20px 0 8px; opacity:.7; }
   .shot { display:flex; gap:12px; padding:10px 14px; background:rgba(12,11,8,1); border-radius:2px; margin-bottom:4px; border-left:2px solid; }
   .shot-n    { font-size:11px; color:#6A6258; min-width:20px; }
   .shot-info { flex:1; }
@@ -223,6 +238,56 @@ export default function WrapPanel({ onClose }) {
     </div>
   </div>
 
+  <!-- CREATIVE BRIEF — only shown if answers exist -->
+  ${(() => {
+    const ba = currentProject.brief_answers ?? {}
+    // Collect all answered questions across all brief types
+    const BRIEF_QS = {
+      Film:     ['What is the core story in one sentence?','Who is the primary audience?','What is the emotional tone?','What does success look like for this film?','Reference films that capture the feeling you want?'],
+      Brand:    ['What does your brand feel like in three words?','Who is your primary customer?','Three brands you admire and why?','One brand that is everything you are not?','What does success look like 12 months after launch?'],
+      Music:    ['What three songs have made you cry and why?','How do you want people to feel after a show?','Who is the fan you are making this for?','What does your album cover look like in your head?','What does your music give people nothing else can?'],
+      Website:  ['What is the primary action a visitor should take?','What feeling should the site give in the first 3 seconds?','Three websites you love and why?','What content do you have ready right now?','What does a successful website do for you?'],
+      Deck:     ['What is the single ask?','Who makes the final decision in the room?','What are the top 3 objections they will have?','What is the one thing they must remember?','What does a yes look like 6 months from now?'],
+      Campaign: ['What is the one feeling this campaign should create?','Who is the person you are trying to reach?','What does this campaign need to do that advertising alone cannot?','Three campaigns that changed how you think about this category?','What does success look like in concrete, measurable terms?'],
+    }
+    const answered = []
+    Object.entries(BRIEF_QS).forEach(([type, qs]) => {
+      qs.forEach((q, i) => {
+        const key = type + '-' + i
+        const val = ba[key]
+        if (val && val.trim()) answered.push({ q, a: val.trim() })
+      })
+    })
+    // Also get reference palette
+    const palette = ba._palette ?? []
+    const palLabels = ba._palette_labels ?? []
+    if (answered.length === 0 && palette.length === 0) return ''
+    return `
+  <div class="section page">
+    <div class="sec-eye">Creative Direction</div>
+    <div class="sec-title">Creative Brief</div>
+    <div class="sec-rule"></div>
+    ${answered.map(({ q, a }) => `
+      <div class="brief-qa">
+        <div class="bq-q">${q}</div>
+        <div class="bq-a">${a.replace(/\n/g, '<br>')}</div>
+      </div>
+    `).join('')}
+    ${palette.length > 0 ? `
+      <div class="brief-palette-label">Reference palette</div>
+      <div class="brief-palette">
+        ${palette.map((c, i) => `
+          <div class="brief-swatch">
+            <div style="width:40px;height:40px;border-radius:3px;background:${c};border:.5px solid rgba(255,255,255,.1)"></div>
+            <div class="brief-swatch-label">${palLabels[i] ?? ''}</div>
+            <div class="brief-swatch-hex">${c}</div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+  </div>`
+  })()}
+
   <!-- SCENE OVERVIEW -->
   <div class="section page">
     <div class="sec-eye">Project Arc</div>
@@ -277,9 +342,9 @@ export default function WrapPanel({ onClose }) {
     ${(subjects??[]).map(s => {
       const sceneNames = sortedNodes.filter(n => (s.node_ids??[]).includes(n.id)).map(n=>n.name)
       const initials   = s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
-      const CONTACT_COLORS = { prospect:'#6A6258', contacted:'var(--accent)', confirmed:'var(--teal)', filmed:'#4ADE80', declined:'#E05050' }
+      const CONTACT_COLORS = { prospect:'#6A6258', contacted:accentHex, confirmed:'#4A9E9E', filmed:'#4ADE80', declined:'#E05050' }
       return `<div class="person">
-        <div class="person-init" style="background:${s.color??'var(--teal)'}22;color:${s.color??'var(--teal)'};border:.5px solid ${s.color??'var(--teal)'}44">${initials}</div>
+        <div class="person-init" style="background:${s.color??'#4A9E9E'}22;color:${s.color??'#4A9E9E'};border:.5px solid ${s.color??'#4A9E9E'}44">${initials}</div>
         <div>
           <div class="person-name">${s.name}</div>
           ${s.title ? `<div class="person-title">${s.title}</div>` : ''}
@@ -299,7 +364,7 @@ export default function WrapPanel({ onClose }) {
     <div class="sec-title">Key Decisions</div>
     <div class="sec-rule"></div>
     ${(allNotes??[]).slice(0,24).map(n => `
-      <div class="note-item" style="border-left-color:${n.color??'var(--teal)'}">
+      <div class="note-item" style="border-left-color:${n.color??'#4A9E9E'}">
         <div class="note-body">${n.body}</div>
         <div class="note-meta">${n.nodes?.name ? n.nodes.name + ' · ' : ''}${n.room} · ${new Date(n.created_at).toLocaleDateString('en-GB')}</div>
       </div>`).join('')}
@@ -311,7 +376,7 @@ export default function WrapPanel({ onClose }) {
     <div class="sec-title">The Team</div>
     <div class="sec-rule"></div>
     <div class="team-row">
-      <div class="team-init" style="background:${currentProject.accent_color??'var(--accent)'}">${(profile?.name??'CD').slice(0,2).toUpperCase()}</div>
+      <div class="team-init" style="background:${currentProject.accent_color??'${accentHex}'}">${(profile?.name??'CD').slice(0,2).toUpperCase()}</div>
       <div>
         <div class="team-name">${profile?.name ?? 'Creative Director'}</div>
         <div class="team-role">Creative Director · The Kentegency</div>
@@ -319,7 +384,7 @@ export default function WrapPanel({ onClose }) {
     </div>
     ${(contributors??[]).map(c => `
       <div class="team-row">
-        <div class="team-init" style="background:${c.color??'var(--teal)'}">${c.name.slice(0,2).toUpperCase()}</div>
+        <div class="team-init" style="background:${c.color??'#4A9E9E'}">${c.name.slice(0,2).toUpperCase()}</div>
         <div>
           <div class="team-name">${c.name}</div>
           <div class="team-role">${c.role}</div>
@@ -368,7 +433,7 @@ export default function WrapPanel({ onClose }) {
         if (result.fallback) {
           // No Browserless token — open HTML in new tab with print button
           openHTMLFallback(html)
-          showToast('Opened in new tab. Click "Print / Save PDF" to download.', 'var(--accent)')
+          showToast('Opened in new tab. Click "Print / Save PDF" to download.', '${accentHex}')
         } else {
           showToast(`${filename} downloaded.`, '#4ADE80')
           onClose()
@@ -377,7 +442,7 @@ export default function WrapPanel({ onClose }) {
         // Edge Function not deployed yet — fall back to HTML tab
         console.warn('PDF function unavailable, using HTML fallback:', fnErr)
         openHTMLFallback(html)
-        showToast('Opened in new tab. Click "Print / Save PDF" to download.', 'var(--accent)')
+        showToast('Opened in new tab. Click "Print / Save PDF" to download.', '${accentHex}')
       }
 
     } catch (err) {

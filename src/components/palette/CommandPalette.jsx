@@ -1,28 +1,27 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useUIStore, useProjectStore, useNodeStore, useAuthStore } from '../../stores'
+import { getVocab } from '../../lib/vocabulary'
 import './Palette.css'
 
 // ── COMMAND REGISTRY ─────────────────────────────────────────
-// Commands are generated at runtime so they can reference live state
 function useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, onClose }) {
   const { openOverlay, setRoom, setTab, setScreen, showToast } = useUIStore()
   const { currentProject }                                      = useProjectStore()
   const { nodes, selectNode }                                   = useNodeStore()
+  const vocab = getVocab(currentProject?.type)
 
   return [
     // ── NAVIGATION
     { id:'dashboard',   group:'Navigate',  label:'Go to dashboard',          shortcut:'G D', icon:'⌂',
       action: () => { setScreen('dashboard'); onClose() } },
     { id:'studio',      group:'Navigate',  label:'Switch to Studio room',     shortcut:'',    icon:'◈',
-      action: () => { setRoom('studio');  showToast('Studio'); onClose() } },
+      action: () => { setRoom('studio');  showToast('Studio — your private view.'); onClose() } },
     { id:'meeting',     group:'Navigate',  label:'Switch to Meeting room',    shortcut:'',    icon:'◈',
-      action: () => { setRoom('meeting'); showToast('Meeting'); onClose() } },
+      action: () => { setRoom('meeting'); showToast('Meeting — shared with contributors.'); onClose() } },
     { id:'window',      group:'Navigate',  label:'Switch to Window room',     shortcut:'',    icon:'◈',
-      action: () => { setRoom('window');  showToast('Window'); onClose() } },
+      action: () => { setRoom('window');  showToast('Window — what your client sees.'); onClose() } },
 
     // ── VIEWS
-    { id:'callsheet',   group:'Generate',  label:'Generate call sheet — scene + date + PDF', icon:'☰',
-      action: () => { openOverlay('callsheet'); onClose() } },
     { id:'stage',       group:'View',      label:'Open Stage mode',           shortcut:'⌥ S', icon:'▶',
       action: () => { openOverlay('stage'); onClose() } },
     { id:'moodboard',   group:'View',      label:'Open Moodboard — all references', shortcut:'M', icon:'⊡',
@@ -35,18 +34,22 @@ function useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, 
       action: () => { openOverlay('digest'); onClose() } },
     { id:'sketch',      group:'View',      label:'Open Sketch canvas',        shortcut:'S',   icon:'✏',
       action: () => { openOverlay('sketch'); onClose() } },
+    { id:'listview',    group:'View',      label:`Toggle list / arc view`,    shortcut:'L',   icon:'≡',
+      action: () => { showToast('Press L on the canvas to toggle list view.'); onClose() } },
+
+    // ── GENERATE
+    { id:'callsheet',   group:'Generate',  label:'Generate call sheet',       shortcut:'',    icon:'☰',
+      action: () => { openOverlay('callsheet'); onClose() } },
+    { id:'wrap',        group:'Generate',  label:'Generate Wrap document',    shortcut:'',    icon:'⊡',
+      action: () => { onWrap?.(); onClose() } },
 
     // ── ACTIONS
     { id:'upload',      group:'Action',    label:'Upload assets to scene',    shortcut:'U',   icon:'↑',
       action: () => { onUpload?.(); onClose() } },
     { id:'publish',     group:'Action',    label:'Publish to rooms',          shortcut:'P',   icon:'→',
       action: () => { openOverlay('publish'); onClose() } },
-    { id:'wrap',        group:'Action',    label:'Generate Wrap document',    shortcut:'',    icon:'⊡',
-      action: () => { onWrap?.(); onClose() } },
     { id:'voice',       group:'Action',    label:'Record voice note',         shortcut:'',    icon:'◉',
       action: () => { onVoice?.(); onClose() } },
-    { id:'session',     group:'Action',    label:'Start live session with client', shortcut:'', icon:'▶',
-      action: () => { window.__startSession?.(null); showToast('Open Node panel to create a session link.'); onClose() } },
     { id:'acts',        group:'Action',    label:'Manage act zones',          shortcut:'',    icon:'⋮',
       action: () => { onActs?.(); onClose() } },
     { id:'settings',    group:'Action',    label:'Open project settings',     shortcut:'',    icon:'⚙',
@@ -54,23 +57,23 @@ function useCommands({ onUpload, onInvite, onSettings, onWrap, onActs, onVoice, 
     { id:'invite',      group:'Action',    label:'Invite contributor',        shortcut:'',    icon:'⊕',
       action: () => { onInvite?.(); onClose() } },
 
-    // ── PANEL TABS
-    { id:'tab-node',    group:'Panel',     label:'Switch to Node tab',        shortcut:'',    icon:'◇',
+    // ── PANEL TABS — vocabulary-aware labels
+    { id:'tab-node',    group:'Panel',     label:`Switch to ${vocab.node} tab`,     shortcut:'1', icon:'◇',
       action: () => { setTab('node');   onClose() } },
-    { id:'tab-shots',   group:'Panel',     label:'Switch to Shots tab',       shortcut:'',    icon:'◇',
+    { id:'tab-shots',   group:'Panel',     label:`Switch to ${vocab.shots} tab`,    shortcut:'2', icon:'◇',
       action: () => { setTab('shots');  onClose() } },
-    { id:'tab-team',    group:'Panel',     label:'Switch to Team tab',        shortcut:'',    icon:'◇',
+    { id:'tab-team',    group:'Panel',     label:`Switch to ${vocab.crew} tab`,     shortcut:'3', icon:'◇',
       action: () => { setTab('team');   onClose() } },
-    { id:'tab-people',  group:'Panel',     label:'Switch to People tab',      shortcut:'',    icon:'◇',
+    { id:'tab-people',  group:'Panel',     label:`Switch to ${vocab.subjects} tab`, shortcut:'4', icon:'◇',
       action: () => { setTab('people'); onClose() } },
-    { id:'tab-style',   group:'Panel',     label:'Switch to Style tab',       shortcut:'',    icon:'◇',
+    { id:'tab-style',   group:'Panel',     label:'Switch to Identity tab',          shortcut:'5', icon:'◇',
       action: () => { setTab('style');  onClose() } },
 
-    // ── SCENES (dynamic — from current project nodes)
+    // ── SCENES (dynamic)
     ...nodes.slice(0, 12).map(n => ({
       id:    `scene-${n.id}`,
-      group: 'Scenes',
-      label: `Open scene: ${n.name}`,
+      group: vocab.nodes,
+      label: `Open ${vocab.node.toLowerCase()}: ${n.name}`,
       shortcut: '',
       icon:  '○',
       status: n.status,

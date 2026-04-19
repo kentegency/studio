@@ -11,20 +11,35 @@ const TYPE_ICONS = {
 }
 
 export default function AssetViewer({ asset, onClose, onNext, onPrev, hasNext, hasPrev }) {
-  const [loaded, setLoaded] = useState(false)
-  const [zoom,   setZoom]   = useState(1)
+  const [loaded,    setLoaded]    = useState(false)
+  const [zoom,      setZoom]      = useState(1)
+  const [editName,  setEditName]  = useState(false)
+  const [nameVal,   setNameVal]   = useState(asset?.name ?? '')
+  const [saving,    setSaving]    = useState(false)
 
   useEffect(() => {
     setLoaded(false)
     setZoom(1)
+    setEditName(false)
+    setNameVal(asset?.name ?? '')
     const handler = (e) => {
-      if (e.key === 'Escape')    onClose()
-      if (e.key === 'ArrowRight' && hasNext) onNext()
-      if (e.key === 'ArrowLeft'  && hasPrev) onPrev()
+      if (e.key === 'Escape')    { if (editName) { setEditName(false); return } onClose() }
+      if (e.key === 'ArrowRight' && hasNext && !editName) onNext()
+      if (e.key === 'ArrowLeft'  && hasPrev && !editName) onPrev()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [asset])
+  }, [asset, editName])
+
+  const saveName = async () => {
+    if (!nameVal.trim() || nameVal === asset.name) { setEditName(false); return }
+    setSaving(true)
+    const { supabase } = await import('../../lib/supabase')
+    await supabase.from('assets').update({ name: nameVal.trim() }).eq('id', asset.id)
+    asset.name = nameVal.trim() // update in-place for immediate UI
+    setSaving(false)
+    setEditName(false)
+  }
 
   const type = asset.type ?? 'document'
   const name = asset.name ?? 'Asset'
@@ -47,7 +62,29 @@ export default function AssetViewer({ asset, onClose, onNext, onPrev, hasNext, h
         <div className="viewer-meta">
           <div className="viewer-icon">{TYPE_ICONS[type] ?? TYPE_ICONS.document}</div>
           <div>
-            <div className="viewer-name">{name}</div>
+            {editName ? (
+              <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                <input
+                  className="viewer-name-input"
+                  value={nameVal}
+                  onChange={e => setNameVal(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveName() }}
+                  autoFocus
+                />
+                <button className="va-btn" onClick={saveName} disabled={saving}>
+                  {saving ? '…' : 'Save'}
+                </button>
+                <button className="va-btn" onClick={() => setEditName(false)}>Cancel</button>
+              </div>
+            ) : (
+              <div className="viewer-name"
+                onClick={() => setEditName(true)}
+                title="Click to rename"
+                style={{ cursor:'text' }}>
+                {nameVal}
+                <span style={{ fontSize:'10px', color:'var(--ghost)', marginLeft:'6px' }}>✎</span>
+              </div>
+            )}
             <div className="viewer-info">
               {type} {asset.size_bytes ? `· ${formatSize(asset.size_bytes)}` : ''}
               {asset.room ? ` · ${asset.room}` : ''}

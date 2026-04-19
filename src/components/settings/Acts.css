@@ -46,7 +46,7 @@
   padding: 2px 0; border-bottom: .5px solid transparent;
   transition: border-color var(--dur-mid) var(--ease);
 }
-.act-name-input:focus { border-bottom-color: rgba(245,146,12,.3); color: var(--cream); }
+.act-name-input:focus { border-bottom-color: rgba(var(--project-accent-rgb, 212,170,106), .3); color: var(--cream); }
 .act-range { font-size: 11px; color: var(--ghost); letter-spacing: .08em; font-family: var(--font-mono); margin-top: 3px; }
 
 .act-color-row { display: flex; gap: 4px; flex-shrink: 0; }

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNodeStore, useUIStore, useAssetsStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
+import { getVocab } from '../../lib/vocabulary'
 import { supabase } from '../../lib/supabase'
 import { undoStack } from '../../lib/undo'
 import EmptyState from '../EmptyState'
@@ -35,12 +36,13 @@ const DocIcon  = () => <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v1
 const MicIcon  = () => <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:'1.5',strokeLinecap:'round',flexShrink:0}}><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
 
 export default function NodePane({ onUpload }) {
-  const { selectedNode, selectNode, updateNode } = useNodeStore()
+  const { selectedNode, selectNode, updateNode, nodes } = useNodeStore()
   const { assets, fetchAssets }                  = useAssetsStore()
   const { notes, fetchNotes, addNote }           = useNotesStore()
   const { openOverlay, showToast }               = useUIStore()
   const { user }                                 = useAuthStore()
   const { currentProject }                       = useProjectStore()
+  const vocab = getVocab(currentProject?.type)
 
   const [newNote,      setNewNote]      = useState('')
   const [noteColor,    setNoteColor]    = useState('var(--accent)')
@@ -54,6 +56,7 @@ export default function NodePane({ onUpload }) {
   const [notesLoading,  setNotesLoading]  = useState(false)
   const [description,   setDescription]  = useState('')
   const [descSaving,    setDescSaving]   = useState(false)
+  const [assetCtx,      setAssetCtx]     = useState(null) // { x, y, asset }
   const descTimer = useRef(null)
 
   // Sync description from selected node
@@ -91,6 +94,21 @@ export default function NodePane({ onUpload }) {
 
   const openViewer = (asset, idx) => {
     window.__openViewer?.(asset, assets, idx)
+  }
+
+  const moveAsset = async (assetId, targetNodeId, targetNodeName) => {
+    const { supabase } = await import('../../lib/supabase')
+    const { error } = await supabase
+      .from('assets')
+      .update({ node_id: targetNodeId })
+      .eq('id', assetId)
+    if (!error) {
+      showToast(`Asset moved to "${targetNodeName}".`)
+      await fetchAssets(selectedNode.id) // refresh current scene assets
+    } else {
+      showToast('Could not move asset.', 'var(--red)')
+    }
+    setAssetCtx(null)
   }
 
   if (!selectedNode) return (
@@ -210,7 +228,7 @@ export default function NodePane({ onUpload }) {
             onCancel={() => setConfirmLock(false)}
           />
         )}
-        <div className="rp-ey">{act || `${selectedNode.type ?? 'scene'} · ${Math.round((selectedNode.position ?? 0) * 100)}%`}</div>
+        <div className="rp-ey">{act || `${vocab.node} · ${Math.round((selectedNode.position ?? 0) * 100)}%`}</div>
         <div className="rp-ti">{name}</div>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div className="rp-st" style={{ cursor:'pointer' }}
@@ -218,6 +236,21 @@ export default function NodePane({ onUpload }) {
             <span className="rp-dot" style={{ background:color }} />
             <span style={{ color }}>{label}</span>
             <span style={{ color:'var(--ghost)', fontSize:'11px', marginLeft:'4px' }}>↻</span>
+          </div>
+          {/* Position input — direct arc position control */}
+          <div className="scene-pos-row">
+            <span className="scene-pos-label">Arc position</span>
+            <input
+              className="scene-pos-input"
+              type="number"
+              min={1} max={99}
+              value={Math.round((selectedNode.position ?? 0) * 100)}
+              onChange={async (e) => {
+                const pct = Math.max(1, Math.min(99, parseInt(e.target.value) || 1))
+                await updateNode(selectedNode.id, { position: pct / 100 })
+              }}
+            />
+            <span className="scene-pos-pct">%</span>
           </div>
           {saveIndicator && (
             <div className="save-indicator">
@@ -232,7 +265,7 @@ export default function NodePane({ onUpload }) {
       <div className="scene-desc-wrap">
         <textarea
           className="scene-desc-input"
-          placeholder="What is this scene trying to do? Describe the mood, the purpose, the creative direction…"
+          placeholder={vocab.descHint ?? "What is this scene trying to do? Describe the mood, the purpose, the creative direction…"}
           value={description}
           onChange={e => handleDescChange(e.target.value)}
           rows={3}
@@ -272,7 +305,9 @@ export default function NodePane({ onUpload }) {
                 const inMeeting = a.room === 'meeting'
                 return (
                   <div key={a.id} className="at" data-hover
-                    onClick={() => openViewer(a, i)} title={a.name}>
+                    onClick={() => openViewer(a, i)}
+                    onContextMenu={(e) => { e.preventDefault(); setAssetCtx({ x: e.clientX, y: e.clientY, asset: a }) }}
+                    title={a.name}>
                     {isImg ? (
                       <img src={a.file_url} alt={a.name}
                         style={{ width:'100%',height:'100%',objectFit:'cover',borderRadius:'2px' }}
@@ -454,6 +489,36 @@ export default function NodePane({ onUpload }) {
           </div>
         )}
       </div>
+
+      {/* Asset context menu — right-click → move to scene */}
+      {assetCtx && (
+        <>
+          <div style={{ position:'fixed', inset:0, zIndex:4998 }}
+            onClick={() => setAssetCtx(null)} />
+          <div className="arc-ctx-menu" style={{ top: assetCtx.y, left: assetCtx.x }}>
+            <div className="acm-scene-name">{assetCtx.asset.name?.slice(0,28)}</div>
+            <div style={{ padding:'6px 12px 4px', fontSize:'10px', color:'var(--ghost)', fontFamily:'var(--font-mono)', letterSpacing:'.08em' }}>
+              Move to scene
+            </div>
+            {nodes
+              .filter(n => n.id !== selectedNode?.id)
+              .sort((a,b) => (a.position??0) - (b.position??0))
+              .map(n => (
+                <button key={n.id} className="acm-item"
+                  onClick={() => moveAsset(assetCtx.asset.id, n.id, n.name)}>
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>
+                  {n.name.length > 22 ? n.name.slice(0,20) + '…' : n.name}
+                </button>
+              ))
+            }
+            {nodes.filter(n => n.id !== selectedNode?.id).length === 0 && (
+              <div style={{ padding:'8px 12px', fontSize:'11px', color:'var(--ghost)' }}>
+                No other scenes yet
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }

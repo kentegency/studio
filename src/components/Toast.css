@@ -42,7 +42,7 @@
   position: fixed; top: 0; left: 0; right: 0;
   z-index: 9994;
   background: rgba(90,60,10,.95);
-  border-bottom: .5px solid rgba(245,146,12,.2);
+  border-bottom: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .2);
   padding: 6px 16px;
   font-size: 12px; letter-spacing: .05em;
   color: var(--orange); text-align: center;

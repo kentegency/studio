@@ -156,3 +156,30 @@
   background: var(--accent); flex-shrink: 0;
 }
 .usc-text strong { color: var(--accent); }
+
+/* ── URL IMPORT ── */
+.url-import-row {
+  display: flex; gap: 6px; padding: 10px 14px;
+  border-top: .5px solid var(--b);
+}
+.url-import-input {
+  flex: 1; padding: 7px 10px;
+  background: var(--s2); border: .5px solid var(--b);
+  border-radius: 2px; color: var(--cream);
+  font-size: 12px; font-family: var(--font-ui);
+  outline: none; caret-color: var(--accent);
+  transition: border-color var(--dur-fast);
+}
+.url-import-input::placeholder { color: var(--ghost); }
+.url-import-input:focus { border-color: var(--accent-mid); }
+.url-import-btn {
+  padding: 7px 14px; border-radius: 2px;
+  background: transparent;
+  border: .5px solid var(--accent-mid);
+  color: var(--accent); font-size: 12px;
+  font-family: var(--font-ui);
+  transition: background var(--dur-fast);
+  flex-shrink: 0;
+}
+.url-import-btn:hover:not(:disabled) { background: var(--accent-ghost); }
+.url-import-btn:disabled { opacity: .35; }

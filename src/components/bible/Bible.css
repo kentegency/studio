@@ -49,7 +49,7 @@
   caret-color: var(--project-accent, var(--orange));
   transition: border-color var(--dur-mid) var(--ease);
 }
-.bible-search:focus { border-color: rgba(245,146,12,.3); }
+.bible-search:focus { border-color: rgba(var(--project-accent-rgb, 212,170,106), .3); }
 .bible-search::placeholder { color: var(--ghost); }
 .bible-filter-btn {
   font-size: 11px; color: var(--mute); letter-spacing: .1em;
@@ -155,7 +155,7 @@
   outline: none; caret-color: var(--orange);
   transition: border-color var(--dur-mid) var(--ease);
 }
-.sf-input:focus, .sf-select:focus, .sf-textarea:focus { border-color: rgba(245,146,12,.3); }
+.sf-input:focus, .sf-select:focus, .sf-textarea:focus { border-color: rgba(var(--project-accent-rgb, 212,170,106), .3); }
 .sf-input::placeholder, .sf-textarea::placeholder { color: var(--ghost); }
 .sf-select { cursor: pointer; }
 .sf-textarea { resize: vertical; min-height: 72px; }

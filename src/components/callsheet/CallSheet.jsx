@@ -74,7 +74,7 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
   const shotRows = shots.map((s, i) => `
     <tr>
       <td style="padding:10px 14px;border-bottom:.5px solid rgba(255,255,255,.05);
-        font-family:'IBM Plex Mono',monospace;font-size:11px;color:#F5920C;opacity:.7;">
+        font-family:'IBM Plex Mono',monospace;font-size:11px;color:${accentHex};opacity:.7;">
         ${String(s.number).padStart(2,'0')}
       </td>
       <td style="padding:10px 14px;border-bottom:.5px solid rgba(255,255,255,.05);">
@@ -117,7 +117,7 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
   .print-label { font-size:11px; letter-spacing:.28em; color:#6A6258; text-transform:uppercase; }
   .print-btn {
     font-size:11px; letter-spacing:.2em; padding:8px 20px;
-    text-transform:uppercase; color:#F5920C;
+    text-transform:uppercase; color:${accentHex};
     border:.5px solid rgba(212,170,106,.3); border-radius:2px;
     background:transparent; font-family:'IBM Plex Mono',monospace; cursor:pointer;
   }
@@ -125,10 +125,10 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
 
   /* HEADER */
   .cs-header { padding:48px 64px 40px; border-bottom:.5px solid rgba(255,255,255,.06); }
-  .cs-type { font-size:10px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:20px; }
+  .cs-type { font-size:10px; letter-spacing:.4em; color:${accentHex}; text-transform:uppercase; margin-bottom:20px; }
   .cs-date { font-family:'Bebas Neue',sans-serif; font-size:52px; color:#F4EFD8; line-height:1; letter-spacing:.02em; margin-bottom:8px; }
   .cs-scene { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:20px; color:#7A7268; letter-spacing:.02em; margin-bottom:24px; }
-  .cs-rule { width:80px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin-bottom:24px; }
+  .cs-rule { width:80px; height:1px; background:linear-gradient(90deg,${accentHex},transparent); margin-bottom:24px; }
   .cs-meta-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0; }
   .cs-meta-cell { padding:16px 0; border-right:.5px solid rgba(255,255,255,.06); padding-right:24px; margin-right:24px; }
   .cs-meta-cell:last-child { border-right:none; }
@@ -137,9 +137,9 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
 
   /* SECTIONS */
   .section { padding:40px 64px; border-top:.5px solid rgba(255,255,255,.06); }
-  .sec-eye { font-size:9px; letter-spacing:.4em; color:#F5920C; text-transform:uppercase; margin-bottom:8px; }
+  .sec-eye { font-size:9px; letter-spacing:.4em; color:${accentHex}; text-transform:uppercase; margin-bottom:8px; }
   .sec-title { font-family:'Bebas Neue',sans-serif; font-size:28px; color:#F4EFD8; letter-spacing:.04em; margin-bottom:4px; }
-  .sec-rule { width:40px; height:1px; background:linear-gradient(90deg,#F5920C,transparent); margin:14px 0 24px; }
+  .sec-rule { width:40px; height:1px; background:linear-gradient(90deg,${accentHex},transparent); margin:14px 0 24px; }
 
   table { width:100%; border-collapse:collapse; }
   th { font-size:9px; letter-spacing:.28em; color:#4A4840; text-transform:uppercase;

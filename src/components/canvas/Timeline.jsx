@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useNodeStore, useUIStore, useProjectStore } from '../../stores'
+import { getVocab } from '../../lib/vocabulary'
 import Node from './Node'
 import EmptyState from '../EmptyState'
 import '../EmptyState.css'
 import './Timeline.css'
 
 const ACTS_DEMO = [
-  { x:8,   width:268, fill:'rgba(30,138,138,0.055)', stroke:'rgba(30,138,138,0.13)',  label:'I — PAST',     labelFill:'rgba(30,138,138,0.65)',  labelX:12  },
+  { x:8,   width:268, fill:'rgba(74,158,158,0.045)', stroke:'rgba(74,158,158,0.11)',  label:'I — PAST',     labelFill:'rgba(74,158,158,0.60)',  labelX:12  },
   { x:284, width:302, fill:'rgba(212,170,106,0.042)', stroke:'rgba(212,170,106,0.1)',   label:'II — PRESENT', labelFill:'rgba(212,170,106,0.6)',   labelX:288 },
   { x:594, width:300, fill:'rgba(90,18,10,0.052)',   stroke:'rgba(120,38,22,0.1)',    label:'III — FUTURE', labelFill:'rgba(180,60,30,0.65)',   labelX:598 },
 ]
@@ -33,7 +34,7 @@ const STATUS_FILL  = {
 }
 const STATUS_LABEL = { concept:'Concept', progress:'In Progress', review:'In Review', approved:'Approved', locked:'Locked' }
 const ACT_COLORS   = {
-  teal:   { fill:'rgba(30,138,138,0.055)',  stroke:'rgba(30,138,138,0.13)',  labelFill:'rgba(30,138,138,0.65)'  },
+  teal:   { fill:'rgba(74,158,158,0.045)',  stroke:'rgba(74,158,158,0.11)',  labelFill:'rgba(74,158,158,0.60)'  },
   orange: { fill:'rgba(212,170,106,0.042)',  stroke:'rgba(212,170,106,0.1)',   labelFill:'rgba(212,170,106,0.6)'   },
   red:    { fill:'rgba(90,18,10,0.052)',    stroke:'rgba(120,38,22,0.1)',    labelFill:'rgba(180,60,30,0.65)'   },
   purple: { fill:'rgba(139,92,246,0.042)', stroke:'rgba(139,92,246,0.12)',  labelFill:'rgba(139,92,246,0.65)'  },
@@ -203,6 +204,7 @@ export default function Timeline() {
   const { selectedNode, selectNode, nodes, createNode, updateNode } = useNodeStore()
   const { currentProject, acts } = useProjectStore()
   const { setMinimapPos, showToast, openOverlay } = useUIStore()
+  const vocab = getVocab(currentProject?.type)
 
   const [showNewNode, setShowNewNode] = useState(false)
   const [newNodeName, setNewNodeName] = useState('')
@@ -430,8 +432,16 @@ export default function Timeline() {
                 <span className="tl-arrow">▸</span>
                 {currentProject.name}
               </div>
-              {currentProject.logline && (
-                <div className="tl-proj-logline">{currentProject.logline}</div>
+              {(currentProject.logline || currentProject.brief_answers?.['Film-0'] || currentProject.brief_answers?.['Brand-0'] || currentProject.brief_answers?.['Deck-0']) && (
+                <div className="tl-proj-logline">
+                  {currentProject.logline
+                    || currentProject.brief_answers?.['Film-0']
+                    || currentProject.brief_answers?.['Brand-0']
+                    || currentProject.brief_answers?.['Deck-0']
+                    || currentProject.brief_answers?.['Music-0']
+                    || currentProject.brief_answers?.['Website-0']
+                    || currentProject.brief_answers?.['Campaign-0']}
+                </div>
               )}
             </>
           ) : (
@@ -491,7 +501,7 @@ export default function Timeline() {
             </button>
             {currentProject && (
               <button className="add-node-btn" onClick={() => setShowNewNode(s => !s)}>
-                + Add Scene
+                + {vocab.nodeVerb ?? 'Add scene'}
               </button>
             )}
           </div>
@@ -503,7 +513,7 @@ export default function Timeline() {
         <form className="new-node-form" onSubmit={handleCreate}>
           <div className="nn-row">
             <input className="nn-input" type="text"
-              placeholder="Scene name — e.g. Opening Sequence"
+              placeholder={vocab.nodeHint ?? "Scene name"}
               value={newNodeName} onChange={e => setNewNodeName(e.target.value)}
               required autoFocus />
             <select className="nn-select" value={newNodeType}
@@ -567,7 +577,7 @@ export default function Timeline() {
                 )
               })}
             {!hasRealNodes && (
-              <div className="tlv-empty">No scenes yet — add a scene from the arc view</div>
+              <div className="tlv-empty">No {vocab.nodes.toLowerCase()} yet — add one from the arc view</div>
             )}
           </div>
         )}
@@ -576,9 +586,9 @@ export default function Timeline() {
           <div className="tl-empty-state">
             <EmptyState
               icon={<svg viewBox="0 0 24 24" style={{width:'16px',height:'16px',stroke:'currentColor',fill:'none',strokeWidth:'1.5'}}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
-              title="No scenes yet"
-              body="Add your first scene to begin building your timeline."
-              action="Add first scene →"
+              title={`No ${vocab.nodes.toLowerCase()} yet`}
+              body={`Add your first ${vocab.node.toLowerCase()} to begin building your arc.`}
+              action={`${vocab.nodeVerb} →`}
               onAction={() => setShowNewNode(true)} />
           </div>
         )}

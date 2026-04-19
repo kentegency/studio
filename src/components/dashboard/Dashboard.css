@@ -172,7 +172,7 @@
   font-size: 11px; letter-spacing: .2em;
   padding: 3px 8px; border-radius: 1px;
 }
-.dc-status.active    { color: var(--orange); background: rgba(245,146,12,.1); }
+.dc-status.active    { color: var(--orange); background: rgba(var(--project-accent-rgb, 212,170,106),.1); }
 .dc-status.draft     { color: var(--mute);   background: rgba(255,255,255,.04); }
 .dc-status.completed { color: var(--green);  background: rgba(74,222,128,.08); }
 .dc-status.archived  { color: var(--ghost);  background: rgba(255,255,255,.02); }
@@ -207,7 +207,7 @@
 .dcf-template-opt:hover { background: var(--s3); border-color: var(--b2); }
 .dcf-template-opt.on {
   background: rgba(var(--project-accent-rgb, 212,170,106), .08);
-  border-color: rgba(245,146,12,.3);
+  border-color: rgba(var(--project-accent-rgb, 212,170,106),.3);
   color: var(--cream);
 }
 .dcf-template-opt span {

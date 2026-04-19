@@ -98,6 +98,6 @@
   content: '';
   display: block;
   width: 40px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(245,146,12,.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--project-accent-rgb, 212,170,106), .3), transparent);
   margin-bottom: 20px;
 }

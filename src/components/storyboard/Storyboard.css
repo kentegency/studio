@@ -65,7 +65,7 @@
 .sb-layout-btn:last-child { border-right: none; }
 .sb-layout-btn:hover { background: var(--s3); color: var(--dim); }
 .sb-layout-btn.on {
-  background: rgba(245,146,12,.1);
+  background: rgba(var(--project-accent-rgb, 212,170,106), .1);
   color: var(--orange);
 }
 
@@ -85,7 +85,7 @@
 .sb-tool-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
 .sb-tool-btn:hover { background: var(--s3); color: var(--dim); }
 .sb-tool-btn.on {
-  background: rgba(245,146,12,.1);
+  background: rgba(var(--project-accent-rgb, 212,170,106), .1);
   color: var(--orange);
 }
 

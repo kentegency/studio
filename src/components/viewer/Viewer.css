@@ -120,8 +120,8 @@
 }
 .viewer-audio-icon {
   width: 64px; height: 64px; border-radius: 50%;
-  background: rgba(245,146,12,.1);
-  border: .5px solid rgba(245,146,12,.2);
+  background: rgba(var(--project-accent-rgb, 212,170,106), .1);
+  border: .5px solid rgba(var(--project-accent-rgb, 212,170,106), .2);
   display: flex; align-items: center; justify-content: center;
 }
 .viewer-audio-icon svg { width: 28px; height: 28px; stroke: var(--orange); fill: none; stroke-width: 1.5; }
@@ -145,3 +145,22 @@
   margin-top: 8px;
 }
 .vnd-open:hover { background: rgba(var(--project-accent-rgb, 212,170,106), .06); }
+
+/* ── ASSET RENAME ── */
+.viewer-name-input {
+  background: var(--s2);
+  border: .5px solid var(--accent);
+  border-radius: 2px;
+  color: var(--cream);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: var(--weight-label);
+  padding: 4px 8px;
+  outline: none;
+  min-width: 220px;
+  caret-color: var(--accent);
+}
+.viewer-name-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ghost);
+}

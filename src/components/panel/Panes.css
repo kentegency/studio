@@ -58,7 +58,7 @@
   background: rgba(0,0,0,.8); color: #2E2A1C;
   padding: 1px 3px; border-radius: 1px;
 }
-.at-add { border: .5px dashed rgba(245,146,12,.1) !important; }
+.at-add { border: .5px dashed rgba(var(--project-accent-rgb, 212,170,106), .1) !important; }
 .at-add svg { stroke: #1E1810 !important; }
 .at-add:hover { border-color: rgba(var(--project-accent-rgb, 212,170,106), .26) !important; }
 
@@ -299,7 +299,7 @@
   color: var(--cream); outline: none; flex: 1;
   transition: border-color var(--dur-mid) var(--ease);
 }
-.nn-select:focus { border-color: rgba(245,146,12,.3); }
+.nn-select:focus { border-color: rgba(var(--project-accent-rgb, 212,170,106), .3); }
 
 /* LOCKED BADGE */
 .locked-badge {
@@ -540,3 +540,30 @@
   transition: opacity var(--dur-fast);
 }
 .assets-show-all:hover { opacity: .7; }
+
+/* ── SCENE POSITION INPUT ── */
+.scene-pos-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 6px;
+}
+.scene-pos-label {
+  font-size: 10px; color: var(--ghost);
+  font-family: var(--font-mono); letter-spacing: .08em;
+  flex: 1;
+}
+.scene-pos-input {
+  width: 44px; padding: 3px 6px;
+  background: var(--s3); border: .5px solid var(--b);
+  border-radius: 2px; color: var(--dim);
+  font-size: 11px; font-family: var(--font-mono);
+  text-align: right; outline: none;
+  transition: border-color var(--dur-fast);
+  -moz-appearance: textfield;
+}
+.scene-pos-input::-webkit-outer-spin-button,
+.scene-pos-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.scene-pos-input:focus { border-color: var(--accent-mid); color: var(--cream); }
+.scene-pos-pct {
+  font-size: 10px; color: var(--ghost);
+  font-family: var(--font-mono);
+}
