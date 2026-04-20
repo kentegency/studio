@@ -217,10 +217,12 @@ export function ShotsPane() {
             </button>
           </div>
           <div className="shot-list-mini">
-            {shots.map(shot => (
+            {shots.map((shot, idx) => (
               <ShotRow
                 key={shot.id}
                 shot={shot}
+                idx={idx}
+                total={shots.length}
                 onStatusCycle={() => cycleStatus(shot)}
                 onDelete={async () => {
                   const { error } = await supabase.from('shots').delete().eq('id', shot.id)
@@ -229,6 +231,20 @@ export function ShotsPane() {
                 onRename={async (name) => {
                   const { error } = await supabase.from('shots').update({ name }).eq('id', shot.id)
                   if (!error) setShots(prev => prev.map(s => s.id === shot.id ? { ...s, name } : s))
+                }}
+                onReorder={async (fromIdx, toIdx) => {
+                  if (fromIdx === toIdx) return
+                  const reordered = [...shots]
+                  const [moved] = reordered.splice(fromIdx, 1)
+                  reordered.splice(toIdx, 0, moved)
+                  // Optimistic update
+                  setShots(reordered)
+                  // Persist new order_index for each shot
+                  await Promise.all(
+                    reordered.map((s, i) =>
+                      supabase.from('shots').update({ order_index: i + 1, number: i + 1 }).eq('id', s.id)
+                    )
+                  )
                 }}
                 SH_COLOR={SH_COLOR}
               />
@@ -241,9 +257,10 @@ export function ShotsPane() {
 }
 
 // ── SHOT ROW — with delete + inline rename ────
-function ShotRow({ shot, onStatusCycle, onDelete, onRename, SH_COLOR }) {
+function ShotRow({ shot, idx, total, onStatusCycle, onDelete, onRename, onReorder, SH_COLOR }) {
   const [editingName, setEditingName] = useState(false)
   const [nameVal,     setNameVal]     = useState(shot.name)
+  const [dragOver,    setDragOver]    = useState(false)
 
   const commitRename = () => {
     const trimmed = nameVal.trim()
@@ -253,8 +270,26 @@ function ShotRow({ shot, onStatusCycle, onDelete, onRename, SH_COLOR }) {
   }
 
   return (
-    <div className="shm shm-interactive"
-      style={{ borderLeftColor: SH_COLOR[shot.status] ?? '#2A2720' }}>
+    <div className={`shm shm-interactive ${dragOver ? 'shm-drag-over' : ''}`}
+      style={{ borderLeftColor: SH_COLOR[shot.status] ?? '#2A2720' }}
+      draggable
+      onDragStart={e => {
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', String(idx))
+      }}
+      onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOver(true) }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={e => {
+        e.preventDefault()
+        setDragOver(false)
+        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10)
+        if (!isNaN(fromIdx)) onReorder(fromIdx, idx)
+      }}
+      onDragEnd={() => setDragOver(false)}>
+
+      {/* Drag handle */}
+      <span className="shm-drag" title="Drag to reorder">⠿</span>
+
       {/* Number — click cycles status */}
       <span className="shm-n" onClick={onStatusCycle}
         style={{ cursor:'pointer' }} title="Click to advance status">

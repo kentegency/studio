@@ -275,3 +275,13 @@ alter table subjects enable row level security;
 create policy "Project owner manages subjects" on subjects for all using (
   exists (select 1 from projects where id = subjects.project_id and owner_id = auth.uid())
 );
+
+-- ── TIER 1 PRODUCTION DATA ─────────────────────────────────────
+-- Adds production_data JSONB to nodes — holds all scene-level
+-- production fields without new tables
+-- Fields: location{name,address,gps,contact,phone,parking,access,permits}
+--         elements{int_ext,time_of_day,cast[],props[],special_equipment[]}
+--         equipment[]{item,quantity,confirmed}
+--         shoot_day (integer)
+--         post_flags{adr,vfx,grade,sound_mix,delivered}
+ALTER TABLE nodes ADD COLUMN IF NOT EXISTS production_data JSONB DEFAULT '{}';

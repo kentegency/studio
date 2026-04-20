@@ -107,7 +107,7 @@ export default function Node({ node, selected, onClick, isDragging }) {
         }} />
 
       {/* Shot count badge — shows inside node if shots exist */}
-      {shotData?.total > 0 && (
+      {shotData?.total > 0 && !node.production_data?.shoot_day && (
         <text
           x={cx} y={cy + 1}
           textAnchor="middle" dominantBaseline="middle"
@@ -116,6 +116,19 @@ export default function Node({ node, selected, onClick, isDragging }) {
           fill={status === 'approved' || status === 'locked' ? '#040402' : 'rgba(255,255,255,0.7)'}
           style={{ pointerEvents:'none', fontWeight:500 }}>
           {shotData.done}/{shotData.total}
+        </text>
+      )}
+
+      {/* Shoot day badge — D1, D2… inside node when assigned */}
+      {node.production_data?.shoot_day && (
+        <text
+          x={cx} y={cy + 1}
+          textAnchor="middle" dominantBaseline="middle"
+          fontSize={node.r > 7 ? 8 : 6}
+          fontFamily="IBM Plex Mono"
+          fill={status === 'approved' || status === 'locked' ? '#040402' : 'rgba(212,170,106,0.9)'}
+          style={{ pointerEvents:'none', fontWeight:600 }}>
+          D{node.production_data.shoot_day}
         </text>
       )}
 
@@ -132,6 +145,26 @@ export default function Node({ node, selected, onClick, isDragging }) {
           ? (node.label ?? '').slice(0, 11) + '…'
           : (node.label ?? '')}
       </text>
+
+      {/* Post status micro-badges — ADR, VFX, delivered dots below label */}
+      {(() => {
+        const post = node.production_data?.post ?? {}
+        const badges = [
+          post.adr       && { color:'#8B5CF6', title:'ADR' },
+          post.vfx       && { color:'var(--accent)', title:'VFX' },
+          post.delivered && { color:'#4ADE80', title:'Delivered' },
+        ].filter(Boolean)
+        if (!badges.length) return null
+        const startX = cx - (badges.length - 1) * 5
+        return badges.map((b, i) => (
+          <circle key={i}
+            cx={startX + i * 10} cy={cy + node.r + 22}
+            r={2.5} fill={b.color} opacity={0.8}
+            style={{ pointerEvents:'none' }}>
+            <title>{b.title}</title>
+          </circle>
+        ))
+      })()}
 
       {/* Hover tooltip — hidden while dragging */}
       {showTooltip && !isDragging && (

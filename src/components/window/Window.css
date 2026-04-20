@@ -360,3 +360,128 @@
   font-family: 'IBM Plex Mono', monospace;
   letter-spacing: .1em;
 }
+
+/* ── MOBILE — ≤ 640px ─────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Header — tighter on small screens */
+  .win-header {
+    padding: 0 16px; gap: 10px;
+  }
+  .win-project-name {
+    font-size: 9px; letter-spacing: .08em;
+  }
+
+  /* Hero — tighter padding, readable font floor */
+  .win-hero {
+    padding: 36px 20px 28px;
+    gap: 10px;
+  }
+  .win-hero-title {
+    font-size: clamp(40px, 11vw, 72px);
+    line-height: .9;
+  }
+  .win-hero-log {
+    font-size: 15px;
+  }
+  .win-hero-hint {
+    font-size: 11px;
+  }
+
+  /* Content section — comfortable reading width */
+  .win-content {
+    padding: 24px 20px;
+    gap: 20px;
+  }
+
+  /* Scene node title */
+  .win-node-title {
+    font-size: clamp(32px, 9vw, 52px);
+  }
+  .win-node-eye, .win-node-status {
+    font-size: 11px;
+  }
+
+  /* Asset grid — 2 columns on phone, 1 on very narrow */
+  .win-assets {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+  }
+
+  /* Scene nav pills — full width, easier to tap */
+  .win-scene-nav {
+    flex-direction: column; gap: 8px;
+  }
+  .win-node-pill {
+    width: 100%; text-align: center;
+    padding: 14px 16px; min-height: 52px;
+    font-size: 11px;
+  }
+
+  /* Reactions row — bigger tap targets */
+  .win-react-btn {
+    width: 56px; height: 56px;
+    font-size: 22px;
+  }
+  .win-react-label {
+    font-size: 11px;
+  }
+
+  /* Approval block — full width */
+  .win-approve {
+    width: 100%; text-align: center;
+    padding: 18px 20px; min-height: 56px;
+    font-size: 12px; letter-spacing: .14em;
+  }
+  .win-approve-confirm {
+    padding: 16px 18px;
+  }
+  .wac-title {
+    font-size: 14px;
+  }
+  .wac-body {
+    font-size: 13px;
+  }
+  .wac-buttons {
+    flex-direction: column; gap: 8px;
+  }
+  .wac-confirm, .wac-cancel {
+    width: 100%; text-align: center;
+    padding: 14px 20px; min-height: 52px;
+    font-size: 12px;
+  }
+
+  /* Approved state */
+  .was-title { font-size: 22px; }
+  .was-body  { font-size: 12px; }
+
+  /* Comment input — larger on touch */
+  .win-comment-input {
+    font-size: 16px; /* prevents iOS auto-zoom */
+    padding: 14px 16px;
+  }
+  .win-comment-send {
+    width: 100%; text-align: center;
+    padding: 12px 20px; min-height: 48px;
+  }
+
+  /* Progress arc line */
+  .win-line-wrap svg { height: 60px; }
+
+  /* Footer */
+  .win-footer {
+    padding: 16px 20px;
+    flex-direction: column; gap: 8px;
+    text-align: center;
+  }
+  .win-session-btn {
+    width: 100%; justify-content: center;
+    padding: 12px 20px; min-height: 48px;
+    margin-left: 0;
+  }
+
+  /* Notes */
+  .win-note {
+    font-size: 11px; padding: 10px 12px;
+  }
+}

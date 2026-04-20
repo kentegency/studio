@@ -7,6 +7,7 @@ import { TeamPane }  from '../panel/ShotsPane'
 import { StylePane } from '../panel/ShotsPane'
 import WindowPreview from '../panel/WindowPreview'
 import BiblePane from '../bible/BiblePane'
+import ProductionPane from '../panel/ProductionPane'
 import './RightPanel.css'
 
 
@@ -17,11 +18,12 @@ export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }
   const vocab = getVocab(currentProject?.type)
 
   const TABS = [
-    { key: 'node',   label: vocab.node     },
-    { key: 'shots',  label: vocab.shots    },
-    { key: 'team',   label: vocab.crew     },
-    { key: 'people', label: vocab.subjects },
-    { key: 'style',  label: 'Identity'    },
+    { key: 'node',       label: vocab.node     },
+    { key: 'shots',      label: vocab.shots    },
+    { key: 'production', label: 'Production'  },
+    { key: 'team',       label: vocab.crew     },
+    { key: 'people',     label: vocab.subjects },
+    { key: 'style',      label: 'Identity'    },
   ]
 
   const switchTab = (key) => {
@@ -61,11 +63,12 @@ export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }
 
   // Meeting room banner
   const panes = {
-    node:   () => <NodePane onUpload={onUpload} onPublish={onPublish} />,
-    shots:  () => <ShotsPane />,
-    team:   () => <TeamPane onInvite={onInvite} />,
-    people: () => <BiblePane />,
-    style:  () => <StylePane onOpenSettings={onSettings} />,
+    node:       () => <NodePane onUpload={onUpload} onPublish={onPublish} />,
+    shots:      () => <ShotsPane />,
+    production: () => <ProductionPane />,
+    team:       () => <TeamPane onInvite={onInvite} />,
+    people:     () => <BiblePane />,
+    style:      () => <StylePane onOpenSettings={onSettings} />,
   }
   const ActivePane = panes[activeTab] ?? panes.node
 

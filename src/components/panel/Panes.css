@@ -689,3 +689,17 @@
   color: var(--mute); font-family: var(--font-ui);
 }
 .sdc-no:hover { color: var(--dim); }
+
+/* ── SHOT DRAG REORDER ── */
+.shm-drag {
+  display: none;
+  color: var(--ghost); font-size: 13px;
+  cursor: grab; padding: 0 4px; flex-shrink: 0;
+  user-select: none;
+}
+.shm-drag:active { cursor: grabbing; }
+.shm-interactive:hover .shm-drag { display: flex; align-items: center; }
+.shm-drag-over {
+  border-top: 1.5px solid var(--accent-mid) !important;
+  background: rgba(var(--project-accent-rgb, 212,170,106), .04);
+}
