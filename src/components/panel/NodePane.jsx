@@ -452,6 +452,15 @@ export default function NodePane({ onUpload }) {
               <div style={{ fontSize:'11px', color:'var(--mute)', fontFamily:'var(--font-ui)', lineHeight:1.5 }}>
                 Send this link to your client. They join from their browser — no login needed.
               </div>
+              {!import.meta.env.VITE_TURN_USERNAME && (
+                <div style={{
+                  fontSize:'11px', color:'#C07010', fontFamily:'var(--font-mono)',
+                  background:'rgba(192,112,16,.08)', border:'.5px solid rgba(192,112,16,.2)',
+                  borderRadius:'2px', padding:'7px 10px', lineHeight:1.55, letterSpacing:'.02em',
+                }}>
+                  ⚠ TURN server not configured. Sessions may fail on ~20% of networks. Add VITE_TURN_USERNAME + VITE_TURN_CREDENTIAL to Vercel. Free tier at metered.ca.
+                </div>
+              )}
             </div>
           )}
         </div>

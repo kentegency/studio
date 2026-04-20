@@ -54,7 +54,7 @@ function openHTMLFallback(html, existingTab) {
 const SH_COLOR = { done:'#4ADE80', progress:'var(--accent)', pending:'#4A4840' }
 
 // ── CALL SHEET HTML TEMPLATE ──────────────────────────────────
-function buildCallSheetHTML({ project, node, date, generalCall, location, director, shots, subjects, notes, profile }) {
+function buildCallSheetHTML({ project, node, date, generalCall, location, director, advanceCall, parking, nearestHospital, safetyNotes, shots, subjects, notes, profile }) {
   const shotsDone    = shots.filter(s => s.status === 'done').length
   const confirmedSub = subjects.filter(s => ['confirmed','filmed'].includes(s.contact_status))
   const dateStr      = date
@@ -185,14 +185,26 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
         <div class="cs-meta-label">General Call</div>
         <div class="cs-meta-val">${generalCall || 'TBC'}</div>
       </div>
+      ${advanceCall ? `<div class="cs-meta-cell">
+        <div class="cs-meta-label">Advance Call</div>
+        <div class="cs-meta-val">${advanceCall}</div>
+      </div>` : ''}
       <div class="cs-meta-cell">
         <div class="cs-meta-label">Location</div>
         <div class="cs-meta-val">${location || 'TBC'}</div>
       </div>
+      ${parking ? `<div class="cs-meta-cell">
+        <div class="cs-meta-label">Parking / Access</div>
+        <div class="cs-meta-val" style="font-size:12px;line-height:1.5;">${parking}</div>
+      </div>` : ''}
       <div class="cs-meta-cell" style="margin-top:16px;">
         <div class="cs-meta-label">Director</div>
         <div class="cs-meta-val">${director || profile?.name || 'TBC'}</div>
       </div>
+      ${nearestHospital ? `<div class="cs-meta-cell" style="margin-top:16px;">
+        <div class="cs-meta-label">Nearest Hospital</div>
+        <div class="cs-meta-val" style="font-size:12px;">${nearestHospital}</div>
+      </div>` : ''}
       <div class="cs-meta-cell" style="margin-top:16px;">
         <div class="cs-meta-label">Scene Status</div>
         <div class="cs-meta-val" style="text-transform:uppercase;letter-spacing:.1em;font-size:11px;
@@ -252,6 +264,15 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
     ${noteItems}
   </div>` : ''}
 
+  <!-- SAFETY -->
+  ${safetyNotes ? `
+  <div class="section">
+    <div class="sec-eye">Health &amp; Safety</div>
+    <div class="sec-title">Safety Notes</div>
+    <div class="sec-rule"></div>
+    <div style="font-size:13px;color:#A09890;line-height:1.7;">${safetyNotes}</div>
+  </div>` : ''}
+
   <!-- FOOTER -->
   <div class="cs-footer">
     <div class="csf-left">
@@ -282,8 +303,23 @@ export default function CallSheet({ onClose }) {
   const [generalCall,    setGeneralCall]    = useState('07:00')
   const [location,       setLocation]       = useState('')
   const [director,       setDirector]       = useState(profile?.name ?? '')
+  const [advanceCall,    setAdvanceCall]    = useState('')
+  const [parking,        setParking]        = useState('')
+  const [nearestHospital,setNearestHospital]= useState('')
+  const [safetyNotes,    setSafetyNotes]    = useState('')
   const [generating,     setGenerating]     = useState(false)
   const [progress,       setProgress]       = useState('')
+
+  // Auto-populate from Production tab data when scene changes
+  useEffect(() => {
+    const node = realNodes.find(n => n.id === selectedNodeId)
+    if (!node?.production_data) return
+    const loc = node.production_data.location ?? {}
+    if (loc.name || loc.address) {
+      setLocation([loc.name, loc.address].filter(Boolean).join(' — '))
+    }
+    if (loc.parking) setParking(loc.parking)
+  }, [selectedNodeId])
 
   // Escape closes
   useEffect(() => {
@@ -330,6 +366,10 @@ export default function CallSheet({ onClose }) {
         generalCall,
         location,
         director,
+        advanceCall,
+        parking,
+        nearestHospital,
+        safetyNotes,
         shots:       shots    ?? [],
         subjects:    subjects ?? [],
         notes:       notes    ?? [],
@@ -431,6 +471,42 @@ export default function CallSheet({ onClose }) {
               onChange={e => setDirector(e.target.value)} />
           </div>
 
+          {/* Advance call */}
+          <div className="cs-field">
+            <label className="cs-label">Advance Call</label>
+            <input className="cs-input" type="time"
+              value={advanceCall}
+              onChange={e => setAdvanceCall(e.target.value)} />
+          </div>
+
+          {/* Nearest hospital */}
+          <div className="cs-field">
+            <label className="cs-label">Nearest Hospital</label>
+            <input className="cs-input" type="text"
+              placeholder="Name + address"
+              value={nearestHospital}
+              onChange={e => setNearestHospital(e.target.value)} />
+          </div>
+
+          {/* Parking / access */}
+          <div className="cs-field cs-field-full">
+            <label className="cs-label">Parking / Access</label>
+            <input className="cs-input" type="text"
+              placeholder="Parking details, gate codes, building access…"
+              value={parking}
+              onChange={e => setParking(e.target.value)} />
+          </div>
+
+          {/* Safety notes */}
+          <div className="cs-field cs-field-full">
+            <label className="cs-label">Safety Notes</label>
+            <textarea className="cs-input" rows={2}
+              placeholder="Health & safety notes, hazards, first aid location…"
+              value={safetyNotes}
+              onChange={e => setSafetyNotes(e.target.value)}
+              style={{ resize:'vertical', lineHeight:1.5 }} />
+          </div>
+
           {/* What will be pulled */}
           {selectedNode && (
             <div className="cs-field cs-field-full">
@@ -439,6 +515,9 @@ export default function CallSheet({ onClose }) {
                 <span className="cs-preview-item">Subjects assigned to this scene</span>
                 <span className="cs-preview-item">Full shot list</span>
                 <span className="cs-preview-item">Scene notes</span>
+                {selectedNode.production_data?.location?.name && (
+                  <span className="cs-preview-item">Location from Production tab ✓</span>
+                )}
               </div>
             </div>
           )}

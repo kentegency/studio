@@ -162,6 +162,7 @@ export default function CommandPalette({ onClose, onUpload, onInvite, onSettings
         { data: noteHits },
         { data: assetHits },
         { data: subjectHits },
+        { data: sceneHits },
       ] = await Promise.all([
         supabase.from('notes').select('id, body, node_id, nodes(name)')
           .eq('project_id', pid).ilike('body', q).limit(5),
@@ -169,6 +170,8 @@ export default function CommandPalette({ onClose, onUpload, onInvite, onSettings
           .eq('project_id', pid).ilike('name', q).limit(5),
         supabase.from('subjects').select('id, name, title, organisation')
           .eq('project_id', pid).ilike('name', q).limit(4),
+        supabase.from('nodes').select('id, name, status, description')
+          .eq('project_id', pid).ilike('name', q).limit(5),
       ])
 
       const results = [
@@ -203,6 +206,18 @@ export default function CommandPalette({ onClose, onUpload, onInvite, onSettings
           label: s.name,
           sub:   [s.title, s.organisation].filter(Boolean).join(' · '),
           action: () => { setTab('people'); onClose() },
+        })),
+        ...(sceneHits ?? []).map(n => ({
+          id:    `sr-scene-${n.id}`,
+          group: `Search — ${vocab.nodes}`,
+          icon:  '○',
+          label: n.name,
+          sub:   n.description ? n.description.slice(0, 50) + (n.description.length > 50 ? '…' : '') : n.status,
+          action: () => {
+            const node = nodes.find(nd => nd.id === n.id)
+            if (node) { selectNode(node); setTab('node') }
+            onClose()
+          },
         })),
       ]
 

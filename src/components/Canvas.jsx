@@ -5,6 +5,7 @@ import Timeline from './canvas/Timeline'
 import Minimap from './shell/Minimap'
 import RightPanel from './shell/RightPanel'
 import QuickCapture from './capture/QuickCapture'
+import MobileSheet from './canvas/MobileSheet'
 import Upload from './upload/Upload'
 import PublishPanel from './publish/PublishPanel'
 import Notifications from './shell/Notifications'
@@ -145,6 +146,7 @@ export default function Canvas() {
         onSettings={() => setShowSettings(true)} />
 
       <QuickCapture onVoice={() => setShowVoice(true)} />
+      <MobileSheet onUpload={() => setShowUpload(true)} />
 
       {/* Full-screen overlays — render at top level */}
       {viewerAsset  && <AssetViewer asset={viewerAsset} onClose={closeViewer}

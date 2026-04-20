@@ -79,14 +79,23 @@ export default function Notifications({ onClose }) {
 
   const fetchAll = async () => {
     setLoading(true)
-    const { data: notes } = await supabase
-      .from('notes')
-      .select('*, nodes(name)')
-      .eq('project_id', currentProject.id)
-      .order('created_at', { ascending: false })
-      .limit(40)
+    const [{ data: notes }, { data: recentNodes }] = await Promise.all([
+      supabase
+        .from('notes')
+        .select('*, nodes(name)')
+        .eq('project_id', currentProject.id)
+        .order('created_at', { ascending: false })
+        .limit(40),
+      supabase
+        .from('nodes')
+        .select('id, name, status, updated_at')
+        .eq('project_id', currentProject.id)
+        .not('status', 'eq', 'concept')
+        .order('updated_at', { ascending: false })
+        .limit(20),
+    ])
 
-    const mapped = (notes ?? []).map(n => ({
+    const noteMapped = (notes ?? []).map(n => ({
       id:     n.id,
       type:   n.body?.startsWith('Client approved') ? 'approval'
             : n.room === 'window' ? 'client'
@@ -99,7 +108,22 @@ export default function Notifications({ onClose }) {
       color:  n.color,
     }))
 
-    setItems(mapped)
+    const statusMapped = (recentNodes ?? []).map(n => ({
+      id:     `status-hist-${n.id}`,
+      type:   'status',
+      body:   `${n.name} — ${n.status}`,
+      scene:  n.name,
+      nodeId: n.id,
+      room:   'studio',
+      time:   n.updated_at,
+      color:  null,
+    }))
+
+    // Merge and sort by time descending
+    const all = [...noteMapped, ...statusMapped]
+      .sort((a, b) => new Date(b.time) - new Date(a.time))
+
+    setItems(all)
     setLoading(false)
   }
 
