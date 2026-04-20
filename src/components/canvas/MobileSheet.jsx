@@ -22,10 +22,12 @@ export default function MobileSheet({ onUpload }) {
   const { currentProject } = useProjectStore()
   const { showToast, setTab } = useUIStore()
 
-  const [open,    setOpen]    = useState(false)
-  const [note,    setNote]    = useState('')
-  const [adding,  setAdding]  = useState(false)
-  const [saving,  setSaving]  = useState(false)
+  const [open,       setOpen]       = useState(false)
+  const [note,       setNote]       = useState('')
+  const [adding,     setAdding]     = useState(false)
+  const [saving,     setSaving]     = useState(false)
+  const [showNotes,  setShowNotes]  = useState(false)
+  const [existNotes, setExistNotes] = useState([])
   const [assetCount, setAssetCount] = useState(0)
   const [shotCount,  setShotCount]  = useState(0)
 
@@ -34,8 +36,9 @@ export default function MobileSheet({ onUpload }) {
     if (selectedNode) {
       setOpen(true)
       setAdding(false)
+      setShowNotes(false)
       setNote('')
-      // Fetch counts
+      // Fetch counts + existing notes
       if (currentProject) {
         supabase.from('assets').select('id', { count: 'exact' })
           .eq('node_id', selectedNode.id)
@@ -43,6 +46,12 @@ export default function MobileSheet({ onUpload }) {
         supabase.from('shots').select('id', { count: 'exact' })
           .eq('node_id', selectedNode.id)
           .then(({ count }) => setShotCount(count ?? 0))
+        supabase.from('notes').select('id, body, color, created_at')
+          .eq('node_id', selectedNode.id)
+          .eq('room', 'studio')
+          .order('created_at', { ascending: false })
+          .limit(10)
+          .then(({ data }) => setExistNotes(data ?? []))
       }
     } else {
       setOpen(false)
@@ -146,6 +155,17 @@ export default function MobileSheet({ onUpload }) {
               </svg>
               Add note
             </button>
+            {existNotes.length > 0 && (
+              <button className={`ms-action ${showNotes ? 'ms-action-active' : ''}`}
+                onClick={() => setShowNotes(s => !s)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                {existNotes.length} note{existNotes.length !== 1 ? 's' : ''}
+              </button>
+            )}
             <button className="ms-action" onClick={() => onUpload?.()}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -183,6 +203,18 @@ export default function MobileSheet({ onUpload }) {
                 Cancel
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Existing notes — expandable */}
+        {showNotes && !adding && existNotes.length > 0 && (
+          <div className="ms-notes-list">
+            {existNotes.map(n => (
+              <div key={n.id} className="ms-note-item"
+                style={{ borderLeftColor: n.color ?? 'var(--accent)' }}>
+                {n.body}
+              </div>
+            ))}
           </div>
         )}
       </div>

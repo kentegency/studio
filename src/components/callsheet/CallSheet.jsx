@@ -57,6 +57,9 @@ const SH_COLOR = { done:'#4ADE80', progress:'var(--accent)', pending:'#4A4840' }
 function buildCallSheetHTML({ project, node, date, generalCall, location, director, advanceCall, parking, nearestHospital, safetyNotes, shots, subjects, notes, profile }) {
   const shotsDone    = shots.filter(s => s.status === 'done').length
   const confirmedSub = subjects.filter(s => ['confirmed','filmed'].includes(s.contact_status))
+  const equipment    = node.production_data?.equipment ?? []
+  const confirmedEq  = equipment.filter(e => e.confirmed)
+  const pendingEq    = equipment.filter(e => !e.confirmed)
   const dateStr      = date
     ? new Date(date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
     : 'Date TBC'
@@ -254,6 +257,30 @@ function buildCallSheetHTML({ project, node, date, generalCall, location, direct
       <tbody>${shotRows}</tbody>
     </table>` : `<div class="empty-row">No shots added to this scene yet.</div>`}
   </div>
+
+  <!-- EQUIPMENT -->
+  ${equipment.length > 0 ? `
+  <div class="section">
+    <div class="sec-eye">Production · Equipment</div>
+    <div class="sec-title">Equipment List</div>
+    <div class="sec-rule"></div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr>
+        <th style="padding:8px 14px;text-align:left;font-size:10px;letter-spacing:.14em;color:#6A6258;border-bottom:.5px solid rgba(255,255,255,.06);">Item</th>
+        <th style="padding:8px 14px;text-align:center;font-size:10px;letter-spacing:.14em;color:#6A6258;border-bottom:.5px solid rgba(255,255,255,.06);width:60px;">Qty</th>
+        <th style="padding:8px 14px;text-align:center;font-size:10px;letter-spacing:.14em;color:#6A6258;border-bottom:.5px solid rgba(255,255,255,.06);width:80px;">Status</th>
+      </tr></thead>
+      <tbody>${equipment.map(e => `
+        <tr>
+          <td style="padding:9px 14px;border-bottom:.5px solid rgba(255,255,255,.04);font-size:13px;color:#A09890;">${e.item}</td>
+          <td style="padding:9px 14px;border-bottom:.5px solid rgba(255,255,255,.04);font-size:12px;color:#6A6258;text-align:center;">${e.quantity}</td>
+          <td style="padding:9px 14px;border-bottom:.5px solid rgba(255,255,255,.04);text-align:center;">
+            <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${e.confirmed?'#4ADE80':'#C07010'};">${e.confirmed?'Confirmed':'Pending'}</span>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>` : ''}
 
   <!-- NOTES -->
   ${noteItems ? `
@@ -517,6 +544,9 @@ export default function CallSheet({ onClose }) {
                 <span className="cs-preview-item">Scene notes</span>
                 {selectedNode.production_data?.location?.name && (
                   <span className="cs-preview-item">Location from Production tab ✓</span>
+                )}
+                {(selectedNode.production_data?.equipment ?? []).length > 0 && (
+                  <span className="cs-preview-item">Equipment list ({selectedNode.production_data.equipment.length} items) ✓</span>
                 )}
               </div>
             </div>

@@ -232,6 +232,10 @@ export function ShotsPane() {
                   const { error } = await supabase.from('shots').update({ name }).eq('id', shot.id)
                   if (!error) setShots(prev => prev.map(s => s.id === shot.id ? { ...s, name } : s))
                 }}
+                onUpdateMeta={async (patch) => {
+                  const { error } = await supabase.from('shots').update(patch).eq('id', shot.id)
+                  if (!error) setShots(prev => prev.map(s => s.id === shot.id ? { ...s, ...patch } : s))
+                }}
                 onReorder={async (fromIdx, toIdx) => {
                   if (fromIdx === toIdx) return
                   const reordered = [...shots]
@@ -256,10 +260,11 @@ export function ShotsPane() {
   )
 }
 
-// ── SHOT ROW — with delete + inline rename ────
-function ShotRow({ shot, idx, total, onStatusCycle, onDelete, onRename, onReorder, SH_COLOR }) {
+// ── SHOT ROW — with delete + inline rename + meta editing ────
+function ShotRow({ shot, idx, total, onStatusCycle, onDelete, onRename, onUpdateMeta, onReorder, SH_COLOR }) {
   const [editingName, setEditingName] = useState(false)
   const [nameVal,     setNameVal]     = useState(shot.name)
+  const [editMeta,    setEditMeta]    = useState(false)
   const [dragOver,    setDragOver]    = useState(false)
 
   const commitRename = () => {
@@ -268,6 +273,9 @@ function ShotRow({ shot, idx, total, onStatusCycle, onDelete, onRename, onReorde
     else setNameVal(shot.name)
     setEditingName(false)
   }
+
+  const SHOT_TYPES = ['ECU','CU','MCU','MS','MWS','WS','EWS','OTS','POV','Insert']
+  const SHOT_KINDS = ['Interview','Drama enactment','Candid','B-roll','Archival','Animation','Graphic']
 
   return (
     <div className={`shm shm-interactive ${dragOver ? 'shm-drag-over' : ''}`}
@@ -317,9 +325,39 @@ function ShotRow({ shot, idx, total, onStatusCycle, onDelete, onRename, onReorde
           </div>
         )}
         <div className="shm-meta">
-          <span className="shm-type">{shot.shot_type}</span>
-          <span className="shm-kind">{shot.shot_kind}</span>
-          <span className="shm-dur">{shot.duration}</span>
+          {editMeta ? (
+            <>
+              <select className="shm-meta-sel"
+                value={shot.shot_type ?? ''}
+                onChange={e => onUpdateMeta({ shot_type: e.target.value })}
+                onClick={e => e.stopPropagation()}>
+                {SHOT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select className="shm-meta-sel"
+                value={shot.shot_kind ?? ''}
+                onChange={e => onUpdateMeta({ shot_kind: e.target.value })}
+                onClick={e => e.stopPropagation()}>
+                {SHOT_KINDS.map(k => <option key={k} value={k}>{k}</option>)}
+              </select>
+              <input className="shm-meta-dur"
+                value={shot.duration ?? ''}
+                placeholder="00:08"
+                onChange={e => onUpdateMeta({ duration: e.target.value })}
+                onClick={e => e.stopPropagation()}
+                onKeyDown={e => e.key === 'Escape' && setEditMeta(false)} />
+              <button className="shm-meta-done"
+                onClick={e => { e.stopPropagation(); setEditMeta(false) }}>✓</button>
+            </>
+          ) : (
+            <>
+              <span className="shm-type" onClick={e => { e.stopPropagation(); setEditMeta(true) }}
+                title="Click to edit">{shot.shot_type}</span>
+              <span className="shm-kind" onClick={e => { e.stopPropagation(); setEditMeta(true) }}
+                title="Click to edit">{shot.shot_kind}</span>
+              <span className="shm-dur"  onClick={e => { e.stopPropagation(); setEditMeta(true) }}
+                title="Click to edit">{shot.duration}</span>
+            </>
+          )}
         </div>
       </div>
       <div className="shm-dot" style={{ background: SH_COLOR[shot.status] ?? '#2A2720' }}

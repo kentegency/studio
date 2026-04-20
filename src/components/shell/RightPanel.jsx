@@ -20,7 +20,7 @@ export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }
   const TABS = [
     { key: 'node',       label: vocab.node     },
     { key: 'shots',      label: vocab.shots    },
-    { key: 'production', label: 'Production'  },
+    { key: 'production', label: 'Prod.'  },
     { key: 'team',       label: vocab.crew     },
     { key: 'people',     label: vocab.subjects },
     { key: 'style',      label: 'Identity'    },
@@ -28,7 +28,7 @@ export default function RightPanel({ onUpload, onPublish, onInvite, onSettings }
 
   const switchTab = (key) => {
     setVisible(false)
-    setTimeout(() => { setTab(key); setVisible(true) }, 130)
+    setTimeout(() => { setTab(key); setVisible(true) }, 80)
   }
 
   useEffect(() => { setTimeout(() => setVisible(true), 100) }, [])

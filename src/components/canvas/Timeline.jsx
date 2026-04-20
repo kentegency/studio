@@ -32,7 +32,7 @@ const STATUS_FILL  = {
   approved: '#4ADE80',
   locked:   '#4ADE80',
 }
-const STATUS_LABEL = { concept:'Concept', progress:'In Progress', review:'In Review', approved:'Approved', locked:'Locked' }
+const STATUS_LABEL = { concept:'○ Concept', progress:'● In progress', review:'◎ In review', approved:'◉ Approved', locked:'⊠ Locked' }
 const ACT_COLORS   = {
   teal:   { fill:'rgba(74,158,158,0.045)',  stroke:'rgba(74,158,158,0.11)',  labelFill:'rgba(74,158,158,0.60)'  },
   orange: { fill:'rgba(212,170,106,0.042)',  stroke:'rgba(212,170,106,0.1)',   labelFill:'rgba(212,170,106,0.6)'   },
@@ -134,7 +134,6 @@ function SceneMode({ node, allNodes, onClose, onSelectNode }) {
               background: `${accent}14`,
               borderColor: `${accent}35`,
             }}>
-              <div className="sm-status-dot" style={{ background: accent }} />
               <span className="sm-status-label" style={{ color: accent }}>
                 {STATUS_LABEL[node.status ?? 'concept']}
               </span>
@@ -678,7 +677,7 @@ export default function Timeline() {
                   <text
                     x={act.x + 8} y={44}
                     fill={act.labelFill} opacity={0.9}
-                    fontSize={9} fontFamily="IBM Plex Mono"
+                    fontSize={9} fontFamily="DM Sans, system-ui, sans-serif"
                     letterSpacing={1.5} fontWeight={500}>
                     {actNum}
                   </text>
@@ -688,7 +687,7 @@ export default function Timeline() {
                     <text
                       x={act.x + 8} y={56}
                       fill={act.labelFill} opacity={0.6}
-                      fontSize={9} fontFamily="IBM Plex Mono"
+                      fontSize={9} fontFamily="DM Sans, system-ui, sans-serif"
                       letterSpacing={0.5}>
                       {displayName}
                     </text>
@@ -712,7 +711,7 @@ export default function Timeline() {
                         x={act.x + act.width - 16} y={43}
                         textAnchor="middle"
                         fill={act.labelFill} opacity={0.8}
-                        fontSize={9} fontFamily="IBM Plex Mono">
+                        fontSize={9} fontFamily="DM Sans, system-ui, sans-serif">
                         ✎
                       </text>
                     </g>
@@ -732,7 +731,7 @@ export default function Timeline() {
                 <text
                   x={dragCx} y={170}
                   textAnchor="middle" fontSize={9}
-                  fontFamily="IBM Plex Mono" fill="rgba(212,170,106,0.6)">
+                  fontFamily="DM Sans, system-ui, sans-serif" fill="rgba(212,170,106,0.6)">
                   {Math.round((dragPos ?? 0) * 100)}%
                 </text>
               </>

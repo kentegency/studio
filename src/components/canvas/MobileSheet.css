@@ -151,3 +151,28 @@
     font-family: var(--font-ui); min-height: 48px;
   }
 }
+
+@media (max-width: 768px) {
+  /* Active action button state */
+  .ms-action-active {
+    background: var(--s3);
+    color: var(--accent);
+    border-color: var(--accent-mid);
+  }
+
+  /* Existing notes list */
+  .ms-notes-list {
+    border-top: .5px solid var(--b);
+    padding: 10px 20px 4px;
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 200px; overflow-y: auto;
+  }
+  .ms-note-item {
+    font-size: 13px; color: var(--dim);
+    padding: 9px 12px;
+    background: var(--s2);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 2px 2px 0;
+    line-height: 1.55;
+  }
+}

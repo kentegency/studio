@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useFocusTrap } from '../../lib/useFocusTrap'
 import { supabase } from '../../lib/supabase'
 import { useProjectStore, useNodeStore, useAuthStore, useUIStore } from '../../stores'
+import { getVocab } from '../../lib/vocabulary'
 import './Wrap.css'
 
 // ── PDF generation via Edge Function ─────────────────────────
@@ -67,6 +68,7 @@ function openHTMLFallback(html, existingTab) {
 export default function WrapPanel({ onClose }) {
   const { currentProject } = useProjectStore()
   const { nodes }          = useNodeStore()
+  const vocab = getVocab(currentProject?.type)
   const { profile }        = useAuthStore()
   const { showToast }      = useUIStore()
   const panelRef = useFocusTrap(true)
@@ -301,8 +303,8 @@ export default function WrapPanel({ onClose }) {
 
   <!-- SCENE OVERVIEW -->
   <div class="section page">
-    <div class="sec-eye">Project Arc</div>
-    <div class="sec-title">Scene Overview</div>
+    <div class="sec-eye">Project Arc · ${vocab.nodes}</div>
+    <div class="sec-title">${vocab.nodes} Overview</div>
     <div class="sec-rule"></div>
     ${sortedNodes.map((n, i) => {
       const sc        = STATUS_COLOR[n.status] ?? '#6A6258'
@@ -314,7 +316,9 @@ export default function WrapPanel({ onClose }) {
         <div class="scene-num">${String(i+1).padStart(2,'0')}</div>
         <div class="scene-body">
           <div class="scene-name">${n.name}</div>
-          <div class="scene-meta">${n.type ?? 'scene'} · ${Math.round((n.position??0)*100)}% through arc</div>
+          <div class="scene-meta">${vocab.node} · ${Math.round((n.position??0)*100)}% through arc${n.production_data?.shoot_day ? ` · Day ${n.production_data.shoot_day}` : ''}</div>
+          ${n.production_data?.elements?.int_ext || n.production_data?.elements?.time_of_day ? `
+          <div class="scene-meta" style="margin-top:2px;opacity:.7;">${[n.production_data?.elements?.int_ext, n.production_data?.elements?.time_of_day, n.production_data?.location?.name].filter(Boolean).join(' · ')}</div>` : ''}
           <div class="scene-status" style="color:${sc}">${n.status ?? 'concept'}</div>
           ${nodeSubjects.length > 0 ? `<div class="scene-subjects">Subjects: ${nodeSubjects.map(s=>s.name).join(', ')}</div>` : ''}
         </div>
@@ -327,7 +331,7 @@ export default function WrapPanel({ onClose }) {
   ${(allShots??[]).length > 0 ? `
   <div class="section page">
     <div class="sec-eye">Production</div>
-    <div class="sec-title">Shot List</div>
+    <div class="sec-title">${vocab.shots}</div>
     <div class="sec-rule"></div>
     ${sortedNodes.map(n => {
       const nodeShots = (allShots??[]).filter(s => s.node_id === n.id)
@@ -347,7 +351,7 @@ export default function WrapPanel({ onClose }) {
   ${(subjects??[]).length > 0 ? `
   <div class="section page">
     <div class="sec-eye">Production Bible</div>
-    <div class="sec-title">Interview Subjects</div>
+    <div class="sec-title">${vocab.subjects}</div>
     <div class="sec-rule"></div>
     <div class="two-col">
     ${(subjects??[]).map(s => {

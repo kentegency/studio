@@ -20,20 +20,26 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
     showToast(msgs[r.toLowerCase()])
   }
 
+  const projectName = currentProject?.name
+  const projectType = currentProject?.type
+
   return (
     <header className="topbar">
-      {/* Room badge only — project name lives in canvas header */}
-      <div className="tb-proj">
-        <span className="tb-room-badge tb-room-badge--inline" style={{
-          color: activeRoom === 'window' ? 'var(--green)'
-               : activeRoom === 'meeting' ? 'var(--teal)'
-               : 'var(--accent)'
-        }}>
-          {activeRoom.charAt(0).toUpperCase() + activeRoom.slice(1)}
-        </span>
+
+      {/* Zone 1 — Project identity */}
+      <div className="tb-identity">
+        {projectType && (
+          <div className="tb-proj-type">{projectType}</div>
+        )}
+        <div className="tb-proj-name">
+          {projectName ?? 'Kentegency Studio'}
+        </div>
       </div>
 
-      {/* Room switcher — centre */}
+      {/* Zone divider */}
+      <div className="tb-divider" />
+
+      {/* Zone 2 — Room switcher */}
       <div className="tb-rooms">
         {rooms.map(r => (
           <button key={r}
@@ -44,10 +50,13 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
         ))}
       </div>
 
-      {/* Actions — right, consolidated */}
+      {/* Zone divider */}
+      <div className="tb-divider" />
+
+      {/* Zone 3 — Actions */}
       <div className="tb-actions">
 
-        {/* View ▾ — creative views */}
+        {/* View ▾ */}
         <div className="tb-view-wrap">
           <button className="tbb" onClick={() => { setShowView(v => !v); setShowGenerate(false) }} data-hover>
             View ▾
@@ -74,7 +83,7 @@ export default function Topbar({ onWrap, onSettings, onActs }) {
           )}
         </div>
 
-        {/* Generate ▾ — document outputs */}
+        {/* Generate ▾ — primary output action */}
         <div className="tb-view-wrap">
           <button className="tbb tbb-generate" onClick={() => { setShowGenerate(v => !v); setShowView(false) }} data-hover>
             Generate ▾

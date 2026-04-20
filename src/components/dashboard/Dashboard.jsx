@@ -248,7 +248,9 @@ export default function Dashboard() {
 
         <div className="dash-grid">
           {projects.map(p => (
-            <div key={p.id} className="dash-card" onClick={() => openProject(p)}>
+            <div key={p.id} className="dash-card"
+              style={{ '--card-accent': p.accent_color ?? 'var(--accent)' }}
+              onClick={() => openProject(p)}>
               <div className="dc-accent" style={{ background: p.accent_color ?? 'var(--accent)' }} />
               <div className="dc-body">
                 <div className="dc-type" style={{ color: p.accent_color ?? 'var(--accent)' }}>

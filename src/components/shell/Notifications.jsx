@@ -41,7 +41,7 @@ export default function Notifications({ onClose }) {
         const node = nodes.find(n => n.id === note.node_id)
         addItem({
           id:       note.id,
-          type:     note.body?.startsWith('Client approved') ? 'approval' : 'comment',
+          type:     note.body?.startsWith('Client approved') ? 'approval' : note.body?.startsWith('Client reacted') ? 'reaction' : note.room === 'window' ? 'client' : 'comment',
           body:     note.body,
           scene:    node?.name,
           nodeId:   note.node_id,
@@ -98,6 +98,7 @@ export default function Notifications({ onClose }) {
     const noteMapped = (notes ?? []).map(n => ({
       id:     n.id,
       type:   n.body?.startsWith('Client approved') ? 'approval'
+            : n.body?.startsWith('Client reacted') ? 'reaction'
             : n.room === 'window' ? 'client'
             : 'comment',
       body:   n.body,
@@ -137,12 +138,14 @@ export default function Notifications({ onClose }) {
 
   const TYPE_ICON = {
     approval: '✓',
+    reaction: '◇',
     client:   '⬡',
     comment:  '◈',
     status:   '◐',
   }
   const TYPE_COLOR = {
     approval: 'var(--green)',
+    reaction: '#8B5CF6',
     client:   'var(--teal)',
     comment:  'var(--accent)',
     status:   'var(--ghost)',
@@ -206,10 +209,12 @@ export default function Notifications({ onClose }) {
               className={`notif-item ${item.nodeId ? 'clickable' : ''}`}
               onClick={() => jumpToScene(item.nodeId)}>
               <div className="ni-icon" style={{ color: TYPE_COLOR[item.type] ?? 'var(--accent)' }}>
-                {TYPE_ICON[item.type] ?? '◉'}
+                {item.type === 'reaction'
+                  ? (item.body?.match(/Client reacted (.+?) to/)?.[1] ?? '◇')
+                  : TYPE_ICON[item.type] ?? '◉'}
               </div>
               <div className="ni-content">
-                <div className="ni-body">{item.body?.slice(0, 100)}{item.body?.length > 100 ? '…' : ''}</div>
+                <div className="ni-body">{item.type === 'reaction' ? item.body : item.body?.slice(0, 100) + (item.body?.length > 100 ? '…' : '')}</div>
                 <div className="ni-meta">
                   {item.scene && <span className="ni-scene">{item.scene}</span>}
                   {item.scene && <span> · </span>}

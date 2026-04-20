@@ -34,3 +34,6 @@
   border-radius: 1px; pointer-events: none;
   transition: width .8s var(--ease);
 }
+
+/* Minimap label — DM Sans */
+.cm-l { font-family: var(--font-ui); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; }

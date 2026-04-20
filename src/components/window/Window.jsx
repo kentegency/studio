@@ -102,11 +102,45 @@ export default function Window({ token }) {
     setNotes(no ?? [])
   }
 
-  const selectNode = (node) => {
+  const selectNode = async (node) => {
     setSelected(node)
-    setReaction(null)
-    setApprovalState('idle')
     loadNodeContent(node.id)
+
+    // Restore approval state from node status
+    if (node.status === 'approved' || node.status === 'locked') {
+      setApprovalState('approved')
+      // Find the approval note timestamp
+      const { data: approvalNote } = await supabase
+        .from('notes')
+        .select('created_at')
+        .eq('node_id', node.id)
+        .ilike('body', 'Client approved%')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+      setApprovedAt(approvalNote ? new Date(approvalNote.created_at) : new Date())
+    } else {
+      setApprovalState('idle')
+      setApprovedAt(null)
+    }
+
+    // Restore reaction from notes
+    const { data: reactionNote } = await supabase
+      .from('notes')
+      .select('body')
+      .eq('node_id', node.id)
+      .ilike('body', 'Client reacted%')
+      .eq('room', 'meeting')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (reactionNote) {
+      // Extract emoji from "Client reacted 🔥 to this scene."
+      const match = reactionNote.body.match(/Client reacted (.+?) to this scene/)
+      setReaction(match ? match[1] : null)
+    } else {
+      setReaction(null)
+    }
   }
 
   const saveReaction = async (r) => {
@@ -200,7 +234,12 @@ export default function Window({ token }) {
             <div className="win-node-eye" style={{ color: accent }}>{selected.type ?? 'Scene'}</div>
             <div className="win-node-title">{selected.name}</div>
             <div className="win-node-status" style={{ color: STATUS_COLORS[selected.status] ?? '#6A6258' }}>
-              {selected.status ?? 'Concept'}
+              {selected.status === 'concept'  ? '○ Concept' :
+               selected.status === 'progress' ? '● In progress' :
+               selected.status === 'review'   ? '◎ In review' :
+               selected.status === 'approved' ? '◉ Approved' :
+               selected.status === 'locked'   ? '⊠ Locked' :
+               selected.status ?? 'Concept'}
             </div>
           </div>
 

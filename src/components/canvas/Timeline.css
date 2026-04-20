@@ -137,7 +137,7 @@
   transition: border-color var(--dur-mid) var(--ease);
 }
 .nn-pos-wrap { display: flex; align-items: center; gap: 12px; }
-.nn-label { font-size: 11px; letter-spacing: .05em; color: var(--mute); text-transform: uppercase; white-space: nowrap; font-family: var(--font-mono); }
+.nn-label { font-size: 10px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; white-space: nowrap; font-family: var(--font-ui); font-weight: 500; }
 .nn-pos-val { font-size: 12px; color: var(--orange); min-width: 32px; text-align: right; font-family: var(--font-mono); }
 .nn-foot { display: flex; justify-content: flex-end; gap: 8px; }
 .nn-cancel {
@@ -248,11 +248,11 @@
   transition: background var(--dur-mid) var(--ease);
 }
 .sm-status-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.sm-status-label { font-size: 14px; font-weight: 500; letter-spacing: .04em; font-family: var(--font-ui); }
+.sm-status-label { font-size: 13px; font-weight: 500; letter-spacing: .02em; font-family: var(--font-ui); }
 .sm-advance {
   font-size: 11px; color: var(--mute); letter-spacing: .12em;
   background: none; border: none;
-  font-family: var(--font-mono); text-transform: uppercase;
+  font-family: var(--font-ui); text-transform: none;
   transition: color var(--dur-mid) var(--ease);
 }
 .sm-advance:hover { color: var(--dim); }

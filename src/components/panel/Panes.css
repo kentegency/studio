@@ -10,7 +10,7 @@
 
 /* Header */
 .rph {
-  padding: 20px 17px 16px;
+  padding: 16px 17px 12px;
   position: relative; flex-shrink: 0;
 }
 .rph::after {
@@ -19,14 +19,15 @@
   opacity: .35;
 }
 .rph::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, var(--project-accent, var(--orange)), transparent 52%);
-  opacity: .22;
+  content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%;
+  background: var(--project-accent, var(--orange));
+  opacity: .75;
 }
-.rp-ey  { font-size: 10px; letter-spacing: .06em; color: var(--mute); margin-bottom: 6px; font-family: var(--font-mono); }
-.rp-ti  { font-family: var(--font-display); font-size: 22px; color: var(--cream); letter-spacing: .04em; line-height: 1; }
-.rp-st  { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; letter-spacing: .05em; font-family: var(--font-ui); }
-.rp-dot { width: 5px; height: 5px; border-radius: 50%; animation: pulse-dot 2.2s ease infinite; }
+.rp-ey  { font-size: 9px; letter-spacing: .18em; color: var(--accent); margin-bottom: 5px; font-family: var(--font-ui); text-transform: uppercase; opacity: .6; font-weight: 500; }
+.rp-ti  { font-family: var(--font-display); font-size: 21px; color: var(--cream); letter-spacing: .03em; line-height: 1; }
+.rp-ti-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.rp-st  { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; letter-spacing: .04em; font-family: var(--font-ui); margin-top: 0; }
+.rp-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 
 /* ── NODE PANE sections — no box borders, use spacing + subtle rules ── */
 .sec { padding: 16px 17px 14px; flex-shrink: 0; position: relative; }
@@ -35,9 +36,9 @@
   background: rgba(255,255,255,.038);
 }
 .sec-l {
-  font-size: 10px; letter-spacing: .06em; color: var(--mute); margin-bottom: 10px;
+  font-size: 10px; letter-spacing: .08em; color: var(--mute); margin-bottom: 10px;
   display: flex; justify-content: space-between; align-items: center;
-  font-family: var(--font-mono); font-weight: 400;
+  font-family: var(--font-ui); font-weight: 500; text-transform: uppercase;
 }
 .sec-l span { color: var(--accent, #D4AA6A); font-size: 11px; transition: opacity var(--dur-fast); letter-spacing: .04em; }
 .sec-l span:hover { opacity: .65; }
@@ -702,4 +703,36 @@
 .shm-drag-over {
   border-top: 1.5px solid var(--accent-mid) !important;
   background: rgba(var(--project-accent-rgb, 212,170,106), .04);
+}
+
+/* ── SHOT META EDITING ── */
+.shm-meta-sel {
+  background: var(--s3); border: .5px solid var(--accent-mid);
+  border-radius: 2px; color: var(--dim);
+  font-size: 10px; font-family: var(--font-mono);
+  padding: 1px 4px; outline: none;
+  letter-spacing: .04em; cursor: pointer;
+}
+.shm-meta-sel:focus { border-color: var(--accent); color: var(--cream); }
+.shm-meta-dur {
+  background: var(--s3); border: .5px solid var(--accent-mid);
+  border-radius: 2px; color: var(--dim);
+  font-size: 10px; font-family: var(--font-mono);
+  padding: 1px 5px; outline: none; width: 46px;
+  caret-color: var(--accent);
+}
+.shm-meta-dur:focus { border-color: var(--accent); color: var(--cream); }
+.shm-meta-done {
+  font-size: 10px; color: var(--green);
+  background: rgba(74,222,128,.1); border: .5px solid rgba(74,222,128,.2);
+  border-radius: 2px; padding: 1px 5px;
+  transition: background var(--dur-fast);
+}
+.shm-meta-done:hover { background: rgba(74,222,128,.18); }
+.shm-type, .shm-kind, .shm-dur {
+  cursor: pointer;
+  transition: color var(--dur-fast);
+}
+.shm-type:hover, .shm-kind:hover, .shm-dur:hover {
+  color: var(--accent);
 }

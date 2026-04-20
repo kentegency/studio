@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNodeStore, useUIStore, useAssetsStore, useNotesStore, useAuthStore, useProjectStore } from '../../stores'
 import { getVocab } from '../../lib/vocabulary'
+import { getStatus, STATUS_ORDER, nextStatus as getNextStatus } from '../../lib/status'
 import { supabase } from '../../lib/supabase'
 import { undoStack } from '../../lib/undo'
 import EmptyState from '../EmptyState'
@@ -8,9 +9,9 @@ import ConfirmModal from '../ConfirmModal'
 import './Panes.css'
 import '../EmptyState.css'
 
-const STATUSES      = ['concept','progress','review','approved','locked']
-const STATUS_COLORS = { concept:'#6A6258', progress:'var(--accent)', review:'#C07010', approved:'#4ADE80', locked:'#4ADE80' }
-const STATUS_LABELS = { concept:'Concept', progress:'In Progress', review:'In Review', approved:'Approved ✓', locked:'Locked ✓' }
+const STATUSES      = STATUS_ORDER
+const STATUS_COLORS = Object.fromEntries(STATUS_ORDER.map(k => [k, getStatus(k).color]))
+const STATUS_LABELS = Object.fromEntries(STATUS_ORDER.map(k => [k, getStatus(k).label]))
 const NOTE_COLORS   = ['var(--accent)','var(--teal)','#F4EFD8','#4ADE80','#8B5CF6','#E05050']
 const WAVEFORM      = [.3,.5,.8,.6,.9,.4,.7,.55,.8,.6,.4,.9,.7,.5,.3,.65,.8,.4,.7,.5,.9,.6,.4,.8,.5,.7,.35,.6,.9,.4,.8,.6,.5,.7,.3,.9,.6,.4,.75,.5]
 const TYPE_COLORS   = { pdf:'#E05050', image:'var(--teal)', gif:'#8B5CF6', video:'var(--accent)', audio:'#4ADE80', document:'#D4CAAA', reference:'#D4CAAA' }
@@ -132,6 +133,7 @@ export default function NodePane({ onUpload }) {
   const status = selectedNode?.status ?? 'concept'
   const color  = STATUS_COLORS[status] ?? '#6A6258'
   const label  = STATUS_LABELS[status] ?? 'Concept'
+  const icon   = getStatus(status).icon
 
   const cycleStatus = async () => {
     if (!selectedNode?.id || updatingStatus) return
@@ -235,41 +237,43 @@ export default function NodePane({ onUpload }) {
           />
         )}
         <div className="rp-ey">{act || `${vocab.node} · ${Math.round((selectedNode.position ?? 0) * 100)}%`}</div>
-        {editingName ? (
-          <input
-            className="rp-ti-input"
-            value={nameVal}
-            autoFocus
-            onChange={e => setNameVal(e.target.value)}
-            onBlur={async () => {
-              const trimmed = nameVal.trim()
-              if (trimmed && trimmed !== name) {
-                await updateNode(selectedNode.id, { name: trimmed })
-                showToast(`Renamed to "${trimmed}".`)
-              } else {
-                setNameVal(name)
-              }
-              setEditingName(false)
-            }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') e.target.blur()
-              if (e.key === 'Escape') { setNameVal(name); setEditingName(false) }
-            }}
-          />
-        ) : (
-          <div className="rp-ti"
-            onDoubleClick={() => { setNameVal(name); setEditingName(true) }}
-            title="Double-click to rename">
-            {name}
-          </div>
-        )}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div className="rp-ti-row">
+          {editingName ? (
+            <input
+              className="rp-ti-input"
+              value={nameVal}
+              autoFocus
+              onChange={e => setNameVal(e.target.value)}
+              onBlur={async () => {
+                const trimmed = nameVal.trim()
+                if (trimmed && trimmed !== name) {
+                  await updateNode(selectedNode.id, { name: trimmed })
+                  showToast(`Renamed to "${trimmed}".`)
+                } else {
+                  setNameVal(name)
+                }
+                setEditingName(false)
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') e.target.blur()
+                if (e.key === 'Escape') { setNameVal(name); setEditingName(false) }
+              }}
+            />
+          ) : (
+            <div className="rp-ti"
+              onDoubleClick={() => { setNameVal(name); setEditingName(true) }}
+              title="Double-click to rename">
+              {name}
+            </div>
+          )}
+          {/* Status inline with title */}
           <div className="rp-st" style={{ cursor:'pointer' }}
             onClick={cycleStatus} data-hover title="Click to advance status">
-            <span className="rp-dot" style={{ background:color }} />
-            <span style={{ color }}>{label}</span>
-            <span style={{ color:'var(--ghost)', fontSize:'11px', marginLeft:'4px' }}>↻</span>
+            <span style={{ color, fontSize:'11px', lineHeight:1 }}>{icon}</span>
+            <span style={{ color, fontSize:'10px' }}>{label}</span>
           </div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end' }}>
           {/* Position input — direct arc position control */}
           <div className="scene-pos-row">
             <span className="scene-pos-label">Arc position</span>

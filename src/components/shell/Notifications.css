@@ -41,7 +41,7 @@
 .notif-body::-webkit-scrollbar { width: 1.5px; }
 .notif-body::-webkit-scrollbar-thumb { background: var(--s3); }
 
-.notif-loading { font-size: 12px; letter-spacing: .05em; color:var(--mute); text-transform:uppercase; padding: 24px 16px; text-align:center; }
+.notif-loading { font-size: 12px; letter-spacing: .03em; color:var(--mute); padding: 24px 16px; text-align:center; }
 
 .notif-empty { padding: 32px 16px; text-align:center; }
 .ne-title { font-size:13px; color:var(--mute); letter-spacing:.06em; margin-bottom:6px; }

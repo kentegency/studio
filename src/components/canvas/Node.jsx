@@ -134,15 +134,16 @@ export default function Node({ node, selected, onClick, isDragging }) {
 
       {/* Label — always visible below node */}
       <text
-        x={cx} y={cy + node.r + 13}
+        x={cx} y={cy + node.r + 14}
         textAnchor="middle"
-        fontSize={9}
-        fontFamily="IBM Plex Mono"
-        letterSpacing={0.8}
+        fontSize={node.r > 9 ? 10 : 9}
+        fontFamily="DM Sans, system-ui, sans-serif"
+        fontWeight={node.r > 9 ? 500 : 400}
+        letterSpacing={0.1}
         fill={selected ? ring.color : node.labelFill}
         style={{ pointerEvents:'none', transition:'fill .25s ease' }}>
-        {(node.label ?? '').length > 12
-          ? (node.label ?? '').slice(0, 11) + '…'
+        {(node.label ?? '').length > 10
+          ? (node.label ?? '').slice(0, 9) + '…'
           : (node.label ?? '')}
       </text>
 
@@ -223,9 +224,14 @@ function Tooltip({ cx, cy, name, status, statusColor, shotData, description }) {
       {/* Status */}
       <text x={tx} y={ty - H + PAD + 20}
         textAnchor="middle" fontSize={9}
-        fontFamily="IBM Plex Mono" letterSpacing={1}
+        fontFamily="DM Sans, system-ui, sans-serif" letterSpacing={0.3}
         fill={statusColor}>
-        {status.toUpperCase()}
+        {status === 'concept'  ? '○ Concept' :
+         status === 'progress' ? '● In progress' :
+         status === 'review'   ? '◎ In review' :
+         status === 'approved' ? '◉ Approved' :
+         status === 'locked'   ? '⊠ Locked' :
+         status}
       </text>
       {/* Shot count */}
       {shotData && (

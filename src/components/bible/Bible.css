@@ -15,7 +15,7 @@
 }
 .bible-title {
   font-size: 11px; letter-spacing: .2em; color: var(--mute);
-  text-transform: uppercase; font-family: var(--font-mono);
+  text-transform: uppercase; font-family: var(--font-ui); font-weight: 500;
 }
 .bible-add {
   width: 24px; height: 24px; border-radius: 2px;
